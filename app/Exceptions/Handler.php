@@ -58,10 +58,20 @@ class Handler extends ExceptionHandler
             ];
 
             return response()->json($response, $response['code']);
-            // return response()->json(['error' => 'Unauthenticated.'], 401);
         }
 
         $response = parent::render($request, $exception);
+        if ($request->is('api/*')) {
+            app('Barryvdh\Cors\CorsService')->addActualRequestHeaders($response, $request);
+            // if ($exception instanceof \ErrorException && $request->expectsJson()) {
+            //     return response()->json([
+            //         "code"    => 500,
+            //         "message" => $exception->getMessage(),
+            //         "file"    => $exception->getFile(),
+            //         "line"    => $exception->getLine()
+            //     ], 500);
+            // }
+        }
 
         return $response;
     }

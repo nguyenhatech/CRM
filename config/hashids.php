@@ -40,7 +40,7 @@ return [
     'connections' => [
 
         'main' => [
-            'salt' => 'kuxdg7qJHj#VKf3r_T83-h%3HHU&uZe',
+            'salt' => '>cRe324DzMYX]Hz^y;7grCr^33QQpD8yYVX',
             'length' => '8',
             'alphabet' => '0123456789abcdefghijklmnopqrstuvxyz'
         ],

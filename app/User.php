@@ -25,7 +25,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'uuid', 'status'
+        'name', 'email', 'phone', 'password', 'uuid', 'status'
     ];
 
     /**
@@ -37,6 +37,34 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
+    /**
+     * Full path of images.
+     */
+    public $imgPath = 'storage/images/avatars';
+
+    /**
+     * Physical path of upload folder.
+     */
+    public $uploadPath = 'app/public/images/avatars';
+
+    /**
+     * Image width.
+     */
+    public $imgWidth = 200;
+
+    /**
+     * Image height.
+     */
+    public $imgHeight = 200;
+
+    const ENABLE = 1;
+    const DISABLE = 0;
+
+    const LIST_STATUS = [
+        self::ENABLE => 'Đã kích hoạt',
+        self::DISABLE => 'Chưa kích hoạt'
+    ];
+
     protected static function boot()
     {
         static::created(function ($model) {
@@ -45,5 +73,33 @@ class User extends Authenticatable
         });
 
         parent::boot();
+    }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function isActive () {
+        return $this->status == self::ENABLE;
+    }
+
+    public function getStatusText () {
+        return self::LIST_STATUS[$this->status];
+    }
+
+    public function isSuperAdmin () {
+        return $this->hasRole(['superadmin']);
+    }
+
+    public function getAvatar()
+    {
+        return $this->avatar == '' ? get_asset('/assets/avatar_default.png') : get_asset($this->imgPath . '/' . $this->avatar);
     }
 }
