@@ -23,7 +23,8 @@ class CheckPromotionController extends ApiController
     ];
 
     protected $validationMessages = [
-
+        'code.required' => 'Vui lòng nhập mã Code cần kiểm tra',
+        'code.max'      => 'Mã code có chiều dài tối đa chỉ 50 kí tự'
     ];
 
     public function __construct(PromotionRepository $promotion)
