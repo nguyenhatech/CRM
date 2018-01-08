@@ -25,7 +25,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'phone', 'password', 'uuid', 'status'
+        'uuid', 'name', 'email', 'phone', 'password', 'uuid', 'status'
     ];
 
     /**
@@ -101,5 +101,9 @@ class User extends Authenticatable
     public function getAvatar()
     {
         return $this->avatar == '' ? get_asset('/assets/avatar_default.png') : get_asset($this->imgPath . '/' . $this->avatar);
+    }
+
+    public function customers() {
+        return $this->belongsToMany('Nh\Repositories\Customers\Customer', 'client_customers', 'client_id', 'customer_id');
     }
 }

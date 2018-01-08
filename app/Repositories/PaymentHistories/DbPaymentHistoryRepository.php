@@ -1,14 +1,15 @@
 <?php
 
-namespace Nh\Repositories\Users;
+namespace Nh\Repositories\PaymentHistories;
 use Nh\Repositories\BaseRepository;
-use Nh\User;
+use Nh\Repositories\Customers\CustomerRepository;
 
-class DbUserRepository extends BaseRepository implements UserRepository
+class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistoryRepository
 {
-    public function __construct(User $user)
+    public function __construct(PaymentHistory $paymentHistory, CustomerRepository $customer)
     {
-        $this->model = $user;
+        $this->model = $paymentHistory;
+        $this->customer = $customer;
     }
 
     /**
@@ -42,12 +43,29 @@ class DbUserRepository extends BaseRepository implements UserRepository
 
         if ($query != '') {
             $model = $model->where(function($q) use ($query) {
-                return $q->where('name', 'like', "%{$query}%")
-                    ->orWhere('email', 'like', "%{$query}%");
+                return $q->where('description', 'like', "%{$query}%");
             });
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);
     }
+
+    /**
+     * Lưu thông tin 1 bản ghi mới
+     *
+     * @param  array $data
+     * @return Eloquent
+     */
+    public function store($data)
+    {
+        $dataCustomer = array_only($data, ['email', 'phone']);
+        $customer = $this->customer->storeOrUpdate($dataCustomer);
+        $data['customer_id'] = $customer->id;
+        $data['client_id'] = getCurrentUser()->id;
+
+        $model = $this->model->create($data);
+        return $this->getById($model->id);
+    }
+
 
 }

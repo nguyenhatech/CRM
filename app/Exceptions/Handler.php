@@ -62,7 +62,7 @@ class Handler extends ExceptionHandler
 
         $response = parent::render($request, $exception);
         if ($request->is('api/*')) {
-            app('Barryvdh\Cors\CorsService')->addActualRequestHeaders($response, $request);
+            // app('Barryvdh\Cors\CorsService')->addActualRequestHeaders($response, $request);
             // if ($exception instanceof \ErrorException && $request->expectsJson()) {
             //     return response()->json([
             //         "code"    => 500,

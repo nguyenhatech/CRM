@@ -19,4 +19,6 @@ Route::group([
     'middleware' => 'auth:api',
 ], function () {
     Route::resource('clients', 'ClientController');
+    Route::resource('customers', 'CustomerController');
+    Route::resource('payment-histories', 'PaymentHistoryController');
 });

@@ -170,7 +170,7 @@ return [
         Zizaco\Entrust\EntrustServiceProvider::class,
         Vinkla\Hashids\HashidsServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
-        Barryvdh\Cors\ServiceProvider::class,
+        // Barryvdh\Cors\ServiceProvider::class,
         Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
 
         /*

@@ -221,3 +221,27 @@ function getCurrentUser($guard = '')
     }
     return false;
 }
+
+function convert_uuid2id($uuid) {
+    if ($decodeId = \Hashids::decode($uuid)) {
+        return $decodeId[0];
+    }
+    return $uuid;
+}
+
+function list_sex() {
+    return [
+        SEX_UNKNOWN => 'Không xác định',
+        SEX_MALE    => 'Nam',
+        SEX_FEMALE  => 'Nữ'
+    ];
+}
+
+function list_level() {
+    return [
+        LEVEL_NORMAL  => 'Thường',
+        LEVEL_SILVER  => 'Bạc',
+        LEVEL_GOLD    => 'Vàng',
+        LEVEL_DIAMOND => 'Kim cương'
+    ];
+}
