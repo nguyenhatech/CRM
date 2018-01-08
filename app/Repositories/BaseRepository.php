@@ -53,4 +53,22 @@ abstract class BaseRepository {
         $record = $this->getById($id);
         return $record->delete();
     }
+
+    /**
+     * Lấy tất cả bản ghi có phân trang
+     *
+     * @param  integer $size Số bản ghi mặc định 25
+     * @param  array $sorting Sắp xếp
+     * @return Illuminate\Pagination\Paginator
+     */
+    public function getByPaginate($size = 25, $sorting = [])
+    {
+        $lModel = $this->model;
+
+        if (!empty($sorting)) {
+            $lModel = $lModel->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
+        }
+
+        return $size <= 0 ? $lModel->get() : $lModel->paginate($size);
+    }
 }

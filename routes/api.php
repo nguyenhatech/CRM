@@ -19,4 +19,5 @@ Route::group([
     'middleware' => 'auth:api',
 ], function () {
     Route::resource('clients', 'ClientController');
+    Route::resource('promotions', 'PromotionController');
 });

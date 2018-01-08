@@ -43,5 +43,5 @@ Route::post('/register', function() {
     return redirect()->to(getenv('APP_URL'));
 });
 
-Route::get('/home', 'HomeController@index')->name('home');
+// Route::get('/home', 'HomeController@index')->name('home');
 
