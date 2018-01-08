@@ -33,7 +33,36 @@ class PromotionController extends ApiController
     ];
 
     protected $validationMessages = [
+        'client_id.required'        => 'Vui lòng nhập mã Client ID',
+        'client_id.exists'          => 'Mã Client ID không tồn tại trên hệ thống',
 
+        'code.required'             => 'Vui lòng nhập mã Code',
+        'code.max'                  => 'Mã Code có chiều dài tối đa là 50 kí tự',
+
+        'type.required'             => 'Vui lòng nhập kiểu giảm giá',
+        'type.numeric'              => 'Kiểu giảm giá phải là kiểu số',
+
+        'amount.required'           => 'Vui lòng nhập số lượng giảm giá',
+        'amount.numeric'            => 'Số lượng giảm giá phải là kiểu số',
+        'amount.min'                => 'Số lượng giảm giá tối thiểu là 0',
+
+        'amount_max.required'       => 'Vui lòng nhập số tiền tối đa được giảm',
+        'amount_max.numeric'        => 'Số tiền tối đa được giảm phải là kiểu số',
+        'amount_max.min'            => 'Số tiền tối đa được giảm tối thiểu là 0',
+
+        'quantity.numeric'          => 'Số lượt giảm giá phải là kiểu số',
+        'quantity.min'              => 'Số lượt giảm giá tối thiểu là 0',
+
+        'quantity_per_user.numeric' => 'Số lượt giảm giá trên mỗi user phải là kiểu số',
+        'quantity_per_user.min'     => 'Số lượt giảm giá trên mỗi user tối thiểu là 0',
+
+        'date_start.required'       => 'Vui lòng nhập ngày bắt đầu giảm giá',
+        'date_start.date_format'    => 'Ngày bắt đầu giảm giá phải theo định dạng Y-m-d H:i:s',
+
+        'date_end.required'         => 'Vui lòng nhập ngày kết thúc giảm giá',
+        'date_end.date_format'      => 'Ngày kết thúc giảm giá phải theo định dạng Y-m-d H:i:s',
+
+        'status.numeric'            => 'Trạng thái của mã giảm giá phải là kiểu số'
     ];
 
     public function __construct(PromotionRepository $promotion, PromotionTransformer $transformer)
@@ -94,7 +123,7 @@ class PromotionController extends ApiController
             $promotion = $this->getResource()->getByQuery($data)->first();
             if (!is_null($promotion)) {
                 return $this->errorResponse([
-                    'errors' => 'Mã code đã tồn tại'
+                    'errors' => 'Mã code đã tồn tại trên hệ thống'
                 ]);
             }
 
