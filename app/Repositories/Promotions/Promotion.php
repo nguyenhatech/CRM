@@ -28,7 +28,7 @@ class Promotion extends Entity
 
     const CASH = 0;
     const PERCENT = 1;
-    const LIST_TYPE_DISCOUNTS = [
+    const LIST_TYPE_PROMOTIONS = [
         self::CASH    => 'Giảm theo tiền mặt',
         self::PERCENT => 'Giảm theo phần trăm'
     ];
@@ -41,7 +41,12 @@ class Promotion extends Entity
     public function getTypeDiscountsText()
     {
         $type = (int) $this->type;
-        return array_key_exists($type, self::LIST_TYPE_DISCOUNTS) ? self::LIST_TYPE_DISCOUNTS[$type] : 'Không xác định';
+        return array_key_exists($type, self::LIST_TYPE_PROMOTIONS) ? self::LIST_TYPE_PROMOTIONS[$type] : 'Không xác định';
+    }
+
+    public static function getListTypePromotions()
+    {
+        return self::LIST_TYPE_PROMOTIONS;
     }
 
     public function checkExpired()

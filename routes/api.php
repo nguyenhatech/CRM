@@ -20,4 +20,5 @@ Route::group([
 ], function () {
     Route::resource('clients', 'ClientController');
     Route::resource('promotions', 'PromotionController');
+    Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
 });
