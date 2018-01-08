@@ -21,4 +21,7 @@ Route::group([
     Route::resource('clients', 'ClientController');
     Route::resource('customers', 'CustomerController');
     Route::resource('payment-histories', 'PaymentHistoryController');
+    Route::resource('promotions', 'PromotionController');
+    Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
+    Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
 });

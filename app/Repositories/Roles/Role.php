@@ -13,4 +13,9 @@ class Role extends EntrustRole
      * @var array
      */
     public $fillable = ['name', 'display_name', 'description'];
+
+    public function users()
+    {
+        return $this->belongsToMany('Nh\User', 'role_user', 'role_id', 'user_id', 'id');
+    }
 }
