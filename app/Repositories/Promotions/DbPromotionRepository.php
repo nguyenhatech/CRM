@@ -2,6 +2,7 @@
 
 namespace Nh\Repositories\Promotions;
 use Nh\Repositories\BaseRepository;
+use Nh\Repositories\Promotions\Promotion;
 use Carbon\Carbon;
 
 class DbPromotionRepository extends BaseRepository implements PromotionRepository
@@ -61,6 +62,33 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);
+    }
+
+    /**
+     * Check mã Code hợp lệ
+     * @param  [type] $params [description]
+     * @return [type]         [description]
+     */
+    public function check($code)
+    {
+        $promotion = $this->model->where('client_id', getCurrentUser()->id)
+                                ->where('status', Promotion::ENABLE)
+                                ->where('date_end', '>',  Carbon::now())
+                                ->where('code', $code)->first();
+
+        if (! is_null($promotion)) {
+            return [
+                'valid'             => true,
+                'amount'            => $promotion->amount,
+                'amount_max'        => $promotion->amount_max,
+                'type_txt'          => $promotion->getTypeDiscountsText(),
+                'quantity'          => $promotion->getQuantity()
+            ];
+        } else {
+            return [
+                'valid' => false
+            ];
+        }
     }
 
 }

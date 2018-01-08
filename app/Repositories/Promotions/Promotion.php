@@ -53,4 +53,9 @@ class Promotion extends Entity
     {
         return Carbon::now() > $this->date_end ? 'Hết hạn' : 'Chưa hết hạn';
     }
+
+    public function getQuantity()
+    {
+        return ! $this->quatity ? 'Không giới hạn' : $this->quatity;
+    }
 }

@@ -21,7 +21,7 @@ class PromotionController extends ApiController
 
     protected $validationRules = [
         'client_id'         => 'required|exists:users,id',
-        'code'              => 'required|max:50|unique:promotions,code',
+        'code'              => 'required|max:50',
         'type'              => 'required|numeric',
         'amount'            => 'required|numeric|min:0',
         'amount_max'        => 'required|numeric|min:0',
@@ -63,6 +63,13 @@ class PromotionController extends ApiController
         DB::beginTransaction();
 
         try {
+            // Nếu là client_id đang đăng nhập tự động gán clien_id
+            // Nếu là supperadmin thì bỏ qua
+            // Đang chưa có đoạn gán Role nên tạm để lấy user đang đăng nhập
+
+            $user = getCurrentUser();
+            $request['client_id'] = $user->id;
+
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $params = $request->all();
@@ -76,6 +83,19 @@ class PromotionController extends ApiController
                         'errors' => 'Số lượng phần trăm giảm giá không được vượt quá 100%'
                     ]);
                 }
+            }
+
+            // Check Code of User là hợp lệ
+            $data = [
+                'client_id' => $user->id,
+                'code' => $request['code']
+            ];
+
+            $promotion = $this->getResource()->getByQuery($data)->first();
+            if (!is_null($promotion)) {
+                return $this->errorResponse([
+                    'errors' => 'Mã code đã tồn tại'
+                ]);
             }
 
             $data = $this->getResource()->store($request->all());
