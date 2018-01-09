@@ -24,4 +24,8 @@ Route::group([
     Route::resource('promotions', 'PromotionController');
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
+    Route::get('account', 'AccountController@index');
+    Route::post('account/change-password', 'AccountController@changePassword');
+    Route::post('account/update-profile', 'AccountController@updateProfile');
+    Route::post('account/upload-avatar', 'AccountController@uploadAvatar');
 });
