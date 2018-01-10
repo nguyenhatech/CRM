@@ -69,20 +69,42 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      * @param  [type] $params [description]
      * @return [type]         [description]
      */
-    public function check($code)
+    public function check($params)
     {
+        $code        = array_get($params, 'code', '');
+        $total_money = (int) array_get($params, 'total_money', 0);
+
         $promotion = $this->model->where('client_id', getCurrentUser()->id)
                                 ->where('status', Promotion::ENABLE)
-                                ->where('date_end', '>',  Carbon::now())
-                                ->where('code', $code)->first();
+                                ->where('date_start', '<=',  Carbon::now())
+                                ->where('date_end', '>=',  Carbon::now())
+                                ->where('quantity', '>',  0)
+                                ->where('code', strtoupper($code))->first();
 
         if (! is_null($promotion)) {
+            // Kiểm tra nếu giảm theo % thì tính số tiền dựa theo booking
+            // Nếu trường amount_max = 0 thì lấy luôn số tiền vừa tính được
+            // Nếu không thì lấy theo trường amount_max
+
+            // Nếu là %
+            if ($promotion->type == Promotion::PERCENT) {
+                // Nếu số tiền tối đa = 0 thì lấy theo tỉ lê %
+                if (! $promotion->amount_max) {
+                    $amount = (int) $promotion->amount * $total_money * 0.01;
+                } else {
+                    // Nếu không lấy theo số tiền max nếu như tỉ lệ % nhân ra lớn hơn
+                    $amountCaculator = (int) $promotion->amount * $total_money * 0.01;
+                    $amountInDB      = (int) $promotion->amount_max;
+
+                    $amount          = $amountCaculator > $amountInDB ? $amountInDB : $amountCaculator;
+                }
+            } else {
+                $amount = $promotion->amount;
+            }
+
             return [
-                'valid'             => true,
-                'amount'            => $promotion->amount,
-                'amount_max'        => $promotion->amount_max,
-                'type_txt'          => $promotion->getTypeDiscountsText(),
-                'quantity'          => $promotion->getQuantity()
+                'valid'  => true,
+                'amount' => $amount
             ];
         } else {
             return [
