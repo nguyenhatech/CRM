@@ -29,8 +29,8 @@ class Promotion extends Entity
     const CASH = 0;
     const PERCENT = 1;
     const LIST_TYPE_PROMOTIONS = [
-        self::CASH    => 'Giảm theo tiền mặt',
-        self::PERCENT => 'Giảm theo phần trăm'
+        self::CASH    => '$',
+        self::PERCENT => '%'
     ];
 
     public function getStatusText()
