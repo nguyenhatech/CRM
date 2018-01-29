@@ -98,6 +98,10 @@ class User extends Authenticatable
         return $this->hasRole(['superadmin']);
     }
 
+    public function isAdmin () {
+        return $this->hasRole(['admin']) || $this->hasRole(['superadmin']);
+    }
+
     public function getAvatar()
     {
         return $this->avatar == '' ? get_asset('/assets/avatar_default.png') : get_asset($this->imgPath . '/' . $this->avatar);
