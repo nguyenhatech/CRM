@@ -36,15 +36,15 @@ class PromotionController extends ApiController
         'client_id.required'        => 'Vui lòng nhập mã Client ID',
         'client_id.exists'          => 'Mã Client ID không tồn tại trên hệ thống',
 
-        'code.required'             => 'Vui lòng nhập mã Code',
-        'code.max'                  => 'Mã Code có chiều dài tối đa là 50 kí tự',
+        'code.required'             => 'Vui lòng nhập mã giảm giá',
+        'code.max'                  => 'Mã giảm giá có chiều dài tối đa là 50 kí tự',
 
         'type.required'             => 'Vui lòng nhập kiểu giảm giá',
         'type.numeric'              => 'Kiểu giảm giá phải là kiểu số',
 
         'amount.required'           => 'Vui lòng nhập số lượng giảm giá',
-        'amount.numeric'            => 'Số lượng giảm giá phải là kiểu số',
-        'amount.min'                => 'Số lượng giảm giá tối thiểu là 0',
+        'amount.numeric'            => 'Số tiền hoặc phần trăm giảm giá phải là kiểu số',
+        'amount.min'                => 'Số tiền hoặc phần trăm giảm giá tối thiểu là 0',
 
         'amount_max.required'       => 'Vui lòng nhập số tiền tối đa được giảm',
         'amount_max.numeric'        => 'Số tiền tối đa được giảm phải là kiểu số',
