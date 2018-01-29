@@ -31,4 +31,34 @@ Route::group([
     Route::resource('roles', 'RoleController');
     Route::get('permissions/by-role', 'PermissionController@getByRole');
     Route::resource('permissions', 'PermissionController');
+    // developer
+    Route::get('/developer/client', [
+        'as' => 'developer.client',
+        'uses' => 'DeveloperController@getClient'
+    ]);
+
+    Route::get('/developer/events', [
+        'as' => 'developer.events',
+        'uses' => 'DeveloperController@getWebhookEvent'
+    ]);
+
+    Route::get('/developer/webhooks', [
+        'as' => 'developer.webhooks',
+        'uses' => 'DeveloperController@getWebhooks'
+    ]);
+
+    Route::delete('/developer/webhook/{id}', [
+        'as' => 'developer.del_webhooks',
+        'uses' => 'DeveloperController@deleteWebhook'
+    ]);
+
+    Route::post('/developer/generate', [
+        'as' => 'developer.generate',
+        'uses' => 'DeveloperController@generate'
+    ]);
+
+    Route::post('/developer/webhook/add', [
+        'as' => 'developer.add_webhook',
+        'uses' => 'DeveloperController@add'
+    ]);
 });
