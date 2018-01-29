@@ -35,6 +35,7 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
     public function getByQuery($params, $size = 25, $sorting = [])
     {
         $query = array_get($params, 'q', '');
+        $customerId = array_get($params, 'customer_id', null);
         $model = $this->model;
 
         if (!empty($sorting)) {
@@ -45,6 +46,14 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
             $model = $model->where(function($q) use ($query) {
                 return $q->where('description', 'like', "%{$query}%");
             });
+        }
+
+        if ($customerId) {
+            $model = $model->where('customer_id', convert_uuid2id($customerId));
+        }
+
+        if (!getCurrentUser()->isAdmin()) {
+            $model = $model->where('client_id', getCurrentUser()->id);
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);
