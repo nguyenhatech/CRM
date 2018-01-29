@@ -2,10 +2,13 @@
 
 namespace Nh\Repositories\Users;
 use Nh\Repositories\BaseRepository;
+use Nh\Repositories\UploadTrait;
 use Nh\User;
 
 class DbUserRepository extends BaseRepository implements UserRepository
 {
+    use UploadTrait;
+
     public function __construct(User $user)
     {
         $this->model = $user;
