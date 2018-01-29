@@ -47,11 +47,11 @@ class Customer extends Entity
     }
 
     public function getTotalAmount() {
-        return $this->payments()->where('status', \Nh\PaymentHistories\PaymentHistory::PAY_SUCCESS)->sum('total_amount');
+        return $this->payments()->where('status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_SUCCESS)->sum('total_amount');
     }
 
     public function getTotalPoint() {
-        return $this->payments()->where('status', \Nh\PaymentHistories\PaymentHistory::PAY_SUCCESS)->sum('total_point');
+        return $this->payments()->where('status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_SUCCESS)->sum('total_point');
     }
 
     public function levelText() {

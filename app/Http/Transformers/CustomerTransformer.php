@@ -39,6 +39,8 @@ class CustomerTransformer extends TransformerAbstract
             'level'           => $customer->level,
             'level_txt'       => $customer->levelText(),
             'avatar'          => $customer->avatar,
+            'total_amount'    => $customer->getTotalAmount(),
+            'total_point'     => $customer->getTotalPoint(),
             'created_at'      => $customer->created_at ? $customer->created_at->format('d-m-Y H:i:s') : null,
             'updated_at'      => $customer->updated_at ? $customer->updated_at->format('d-m-Y H:i:s') : null
         ];
