@@ -46,6 +46,11 @@ class Customer extends Entity
         parent::boot();
     }
 
+    public function getAvatar()
+    {
+        return $this->avatar == '' ? get_asset('/assets/avatar_default.png') : get_asset($this->imgPath . '/' . $this->avatar);
+    }
+
     public function getTotalAmount() {
         return $this->payments()->where('status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_SUCCESS)->sum('total_amount');
     }
