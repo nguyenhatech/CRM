@@ -117,4 +117,31 @@ class CustomerController extends ApiController
         }
     }
 
+    public function uploadAvatar (Request $request) {
+        try {
+            $this->validate($request, [
+                'files.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+                'file' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120'
+            ], [
+                'files.*.image'    => 'File upload không đúng định dạng',
+                'files.*.mimes'    => 'File upload phải là 1 trong các định dạng: :values',
+                'files.*.max'      => 'File upload không thể vượt quá :max KB',
+                'file.image'    => 'File upload không đúng định dạng',
+                'file.mimes'    => 'File upload phải là 1 trong các định dạng: :values',
+                'file.max'      => 'File upload không thể vượt quá :max KB',
+            ]);
+            if ($request->file('file')) {
+                $image = $request->file('file');
+            } else {
+                $image = $request->file('files')[0];
+            }
+            return $this->getResource()->upload($image);
+        } catch (\Illuminate\Validation\ValidationException $validationException) {
+            return $this->errorResponse([
+                'errors' => $validationException->validator->errors(),
+                'exception' => $validationException->getMessage()
+            ]);
+        }
+    }
+
 }

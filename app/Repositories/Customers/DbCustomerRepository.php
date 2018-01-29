@@ -2,9 +2,12 @@
 
 namespace Nh\Repositories\Customers;
 use Nh\Repositories\BaseRepository;
+use Nh\Repositories\UploadTrait;
 
 class DbCustomerRepository extends BaseRepository implements CustomerRepository
 {
+    use UploadTrait;
+
     public function __construct(Customer $customer)
     {
         $this->model = $customer;

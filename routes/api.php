@@ -20,6 +20,7 @@ Route::group([
 ], function () {
     Route::resource('clients', 'ClientController');
     Route::resource('customers', 'CustomerController');
+    Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
     Route::resource('payment-histories', 'PaymentHistoryController');
     Route::resource('promotions', 'PromotionController');
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
