@@ -130,6 +130,9 @@ class PromotionController extends ApiController
                 ]);
             }
 
+            // UPPERCASE mã code:
+            $request['code'] = strtoupper($request['code']);
+
             $data = $this->getResource()->store($request->all());
 
             DB::commit();
