@@ -23,6 +23,7 @@ Route::group([
     Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
     Route::resource('payment-histories', 'PaymentHistoryController');
     Route::resource('promotions', 'PromotionController');
+    Route::post('promotions/upload-image', 'PromotionController@uploadImage');
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
     Route::get('account', 'AccountController@index');

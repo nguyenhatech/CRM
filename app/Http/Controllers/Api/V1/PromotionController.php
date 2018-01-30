@@ -29,7 +29,9 @@ class PromotionController extends ApiController
         'quantity_per_user' => 'nullable|numeric|min:0',
         'date_start'        => 'required|date_format:Y-m-d H:i:s',
         'date_end'          => 'required|date_format:Y-m-d H:i:s',
-        'status'            => 'nullable|numeric'
+        'status'            => 'nullable|numeric',
+        'description'       => 'required|max:191',
+        'image'             => 'required'
     ];
 
     protected $validationMessages = [
@@ -62,7 +64,12 @@ class PromotionController extends ApiController
         'date_end.required'         => 'Vui lòng nhập ngày kết thúc giảm giá',
         'date_end.date_format'      => 'Ngày kết thúc giảm giá phải theo định dạng Y-m-d H:i:s',
 
-        'status.numeric'            => 'Trạng thái của mã giảm giá phải là kiểu số'
+        'status.numeric'            => 'Trạng thái của mã giảm giá phải là kiểu số',
+
+        'image.required'            => 'Vui lòng nhập ảnh',
+
+        'description.required'      => 'Vui lòng nhập mô tả ngắn',
+        'description.max'           => 'Mô tả ngắn không được quá 191 ký tự'
     ];
 
     public function __construct(PromotionRepository $promotion, PromotionTransformer $transformer)
@@ -200,6 +207,33 @@ class PromotionController extends ApiController
         } catch (\Exception $e) {
             DB::rollback();
             throw $e;
+        }
+    }
+
+    public function uploadImage (Request $request) {
+        try {
+            $this->validate($request, [
+                'files.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+                'file' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120'
+            ], [
+                'files.*.image'    => 'File upload không đúng định dạng',
+                'files.*.mimes'    => 'File upload phải là 1 trong các định dạng: :values',
+                'files.*.max'      => 'File upload không thể vượt quá :max KB',
+                'file.image'    => 'File upload không đúng định dạng',
+                'file.mimes'    => 'File upload phải là 1 trong các định dạng: :values',
+                'file.max'      => 'File upload không thể vượt quá :max KB',
+            ]);
+            if ($request->file('file')) {
+                $image = $request->file('file');
+            } else {
+                $image = $request->file('files')[0];
+            }
+            return $this->getResource()->upload($image);
+        } catch (\Illuminate\Validation\ValidationException $validationException) {
+            return $this->errorResponse([
+                'errors' => $validationException->validator->errors(),
+                'exception' => $validationException->getMessage()
+            ]);
         }
     }
 

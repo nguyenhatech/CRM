@@ -11,6 +11,9 @@
     $ php artisan passport:install
     $ php artisan migrate
     $ php artisan db:seed
+
+    $ mkdir storage/app/public/images/avatars
+    $ mkdir storage/app/public/images/promotions
 ```
 ## login admin with
 `admin@admin.com|123456`

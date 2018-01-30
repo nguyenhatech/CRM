@@ -31,7 +31,7 @@ class CustomerTransformer extends TransformerAbstract
             'facebook_id'     => $customer->facebook_id,
             'google_id'       => $customer->google_id,
             'website'         => $customer->website,
-            'dob'             => $customer->dob,
+            'dob'             => $customer->dob ? $customer->dob->format('Y-m-d') : null,
             'job'             => $customer->job,
             'address'         => $customer->address,
             'company_address' => $customer->company_address,
