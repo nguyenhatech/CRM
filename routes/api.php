@@ -33,6 +33,8 @@ Route::group([
     Route::resource('roles', 'RoleController');
     Route::get('permissions/by-role', 'PermissionController@getByRole');
     Route::resource('permissions', 'PermissionController');
+
+    Route::resource('campaigns', 'CampaignController');
     // developer
     Route::get('/developer/client', [
         'as' => 'developer.client',
