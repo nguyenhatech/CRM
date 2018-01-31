@@ -25,7 +25,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'uuid', 'name', 'email', 'phone', 'password', 'uuid', 'status'
+        'uuid', 'name', 'email', 'phone', 'password', 'uuid', 'status', 'avatar'
     ];
 
     /**
@@ -96,6 +96,10 @@ class User extends Authenticatable
 
     public function isSuperAdmin () {
         return $this->hasRole(['superadmin']);
+    }
+
+    public function isAdmin () {
+        return $this->hasRole(['admin']) || $this->hasRole(['superadmin']);
     }
 
     public function getAvatar()

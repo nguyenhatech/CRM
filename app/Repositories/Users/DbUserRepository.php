@@ -2,10 +2,13 @@
 
 namespace Nh\Repositories\Users;
 use Nh\Repositories\BaseRepository;
+use Nh\Repositories\UploadTrait;
 use Nh\User;
 
 class DbUserRepository extends BaseRepository implements UserRepository
 {
+    use UploadTrait;
+
     public function __construct(User $user)
     {
         $this->model = $user;
@@ -48,6 +51,25 @@ class DbUserRepository extends BaseRepository implements UserRepository
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);
+    }
+
+    /**
+     * Cập nhật thông tin 1 bản ghi theo ID
+     *
+     * @param  integer $id ID bản ghi
+     * @return bool
+     */
+    public function update($id, $data)
+    {
+        $record = $this->getById($id);
+
+        if ($password = array_get($data, 'password', null)) {
+            $data['password'] = bcrypt($data['password']);
+        }
+
+        $record->fill($data)->save();
+
+        return $this->getById($id);
     }
 
 }

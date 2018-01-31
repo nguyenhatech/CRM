@@ -46,9 +46,6 @@
     "extra": {
         "laravel": {
             "dont-discover": [
-            ],
-            "providers": [
-                "Barryvdh\\Cors\\ServiceProvider"
             ]
         }
     },

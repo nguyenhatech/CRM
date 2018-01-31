@@ -17,8 +17,8 @@ class CustomerController extends ApiController
 
     protected $validationRules = [
         'name'            => 'required|min:5|max:255',
-        'email'           => 'required_without_all:phone|email|max:255',
-        'phone'           => 'required_without_all:email|digits_between:8,12',
+        'email'           => 'nullable|required_without_all:phone|email|max:255',
+        'phone'           => 'nullable|required_without_all:email|digits_between:8,12',
         'home_phone'      => 'nullable|digits_between:8,12',
         'company_phone'   => 'nullable|digits_between:8,12',
         'website'         => 'nullable|url',
@@ -114,6 +114,33 @@ class CustomerController extends ApiController
         } catch (\Exception $e) {
             \DB::rollback();
             throw $e;
+        }
+    }
+
+    public function uploadAvatar (Request $request) {
+        try {
+            $this->validate($request, [
+                'files.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+                'file' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120'
+            ], [
+                'files.*.image'    => 'File upload không đúng định dạng',
+                'files.*.mimes'    => 'File upload phải là 1 trong các định dạng: :values',
+                'files.*.max'      => 'File upload không thể vượt quá :max KB',
+                'file.image'    => 'File upload không đúng định dạng',
+                'file.mimes'    => 'File upload phải là 1 trong các định dạng: :values',
+                'file.max'      => 'File upload không thể vượt quá :max KB',
+            ]);
+            if ($request->file('file')) {
+                $image = $request->file('file');
+            } else {
+                $image = $request->file('files')[0];
+            }
+            return $this->getResource()->upload($image);
+        } catch (\Illuminate\Validation\ValidationException $validationException) {
+            return $this->errorResponse([
+                'errors' => $validationException->validator->errors(),
+                'exception' => $validationException->getMessage()
+            ]);
         }
     }
 

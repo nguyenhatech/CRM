@@ -29,22 +29,25 @@ class PromotionController extends ApiController
         'quantity_per_user' => 'nullable|numeric|min:0',
         'date_start'        => 'required|date_format:Y-m-d H:i:s',
         'date_end'          => 'required|date_format:Y-m-d H:i:s',
-        'status'            => 'nullable|numeric'
+        'status'            => 'nullable|numeric',
+        'description'       => 'required|max:191',
+        'image'             => 'required',
+        'title'             => 'required'
     ];
 
     protected $validationMessages = [
         'client_id.required'        => 'Vui lòng nhập mã Client ID',
         'client_id.exists'          => 'Mã Client ID không tồn tại trên hệ thống',
 
-        'code.required'             => 'Vui lòng nhập mã Code',
-        'code.max'                  => 'Mã Code có chiều dài tối đa là 50 kí tự',
+        'code.required'             => 'Vui lòng nhập mã giảm giá',
+        'code.max'                  => 'Mã giảm giá có chiều dài tối đa là 50 kí tự',
 
         'type.required'             => 'Vui lòng nhập kiểu giảm giá',
         'type.numeric'              => 'Kiểu giảm giá phải là kiểu số',
 
         'amount.required'           => 'Vui lòng nhập số lượng giảm giá',
-        'amount.numeric'            => 'Số lượng giảm giá phải là kiểu số',
-        'amount.min'                => 'Số lượng giảm giá tối thiểu là 0',
+        'amount.numeric'            => 'Số tiền hoặc phần trăm giảm giá phải là kiểu số',
+        'amount.min'                => 'Số tiền hoặc phần trăm giảm giá tối thiểu là 0',
 
         'amount_max.required'       => 'Vui lòng nhập số tiền tối đa được giảm',
         'amount_max.numeric'        => 'Số tiền tối đa được giảm phải là kiểu số',
@@ -62,7 +65,14 @@ class PromotionController extends ApiController
         'date_end.required'         => 'Vui lòng nhập ngày kết thúc giảm giá',
         'date_end.date_format'      => 'Ngày kết thúc giảm giá phải theo định dạng Y-m-d H:i:s',
 
-        'status.numeric'            => 'Trạng thái của mã giảm giá phải là kiểu số'
+        'status.numeric'            => 'Trạng thái của mã giảm giá phải là kiểu số',
+
+        'image.required'            => 'Vui lòng nhập ảnh',
+
+        'title.required'            => 'Vui lòng nhập tiêu đề',
+
+        'description.required'      => 'Vui lòng nhập mô tả ngắn',
+        'description.max'           => 'Mô tả ngắn không được quá 191 ký tự'
     ];
 
     public function __construct(PromotionRepository $promotion, PromotionTransformer $transformer)
@@ -130,6 +140,9 @@ class PromotionController extends ApiController
                 ]);
             }
 
+            // UPPERCASE mã code:
+            $request['code'] = strtoupper($request['code']);
+
             $data = $this->getResource()->store($request->all());
 
             DB::commit();
@@ -164,7 +177,8 @@ class PromotionController extends ApiController
                 'quantity_per_user' => 'nullable|numeric|min:0',
                 'date_start'        => 'required|date_format:Y-m-d H:i:s',
                 'date_end'          => 'required|date_format:Y-m-d H:i:s',
-                'status'            => 'nullable|numeric'
+                'status'            => 'nullable|numeric',
+                'title'             => 'required'
             ];
 
             $this->validate($request, $this->validationRules, $this->validationMessages);
@@ -197,6 +211,33 @@ class PromotionController extends ApiController
         } catch (\Exception $e) {
             DB::rollback();
             throw $e;
+        }
+    }
+
+    public function uploadImage (Request $request) {
+        try {
+            $this->validate($request, [
+                'files.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+                'file' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120'
+            ], [
+                'files.*.image'    => 'File upload không đúng định dạng',
+                'files.*.mimes'    => 'File upload phải là 1 trong các định dạng: :values',
+                'files.*.max'      => 'File upload không thể vượt quá :max KB',
+                'file.image'    => 'File upload không đúng định dạng',
+                'file.mimes'    => 'File upload phải là 1 trong các định dạng: :values',
+                'file.max'      => 'File upload không thể vượt quá :max KB',
+            ]);
+            if ($request->file('file')) {
+                $image = $request->file('file');
+            } else {
+                $image = $request->file('files')[0];
+            }
+            return $this->getResource()->upload($image);
+        } catch (\Illuminate\Validation\ValidationException $validationException) {
+            return $this->errorResponse([
+                'errors' => $validationException->validator->errors(),
+                'exception' => $validationException->getMessage()
+            ]);
         }
     }
 
