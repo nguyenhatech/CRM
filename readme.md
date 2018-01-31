@@ -14,6 +14,7 @@
 
     $ mkdir storage/app/public/images/avatars
     $ mkdir storage/app/public/images/promotions
+    $ mkdir storage/app/public/images/cgroups
 ```
 ## login admin with
 `admin@admin.com|123456`

@@ -9,4 +9,7 @@ return [
 	Nh\Providers\PromotionServiceProvider::class,
 	Nh\Providers\EmailTemplateServiceProvider::class,
 	Nh\Providers\WebhookServiceProvider::class,
+	Nh\Providers\CgroupServiceProvider::class,
+	Nh\Providers\CustomerCgroupServiceProvider::class,
+	Nh\Providers\CampaignServiceProvider::class,
 ];
