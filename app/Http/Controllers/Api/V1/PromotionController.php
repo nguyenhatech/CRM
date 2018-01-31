@@ -122,7 +122,11 @@ class PromotionController extends ApiController
                 $amount = (int) array_get($params, 'amount', null);
                 if ($amount > 100) {
                     return $this->errorResponse([
-                        'errors' => 'Số lượng phần trăm giảm giá không được vượt quá 100%'
+                        'errors' => [
+                            'name' => [
+                                'Số lượng phần trăm giảm giá không được vượt quá 100%'
+                            ]
+                        ]
                     ]);
                 }
             }
@@ -136,7 +140,11 @@ class PromotionController extends ApiController
             $promotion = $this->getResource()->getByQuery($data)->first();
             if (!is_null($promotion)) {
                 return $this->errorResponse([
-                    'errors' => 'Mã code đã tồn tại trên hệ thống'
+                    'errors' => [
+                        'code' => [
+                            'Mã code đã tồn tại trên hệ thống'
+                        ]
+                    ]
                 ]);
             }
 
@@ -191,7 +199,11 @@ class PromotionController extends ApiController
                 $amount = array_get($params, 'amount', null);
                 if ($amount > 100) {
                     return $this->errorResponse([
-                        'errors' => 'Số lượng phần trăm giảm giá không được vượt quá 100%'
+                        'errors' => [
+                            'name' => [
+                                'Số lượng phần trăm giảm giá không được vượt quá 100%'
+                            ]
+                        ]
                     ]);
                 }
             }

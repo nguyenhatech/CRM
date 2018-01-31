@@ -23,3 +23,13 @@
 ```bash
     $ php artisan passport:client
 ```
+
+## Cài đặt project
+```bash
+    $ composer install
+    $ php artisan migrate
+    $ php artisan db:seed
+    $ php artisan passport:install
+
+    $ mkdir storage/app/public/images/email-templates
+```
