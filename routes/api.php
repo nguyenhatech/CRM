@@ -26,6 +26,8 @@ Route::group([
     Route::post('promotions/upload-image', 'PromotionController@uploadImage');
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
+    Route::resource('email-templates', 'EmailTemplateController');
+    Route::post('email-templates/upload', 'EmailTemplateController@upload');
     Route::get('account', 'AccountController@index');
     Route::post('account/change-password', 'AccountController@changePassword');
     Route::post('account/update-profile', 'AccountController@updateProfile');
