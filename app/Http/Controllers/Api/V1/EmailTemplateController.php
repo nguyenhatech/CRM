@@ -50,7 +50,9 @@ class EmailTemplateController extends ApiController
         $sort = $request->get('sort', 'created_at:-1');
 
         $params = $request->all();
-        $params['client_id'] = convert_uuid2id($params['client_id']);
+        if (array_get($params, 'client_id', null)) {
+            $params['client_id'] = convert_uuid2id($params['client_id']);
+        }
 
         $models = $this->getResource()->getByQuery($params, $pageSize, explode(':', $sort));
         return $this->successResponse($models);
