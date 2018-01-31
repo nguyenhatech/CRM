@@ -8,4 +8,6 @@ return [
 	Nh\Providers\ClientCustomerServiceProvider::class,
 	Nh\Providers\PromotionServiceProvider::class,
 	Nh\Providers\WebhookServiceProvider::class,
+	Nh\Providers\CgroupServiceProvider::class,
+	Nh\Providers\CustomerCgroupServiceProvider::class,
 ];

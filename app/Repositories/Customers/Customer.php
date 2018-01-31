@@ -74,4 +74,9 @@ class Customer extends Entity
     public function client() {
         return $this->belongsToMany('Nh\User', 'client_customers', 'customer_id', 'client_id');
     }
+
+    public function groups()
+    {
+        return $this->belongsToMany('Nh\Repositories\Cgroups\Cgroup', 'customer_cgroups', 'customer_id', 'cgroup_id');
+    }
 }

@@ -21,6 +21,10 @@ Route::group([
     Route::resource('clients', 'ClientController');
     Route::resource('customers', 'CustomerController');
     Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
+    Route::resource('cgroups', 'CgroupController');
+    Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
+    Route::post('cgroups/{id}/add-customer', 'CgroupController@addCustomer');
+    Route::post('cgroups/{id}/remove-customer', 'CgroupController@removeCustomer');
     Route::resource('payment-histories', 'PaymentHistoryController');
     Route::resource('promotions', 'PromotionController');
     Route::post('promotions/upload-image', 'PromotionController@uploadImage');
