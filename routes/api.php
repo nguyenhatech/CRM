@@ -24,4 +24,6 @@ Route::group([
     Route::resource('promotions', 'PromotionController');
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
+    Route::resource('email-templates', 'EmailTemplateController');
+    Route::post('email-templates/upload', 'EmailTemplateController@upload');
 });
