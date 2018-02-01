@@ -3,10 +3,13 @@
 namespace Nh\Repositories\Promotions;
 use Nh\Repositories\BaseRepository;
 use Nh\Repositories\Promotions\Promotion;
+use Nh\Repositories\UploadTrait;
 use Carbon\Carbon;
 
 class DbPromotionRepository extends BaseRepository implements PromotionRepository
 {
+    use UploadTrait;
+    
     public function __construct(Promotion $promotion)
     {
         $this->model = $promotion;

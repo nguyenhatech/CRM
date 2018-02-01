@@ -1,17 +1,16 @@
 <?php
 
-namespace Nh\Repositories\Users;
+namespace Nh\Repositories\Cgroups;
 use Nh\Repositories\BaseRepository;
 use Nh\Repositories\UploadTrait;
-use Nh\User;
 
-class DbUserRepository extends BaseRepository implements UserRepository
+class DbCgroupRepository extends BaseRepository implements CgroupRepository
 {
-    use UploadTrait;
+	use UploadTrait;
 
-    public function __construct(User $user)
+    public function __construct(Cgroup $cgroup)
     {
-        $this->model = $user;
+        $this->model = $cgroup;
     }
 
     /**
@@ -20,7 +19,6 @@ class DbUserRepository extends BaseRepository implements UserRepository
      * @param  integer $id ID bản ghi
      * @return Eloquent
      */
-
     public function getById($id)
     {
         $id = convert_uuid2id($id);
@@ -46,30 +44,19 @@ class DbUserRepository extends BaseRepository implements UserRepository
         if ($query != '') {
             $model = $model->where(function($q) use ($query) {
                 return $q->where('name', 'like', "%{$query}%")
-                    ->orWhere('email', 'like', "%{$query}%");
+                	->orWhere('uuid', 'like', "%{$query}%")
+                    ->orWhere('description', 'like', "%{$query}%");
             });
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);
     }
 
-    /**
-     * Cập nhật thông tin 1 bản ghi theo ID
-     *
-     * @param  integer $id ID bản ghi
-     * @return bool
-     */
-    public function update($id, $data)
-    {
-        $record = $this->getById($id);
-
-        if ($password = array_get($data, 'password', null)) {
-            $data['password'] = bcrypt($data['password']);
-        }
-
-        $record->fill($data)->save();
-
-        return $this->getById($id);
+    public function store($data) {
+        $data = array_only($data, ['name', 'avatar', 'description']);
+        $data['client_id'] = getCurrentUser()->id;
+        $model = $this->model->create($data);
+        return $this->getById($model->id);
     }
 
 }

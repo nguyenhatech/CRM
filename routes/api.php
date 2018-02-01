@@ -20,10 +20,18 @@ Route::group([
 ], function () {
     Route::resource('clients', 'ClientController');
     Route::resource('customers', 'CustomerController');
+    Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
+    Route::resource('cgroups', 'CgroupController');
+    Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
+    Route::post('cgroups/{id}/add-customer', 'CgroupController@addCustomer');
+    Route::post('cgroups/{id}/remove-customer', 'CgroupController@removeCustomer');
     Route::resource('payment-histories', 'PaymentHistoryController');
     Route::resource('promotions', 'PromotionController');
+    Route::post('promotions/upload-image', 'PromotionController@uploadImage');
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
+    Route::resource('email-templates', 'EmailTemplateController');
+    Route::post('email-templates/upload', 'EmailTemplateController@upload');
     Route::get('account', 'AccountController@index');
     Route::post('account/change-password', 'AccountController@changePassword');
     Route::post('account/update-profile', 'AccountController@updateProfile');
@@ -31,6 +39,8 @@ Route::group([
     Route::resource('roles', 'RoleController');
     Route::get('permissions/by-role', 'PermissionController@getByRole');
     Route::resource('permissions', 'PermissionController');
+
+    Route::resource('campaigns', 'CampaignController');
     // developer
     Route::get('/developer/client', [
         'as' => 'developer.client',

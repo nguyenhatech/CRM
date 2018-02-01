@@ -1,17 +1,16 @@
 <?php
 
-namespace Nh\Repositories\Users;
+namespace Nh\Repositories\EmailTemplates;
 use Nh\Repositories\BaseRepository;
 use Nh\Repositories\UploadTrait;
-use Nh\User;
 
-class DbUserRepository extends BaseRepository implements UserRepository
+class DbEmailTemplateRepository extends BaseRepository implements EmailTemplateRepository
 {
     use UploadTrait;
 
-    public function __construct(User $user)
+    public function __construct(EmailTemplate $emailTemplate)
     {
-        $this->model = $user;
+        $this->model = $emailTemplate;
     }
 
     /**
@@ -36,6 +35,7 @@ class DbUserRepository extends BaseRepository implements UserRepository
      */
     public function getByQuery($params, $size = 25, $sorting = [])
     {
+        $client_id = array_get($params, 'client_id', null);
         $query = array_get($params, 'q', '');
         $model = $this->model;
 
@@ -43,10 +43,14 @@ class DbUserRepository extends BaseRepository implements UserRepository
             $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
         }
 
+        if (!is_null($client_id)) {
+            $model = $model->where('client_id', $client_id);
+        }
+
         if ($query != '') {
             $model = $model->where(function($q) use ($query) {
                 return $q->where('name', 'like', "%{$query}%")
-                    ->orWhere('email', 'like', "%{$query}%");
+                    ->orWhere('template', 'like', "%{$query}%");
             });
         }
 
@@ -62,14 +66,7 @@ class DbUserRepository extends BaseRepository implements UserRepository
     public function update($id, $data)
     {
         $record = $this->getById($id);
-
-        if ($password = array_get($data, 'password', null)) {
-            $data['password'] = bcrypt($data['password']);
-        }
-
         $record->fill($data)->save();
-
         return $this->getById($id);
     }
-
 }

@@ -14,7 +14,27 @@ class Promotion extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status'];
+    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description'];
+
+    /**
+     * Full path of images.
+     */
+    public $imgPath = 'storage/images/promotions';
+
+    /**
+     * Physical path of upload folder.
+     */
+    public $uploadPath = 'app/public/images/promotions';
+
+    /**
+     * Image width.
+     */
+    public $imgWidth = 500;
+
+    /**
+     * Image height.
+     */
+    public $imgHeight = 500;
 
     protected $dates = ['deleted_at'];
 
@@ -32,6 +52,11 @@ class Promotion extends Entity
         self::CASH    => 'đ',
         self::PERCENT => '%'
     ];
+
+    public function getImage()
+    {
+        return $this->image == '' ? '' : get_asset($this->imgPath . '/' . $this->image);
+    }
 
     public function getStatusText()
     {

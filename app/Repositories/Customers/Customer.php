@@ -16,6 +16,26 @@ class Customer extends Entity
      */
     public $fillable = ['uuid', 'name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'level', 'avatar'];
 
+    /**
+     * Full path of images.
+     */
+    public $imgPath = 'storage/images/avatars';
+
+    /**
+     * Physical path of upload folder.
+     */
+    public $uploadPath = 'app/public/images/avatars';
+
+    /**
+     * Image width.
+     */
+    public $imgWidth = 200;
+
+    /**
+     * Image height.
+     */
+    public $imgHeight = 200;
+
     protected static function boot()
     {
         static::created(function ($model) {
@@ -24,6 +44,11 @@ class Customer extends Entity
         });
 
         parent::boot();
+    }
+
+    public function getAvatar()
+    {
+        return $this->avatar == '' ? get_asset('/assets/avatar_default.png') : get_asset($this->imgPath . '/' . $this->avatar);
     }
 
     public function getTotalAmount() {
@@ -48,5 +73,10 @@ class Customer extends Entity
 
     public function client() {
         return $this->belongsToMany('Nh\User', 'client_customers', 'customer_id', 'client_id');
+    }
+
+    public function groups()
+    {
+        return $this->belongsToMany('Nh\Repositories\Cgroups\Cgroup', 'customer_cgroups', 'customer_id', 'cgroup_id');
     }
 }

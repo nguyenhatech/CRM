@@ -2,67 +2,59 @@
 
 namespace Nh\Http\Controllers\Api\V1;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Nh\Http\Controllers\Api\RestfulHandler;
 use Nh\Http\Controllers\Api\TransformerTrait;
+use Nh\Http\Controllers\Api\V1\ApiController;
 
-use Nh\Repositories\Customers\CustomerRepository;
-use Nh\Http\Transformers\CustomerTransformer;
+use Nh\Repositories\EmailTemplates\EmailTemplateRepository;
+use Nh\Http\Transformers\EmailTemplateTransformer;
 
-class CustomerController extends ApiController
+class EmailTemplateController extends ApiController
 {
     use TransformerTrait, RestfulHandler;
 
-    protected $customer;
+    protected $emailTemplate;
 
     protected $validationRules = [
-        'name'            => 'required|min:5|max:255',
-        'email'           => 'nullable|required_without_all:phone|email|max:255',
-        'phone'           => 'nullable|required_without_all:email|digits_between:8,12',
-        'home_phone'      => 'nullable|digits_between:8,12',
-        'company_phone'   => 'nullable|digits_between:8,12',
-        'website'         => 'nullable|url',
-        'dob'             => 'nullable|date_format:Y-m-d',
-        'job'             => 'max:255',
-        'address'         => 'max:255',
-        'company_address' => 'max:255'
+        'name'      => 'required|min:5|max:255',
+        'template'  => 'required',
+        'client_id' => 'required|exists:users,id',
     ];
 
     protected $validationMessages = [
-        'name.required'              => 'Tên không được để trống',
-        'name.min'                   => 'Tên cần lớn hơn :min kí tự',
-        'name.max'                   => 'Tên cần nhỏ hơn :max kí tự',
-        'email.required_without_all' => 'Email hoặc số điện thoại không được để trống',
-        'email.email'                => 'Email không đúng định dạng',
-        'email.max'                  => 'Email cần nhỏ hơn :max kí tự',
-        'phone.required_without_all' => 'Số điện thoại hoặc email không được để trống',
-        'phone.digits_between'       => 'Số điện thoại cần nằm trong khoảng :min đến :max số',
-        'home_phone.digits_between'  => 'Số điện thoại bàn cần nằm trong khoảng :min đến :max số',
-        'home_phone.company_phone'   => 'Số điện thoại cơ quan cần nằm trong khoảng :min đến :max số',
-        'website.url'                => 'Website không đúng định dạng',
-        'dob.date_format'            => 'Ngày sinh không đúng định dạng Y-m-d',
-        'job'                        => 'Nghề nghiệp cần nhỏ hơn :max kí tự',
-        'address'                    => 'Địa chỉ cần nhỏ hơn :max kí tự',
-        'company_address'            => 'Địa chỉ cơ quan cần nhỏ hơn :max kí tự',
+        'client_id.required' => 'Vui lòng nhập mã Client ID',
+        'client_id.exists'   => 'Mã Client ID không tồn tại trên hệ thống',
+        'name.required'      => 'Tên không được để trống',
+        'name.min'           => 'Tên cần lớn hơn :min kí tự',
+        'name.max'           => 'Tên cần nhỏ hơn :max kí tự',
+        'name.unique'        => 'Tên đã tồn tại, vui lòng nhập tên khác',
+        'template.required'  => 'Mẫu email không được để trống',
     ];
 
-    public function __construct(CustomerRepository $customer, CustomerTransformer $transformer)
+    public function __construct(EmailTemplateRepository $emailTemplate, EmailTemplateTransformer $transformer)
     {
-        $this->customer = $customer;
+        $this->emailTemplate = $emailTemplate;
         $this->setTransformer($transformer);
     }
 
     public function getResource()
     {
-        return $this->customer;
+        return $this->emailTemplate;
     }
 
     public function index(Request $request)
     {
         $pageSize = $request->get('limit', 25);
-        $sort = explode(':', $request->get('sort', 'id:1'));
+        $sort = $request->get('sort', 'created_at:-1');
 
-        $models = $this->getResource()->getByQuery($request->all(), $pageSize, $sort);
+        $params = $request->all();
+        if (array_get($params, 'client_id', null)) {
+            $params['client_id'] = convert_uuid2id($params['client_id']);
+        }
+
+        $models = $this->getResource()->getByQuery($params, $pageSize, explode(':', $sort));
         return $this->successResponse($models);
     }
 
@@ -71,9 +63,13 @@ class CustomerController extends ApiController
         \DB::beginTransaction();
 
         try {
+
+            $user = getCurrentUser();
+            $request['client_id'] = $user->id;
+
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
-            $data = $this->getResource()->storeOrUpdate($request->all());
+            $data = $this->getResource()->store($request->all());
 
             \DB::commit();
             return $this->successResponse($data);
@@ -100,7 +96,7 @@ class CustomerController extends ApiController
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
             $data = $request->all();
-            $data = array_except($data, ['email', 'level']);
+            $data = array_only($data, ['client_id', 'name', 'template']);
             $model = $this->getResource()->update($id, $data);
 
             \DB::commit();
@@ -117,7 +113,7 @@ class CustomerController extends ApiController
         }
     }
 
-    public function uploadAvatar (Request $request) {
+    public function upload (Request $request) {
         try {
             $this->validate($request, [
                 'files.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120',
@@ -135,7 +131,8 @@ class CustomerController extends ApiController
             } else {
                 $image = $request->file('files')[0];
             }
-            return $this->getResource()->upload($image);
+
+            return $this->getResource()->upload($image, false);
         } catch (\Illuminate\Validation\ValidationException $validationException) {
             return $this->errorResponse([
                 'errors' => $validationException->validator->errors(),

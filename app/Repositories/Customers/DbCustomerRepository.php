@@ -2,9 +2,12 @@
 
 namespace Nh\Repositories\Customers;
 use Nh\Repositories\BaseRepository;
+use Nh\Repositories\UploadTrait;
 
 class DbCustomerRepository extends BaseRepository implements CustomerRepository
 {
+    use UploadTrait;
+
     public function __construct(Customer $customer)
     {
         $this->model = $customer;
@@ -33,10 +36,17 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
     public function getByQuery($params, $size = 25, $sorting = [])
     {
         $query = array_get($params, 'q', '');
+        $group_id = array_get($params, 'group_id', '');
         $model = $this->model;
 
-        if (!empty($sorting)) {
+        if (!empty($sorting) && array_key_exists(1, $sorting)) {
             $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
+        }
+
+        if ($group_id != '') {
+            $model = $model->whereHas('groups', function ($model) use ($group_id) {
+                $model->where('uuid', $group_id);
+            });
         }
 
         if ($query != '') {
