@@ -83,6 +83,7 @@ class CgroupController extends ApiController
 
         try {
             $customerId = array_get($request->all(), 'customer_id', 0);
+            $customerId = convert_uuid2id($customerId);
             $group = $this->getResource()->getById($id);
             if ($group) {
                 $group->customers()->attach($customerId);
@@ -109,6 +110,7 @@ class CgroupController extends ApiController
 
         try {
             $customerId = array_get($request->all(), 'customer_id', 0);
+            $customerId = convert_uuid2id($customerId);
             $group = $this->getResource()->getById($id);
             if ($group) {
                 $group->customers()->detach($customerId);
