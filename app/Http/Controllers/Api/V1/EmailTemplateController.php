@@ -18,7 +18,7 @@ class EmailTemplateController extends ApiController
     protected $emailTemplate;
 
     protected $validationRules = [
-        'name'      => 'required|min:5|max:255|unique:email_templates,name,',
+        'name'      => 'required|min:5|max:255',
         'template'  => 'required',
         'client_id' => 'required|exists:users,id',
     ];
@@ -94,7 +94,6 @@ class EmailTemplateController extends ApiController
         \DB::beginTransaction();
 
         try {
-            $this->validationRules['name'] .= $id;
             $this->validate($request, $this->validationRules, $this->validationMessages);
             $data = $request->all();
             $data = array_except($data, ['client_id', 'name', 'template']);
