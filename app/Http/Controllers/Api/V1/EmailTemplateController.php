@@ -96,7 +96,7 @@ class EmailTemplateController extends ApiController
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
             $data = $request->all();
-            $data = array_except($data, ['client_id', 'name', 'template']);
+            $data = array_only($data, ['client_id', 'name', 'template']);
             $model = $this->getResource()->update($id, $data);
 
             \DB::commit();
