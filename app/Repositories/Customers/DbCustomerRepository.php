@@ -39,7 +39,7 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
         $group_id = array_get($params, 'group_id', '');
         $model = $this->model;
 
-        if (!empty($sorting)) {
+        if (!empty($sorting) && array_key_exists(1, $sorting)) {
             $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
         }
 

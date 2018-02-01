@@ -83,6 +83,7 @@ class CgroupController extends ApiController
 
         try {
             $customerId = array_get($request->all(), 'customer_id', 0);
+            $customerId = convert_uuid2id($customerId);
             $group = $this->getResource()->getById($id);
             if ($group) {
                 $group->customers()->attach($customerId);
@@ -109,6 +110,7 @@ class CgroupController extends ApiController
 
         try {
             $customerId = array_get($request->all(), 'customer_id', 0);
+            $customerId = convert_uuid2id($customerId);
             $group = $this->getResource()->getById($id);
             if ($group) {
                 $group->customers()->detach($customerId);
@@ -153,6 +155,27 @@ class CgroupController extends ApiController
                 'errors' => $validationException->validator->errors(),
                 'exception' => $validationException->getMessage()
             ]);
+        }
+    }
+
+    public function destroy($id)
+    {
+        $data = $this->getResource()->getById($id);
+        if (!$data) {
+            return $this->notFoundResponse();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $data->customers()->detach();
+            $this->getResource()->delete($id);
+
+            DB::commit();
+            return $this->deleteResponse();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
         }
     }
 }

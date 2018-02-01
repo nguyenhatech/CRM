@@ -3,6 +3,7 @@
 namespace Nh\Repositories\Cgroups;
 
 use Nh\Repositories\Entity;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cgroup extends Entity
@@ -41,6 +42,12 @@ class Cgroup extends Entity
         static::created(function ($model) {
             $model->uuid = \Hashids::encode($model->id);
             $model->save();
+        });
+
+        static::addGlobalScope('cgroups', function (Builder $builder) {
+            if (!getCurrentUser()->isSuperAdmin()) {
+                $builder->where('client_id', getCurrentUser()->id);
+            }
         });
 
         parent::boot();
