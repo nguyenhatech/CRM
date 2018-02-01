@@ -3,6 +3,7 @@
 namespace Nh\Repositories\Customers;
 
 use Nh\Repositories\Entity;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Customer extends Entity
@@ -41,6 +42,14 @@ class Customer extends Entity
         static::created(function ($model) {
             $model->uuid = \Hashids::encode($model->id);
             $model->save();
+        });
+
+        static::addGlobalScope('customers', function (Builder $builder) {
+            if (!getCurrentUser()->isSuperAdmin()) {
+                $builder->whereHas('client', function ($builder) {
+                    $builder->where('id', getCurrentUser()->id);
+                });
+            }
         });
 
         parent::boot();
