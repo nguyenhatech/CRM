@@ -39,4 +39,14 @@ class Campaign extends Entity
         return array_key_exists($this->status, self::LIST_STATUS) ? self::LIST_STATUS[$this->status] : 'Không xác định';
     }
 
+    public function client()
+    {
+        return $this->belongsTo('Nh\User', 'client_id', 'id');
+    }
+
+    public function cgroup()
+    {
+        return $this->belongsTo('Nh\Repositories\Cgroups\Cgroup', 'cgroup_id', 'id');
+    }
+
 }

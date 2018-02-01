@@ -9,10 +9,11 @@ use Carbon\Carbon;
 class CampaignTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
-
+        'client',
+        'cgroup'
     ];
 
-     public function transform(Campaign $campaign = null)
+    public function transform(Campaign $campaign = null)
     {
         if (is_null($campaign)) {
             return [];
@@ -26,13 +27,31 @@ class CampaignTransformer extends TransformerAbstract
             'uuid'        => $campaign->uuid,
             'name'        => $campaign->name,
             'description' => $campaign->description,
-            'start_date'  => $campaign->start_date ? $campaign->start_date->format('d-m-Y H:i:s') : null,
-            'end_date'    => $campaign->end_date ? $campaign->end_date->format('d-m-Y H:i:s') : null,
+            'start_date'  => $campaign->start_date ? $campaign->start_date->format('d-m-Y') : null,
+            'end_date'    => $campaign->end_date ? $campaign->end_date->format('d-m-Y') : null,
             'status'      => $campaign->status,
             'status_txt'  => $campaign->getStatusText(),
             'created_at'  => $campaign->created_at ? $campaign->created_at->format('d-m-Y H:i:s') : null,
         ];
 
         return $data;
+    }
+
+    public function includeClient(Campaign $campaign = null)
+    {
+        if (is_null($campaign)) {
+            return $this->null();
+        }
+
+        return $this->item($campaign->client, new UserTransformer());
+    }
+
+    public function includeCgroup(Campaign $campaign = null)
+    {
+        if (is_null($campaign)) {
+            return $this->null();
+        }
+
+        return $this->item($campaign->cgroup, new CgroupTransformer());
     }
 }
