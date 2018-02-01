@@ -18,7 +18,7 @@ class EmailTemplateController extends ApiController
     protected $emailTemplate;
 
     protected $validationRules = [
-        'name'      => 'required|min:5|max:255|unique:email_templates,name,',
+        'name'      => 'required|min:5|max:255',
         'template'  => 'required',
         'client_id' => 'required|exists:users,id',
     ];
@@ -50,7 +50,9 @@ class EmailTemplateController extends ApiController
         $sort = $request->get('sort', 'created_at:-1');
 
         $params = $request->all();
-        $params['client_id'] = convert_uuid2id($params['client_id']);
+        if (array_get($params, 'client_id', null)) {
+            $params['client_id'] = convert_uuid2id($params['client_id']);
+        }
 
         $models = $this->getResource()->getByQuery($params, $pageSize, explode(':', $sort));
         return $this->successResponse($models);
@@ -92,10 +94,9 @@ class EmailTemplateController extends ApiController
         \DB::beginTransaction();
 
         try {
-            $this->validationRules['name'] .= $id;
             $this->validate($request, $this->validationRules, $this->validationMessages);
             $data = $request->all();
-            $data = array_except($data, ['client_id', 'name', 'template']);
+            $data = array_only($data, ['client_id', 'name', 'template']);
             $model = $this->getResource()->update($id, $data);
 
             \DB::commit();
