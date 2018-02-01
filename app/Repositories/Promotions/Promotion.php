@@ -49,7 +49,7 @@ class Promotion extends Entity
     const CASH = 0;
     const PERCENT = 1;
     const LIST_TYPE_PROMOTIONS = [
-        self::CASH    => 'VNĐ',
+        self::CASH    => 'đ',
         self::PERCENT => '%'
     ];
 
