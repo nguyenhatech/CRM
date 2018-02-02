@@ -104,7 +104,7 @@ class User extends Authenticatable
 
     public function getAvatar()
     {
-        return $this->avatar == '' ? get_asset('/assets/avatar_default.png') : get_asset($this->imgPath . '/' . $this->avatar);
+        return $this->avatar == '' ? asset('avatar_default.png') : get_asset($this->imgPath . '/' . $this->avatar);
     }
 
     public function customers() {
