@@ -19,9 +19,8 @@ class CampaignController extends ApiController
     protected $campaign;
 
     protected $validationRules = [
-        'client_id'   => 'required|numeric',
-        'template_id' => 'required|numeric',
-        'cgroup_id'   => 'required|numeric',
+        'template_id' => 'required',
+        'cgroup_id'   => 'required',
         'name'        => 'required|max:191',
         'description' => 'nullable',
         'start_date'  => 'required|date_format:Y-m-d H:i:s',
@@ -30,7 +29,15 @@ class CampaignController extends ApiController
     ];
 
     protected $validationMessages = [
-
+        'template_id.required'      => 'Chưa chọn mẫu email',
+        'cgroup_id.required'        => 'Chưa chọn nhóm khách hàng',
+        'name.required'             => 'Chưa nhập tên',
+        'name.max'                  => 'Tên không được quá 191 kí tự',
+        'start_date.required'       => 'Chưa chọn ngày bắt đầu',
+        'start_date.date_format'    => 'Ngày bắt đầu chưa đúng định dạng',
+        'end_date.required'         => 'Chưa chọn ngày kết thúc',
+        'end_date.date_format'      => 'Ngày kết thúc chưa đúng định dạng',
+        'status.numeric'            => 'Trạng thái sai định dạng'
     ];
 
     public function __construct(CampaignRepository $campaign, CampaignTransformer $transformer)
@@ -63,8 +70,11 @@ class CampaignController extends ApiController
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $params = $request->all();
+            $params['client_id'] = getCurrentUser()->id;
+            $params['template_id'] = convert_uuid2id($params['template_id']);
+            $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
 
-            $data = $this->getResource()->store($request->all());
+            $data = $this->getResource()->store($params);
 
             DB::commit();
             return $this->successResponse($data);

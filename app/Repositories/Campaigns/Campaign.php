@@ -3,6 +3,7 @@
 namespace Nh\Repositories\Campaigns;
 
 use Nh\Repositories\Entity;
+use Illuminate\Database\Eloquent\Builder;
 
 class Campaign extends Entity
 {
@@ -31,6 +32,12 @@ class Campaign extends Entity
             $model->save();
         });
 
+        static::addGlobalScope('campaigns', function (Builder $builder) {
+            if (!getCurrentUser()->isSuperAdmin()) {
+                $builder->where('client_id', getCurrentUser()->id);
+            }
+        });
+
         parent::boot();
     }
 
@@ -47,6 +54,11 @@ class Campaign extends Entity
     public function cgroup()
     {
         return $this->belongsTo('Nh\Repositories\Cgroups\Cgroup', 'cgroup_id', 'id');
+    }
+
+    public function email_template()
+    {
+        return $this->belongsTo('Nh\Repositories\EmailTemplates\EmailTemplate', 'template_id', 'id');
     }
 
 }
