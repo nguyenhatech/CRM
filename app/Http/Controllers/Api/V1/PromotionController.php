@@ -30,8 +30,7 @@ class PromotionController extends ApiController
         'date_start'        => 'required|date_format:Y-m-d H:i:s',
         'date_end'          => 'required|date_format:Y-m-d H:i:s',
         'status'            => 'nullable|numeric',
-        'description'       => 'required|max:191',
-        'image'             => 'required',
+        'description'       => 'max:191',
         'title'             => 'required'
     ];
 
@@ -67,11 +66,8 @@ class PromotionController extends ApiController
 
         'status.numeric'            => 'Trạng thái của mã giảm giá phải là kiểu số',
 
-        'image.required'            => 'Vui lòng nhập ảnh',
-
         'title.required'            => 'Vui lòng nhập tiêu đề',
 
-        'description.required'      => 'Vui lòng nhập mô tả ngắn',
         'description.max'           => 'Mô tả ngắn không được quá 191 ký tự'
     ];
 

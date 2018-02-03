@@ -28,7 +28,7 @@ class PromotionTransformer extends TransformerAbstract
             'image_path'        => $promotion->getImage(),
             'title'             => $promotion->title,
             'description'       => $promotion->description,
-            'content'           => $promotion->content,
+            'content'           => $promotion->content ? $promotion->content : '',
             'amount'            => $promotion->amount,
             'amount_max'        => $promotion->amount_max,
             'quantity'          => $promotion->quantity,
