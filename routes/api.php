@@ -27,6 +27,7 @@ Route::group([
     Route::post('cgroups/{id}/remove-customer', 'CgroupController@removeCustomer');
     Route::resource('payment-histories', 'PaymentHistoryController');
     Route::resource('promotions', 'PromotionController');
+    Route::post('promotions/{id}/active', 'PromotionController@active');
     Route::post('promotions/upload-image', 'PromotionController@uploadImage');
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);

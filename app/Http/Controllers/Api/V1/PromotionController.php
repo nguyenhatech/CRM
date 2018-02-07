@@ -222,6 +222,32 @@ class PromotionController extends ApiController
         }
     }
 
+    public function active(Request $request, $id)
+    {
+        $data = $this->getResource()->getById($id);
+        if (!$data) {
+            return $this->notFoundResponse();
+        }
+
+        DB::beginTransaction();
+        try {
+            $params['status'] = $data->status ? 0 : 1;
+            $model = $this->getResource()->update($id, $params);
+
+            DB::commit();
+            return $this->successResponse($model);
+        } catch (\Illuminate\Validation\ValidationException $validationException) {
+            DB::rollback();
+            return $this->errorResponse([
+                'errors' => $validationException->validator->errors(),
+                'exception' => $validationException->getMessage()
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
     public function uploadImage (Request $request) {
         try {
             $this->validate($request, [

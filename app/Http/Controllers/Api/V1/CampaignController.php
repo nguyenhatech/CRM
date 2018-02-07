@@ -112,7 +112,9 @@ class CampaignController extends ApiController
 
             $params = $request->all();
 
-            $params = array_only($params, ['name', 'description', 'start_date', 'end_date', 'status']);
+            $params = array_only($params, ['name', 'description', 'start_date', 'end_date', 'status', 'cgroup_id', 'template_id']);
+            $params['template_id'] = convert_uuid2id($params['template_id']);
+            $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
 
             $model = $this->getResource()->update($id, $params);
 
