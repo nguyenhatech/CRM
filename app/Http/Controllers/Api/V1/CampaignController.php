@@ -12,6 +12,8 @@ use Nh\Http\Controllers\Api\TransformerTrait;
 use Nh\Repositories\Campaigns\CampaignRepository;
 use Nh\Http\Transformers\CampaignTransformer;
 
+use Nh\Jobs\SendEmailChampaign;
+
 class CampaignController extends ApiController
 {
     use TransformerTrait, RestfulHandler;
@@ -23,8 +25,8 @@ class CampaignController extends ApiController
         'cgroup_id'   => 'required',
         'name'        => 'required|max:191',
         'description' => 'nullable',
-        'start_date'  => 'required|date_format:Y-m-d H:i:s',
-        'end_date'    => 'required|date_format:Y-m-d H:i:s',
+        'start_date'  => 'date_format:Y-m-d H:i:s',
+        'end_date'    => 'date_format:Y-m-d H:i:s',
         'status'      => 'nullable|numeric'
     ];
 
@@ -33,9 +35,7 @@ class CampaignController extends ApiController
         'cgroup_id.required'        => 'Chưa chọn nhóm khách hàng',
         'name.required'             => 'Chưa nhập tên',
         'name.max'                  => 'Tên không được quá 191 kí tự',
-        'start_date.required'       => 'Chưa chọn ngày bắt đầu',
         'start_date.date_format'    => 'Ngày bắt đầu chưa đúng định dạng',
-        'end_date.required'         => 'Chưa chọn ngày kết thúc',
         'end_date.date_format'      => 'Ngày kết thúc chưa đúng định dạng',
         'status.numeric'            => 'Trạng thái sai định dạng'
     ];
@@ -127,6 +127,26 @@ class CampaignController extends ApiController
         } catch (\Exception $e) {
             DB::rollback();
             throw $e;
+        }
+    }
+
+    public function sendEmail($id)
+    {
+        $campaign = $this->campaign->getById($id);
+
+        if ($campaign) {
+            $group = $campaign->cgroup;
+            foreach ($group->customers as $key => $customer) {
+                try {
+                    $job = new SendEmailChampaign($campaign, $campaign->email_template, $customer);
+                    dispatch($job)->delay(now()->addSeconds(2 + $key));
+                } catch (\Exception $e) {
+                    throw $e;
+                }
+            }
+            return $this->infoResponse([]);
+        } else {
+            return $this->notFoundResponse();
         }
     }
 

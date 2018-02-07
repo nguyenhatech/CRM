@@ -41,6 +41,7 @@ Route::group([
     Route::resource('permissions', 'PermissionController');
 
     Route::resource('campaigns', 'CampaignController');
+    Route::get('campaigns/send-email/{id}', 'CampaignController@sendEmail');
     // developer
     Route::get('/developer/client', [
         'as' => 'developer.client',
