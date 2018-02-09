@@ -2,6 +2,7 @@
 
 namespace Nh\Repositories\Roles;
 use Nh\Repositories\BaseRepository;
+use Nh\Repositories\Roles\Role;
 
 class DbRoleRepository extends BaseRepository implements RoleRepository
 {
@@ -22,6 +23,10 @@ class DbRoleRepository extends BaseRepository implements RoleRepository
         $query = array_get($params, 'q', '');
         $model = $this->model->where('name', '!=', 'superadmin');
 
+        if (!getCurrentUser()->isSuperAdmin()) {
+            $model = $model->where('type', '<>' , Role::TYPE_SYSTEM);
+        }
+
         if (!empty($sorting)) {
             $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
         }
@@ -29,8 +34,7 @@ class DbRoleRepository extends BaseRepository implements RoleRepository
         if ($query != '') {
             $model = $model->where(function($q) use ($query) {
                 return $q->where('name', 'like', "%{$query}%")
-                    ->orWhere('display_name', 'like', "%{$query}%")
-                    ->orWhere('description', 'like', "%{$query}%");
+                    ->orWhere('display_name', 'like', "%{$query}%");
             });
         }
 

@@ -47,4 +47,35 @@ class DbPermissionRepository extends BaseRepository implements PermissionReposit
         return $model->roles()->sync($ids);
     }
 
+    /**
+     * Lưu thông tin 1 bản ghi mới
+     *
+     * @param  array $data
+     * @return Eloquent
+     */
+    public function store($data)
+    {
+        $prefixs = array_get($data, 'prefix', []);
+
+        if (empty($prefixs)) {
+            $model = $this->model->create($data);
+            return $this->getById($model->id);
+        }
+
+        $name = array_get($data, 'name', '');
+        $display_name = array_get($data, 'display_name', '');
+        foreach ($prefixs as $key => $prefix) {
+            if (isset($this->model->getPrefixs()[$prefix])) {
+                $prefixDisplay = $this->model->getPrefixs()[$prefix];
+
+                $data['name'] = "{$name}.{$prefix}";
+                $data['display_name'] = "{$prefixDisplay} {$display_name}";
+
+                $model = $this->model->create($data);
+            }
+        }
+
+        return $this->getById($model->id);
+    }
+
 }

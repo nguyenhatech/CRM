@@ -12,7 +12,10 @@ class Role extends EntrustRole
      *
      * @var array
      */
-    public $fillable = ['name', 'display_name', 'description'];
+    public $fillable = ['name', 'display_name', 'description', 'type'];
+
+    const TYPE_SYSTEM = 1;// Loại quyền do hệ thống tạo ra user sẽ không thấy được các quyền này
+    const TYPE_USER = 0;// Loại quyền do user tạo ra
 
     public function users()
     {

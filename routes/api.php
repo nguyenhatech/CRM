@@ -40,6 +40,10 @@ Route::group([
     Route::resource('roles', 'RoleController');
     Route::get('permissions/by-role', 'PermissionController@getByRole');
     Route::resource('permissions', 'PermissionController');
+    Route::resource('users', 'UserController');
+    Route::post('users/upload-avatar', 'UserController@uploadAvatar');
+    Route::put('users/{id}/reset-password', 'UserController@resetPassword');
+    Route::put('users/{id}/active', 'UserController@active');
 
     Route::resource('campaigns', 'CampaignController');
     Route::get('campaigns/send-email/{id}', 'CampaignController@sendEmail');

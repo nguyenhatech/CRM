@@ -8,6 +8,7 @@ use Nh\Http\Controllers\Api\TransformerTrait;
 
 use Nh\Repositories\Permissions\PermissionRepository;
 use Nh\Http\Transformers\PermissionTransformer;
+use DB;
 
 class PermissionController extends ApiController
 {
