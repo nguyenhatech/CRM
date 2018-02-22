@@ -8,8 +8,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Nh\Repositories\Campaigns\Campaign;
-use Nh\Repositories\Customers\Customer;
-use Nh\Repositories\EmailTemplates\EmailTemplate;
 
 class SendEmailChampaign implements ShouldQueue
 {
@@ -18,18 +16,16 @@ class SendEmailChampaign implements ShouldQueue
     public $tries = 5;
 
     protected $campaign;
-    protected $template;
-    protected $customer;
+    protected $customers;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(Campaign $campaign, EmailTemplate $template, Customer $customer)
+    public function __construct(Campaign $campaign, $customers)
     {
         $this->campaign = $campaign;
-        $this->template = $template;
-        $this->customer = $customer;
+        $this->customers = $customers;
     }
 
     /**
@@ -39,10 +35,12 @@ class SendEmailChampaign implements ShouldQueue
      */
     public function handle()
     {
-        if ($this->customer->email) {
-            $html = str_replace('***name***', $this->customer->name, $this->template->template);
-            $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
-            $mailer->revicer($this->customer->email)->subject($this->campaign->name)->content($html)->sent();
+        foreach ($this->customers as $key => $customer) {
+            if ($customer->email) {
+                $html = str_replace('***name***', $customer->name, $this->campaign->template);
+                $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
+                $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->sent();
+            }
         }
     }
 }
