@@ -72,6 +72,11 @@ class Customer extends Entity
         return list_level()[$this->level];
     }
 
+    public static function getListLevel()
+    {
+        return list_level();
+    }
+
     public function sexText() {
         return list_sex()[$this->sex];
     }

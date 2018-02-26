@@ -22,6 +22,11 @@ class HelperController extends ApiController
                     'list_type_promotions' => \Nh\Repositories\Promotions\Promotion::getListTypePromotions(),
                 ];
                 break;
+            case 'customer-levels':
+                $result = [
+                    'levels' => \Nh\Repositories\Customers\Customer::getListLevel(),
+                ];
+                break;
         }
 
         return response()->json($result, 200);
