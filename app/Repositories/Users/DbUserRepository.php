@@ -50,9 +50,19 @@ class DbUserRepository extends BaseRepository implements UserRepository
             $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
         }
 
+        if (array_key_exists('status', $params) && !is_null($params['status'])) {
+            $model = $model->where('status', $params['status']);
+        }
+        if (array_key_exists('role', $params) && !is_null($params['role'])) {
+            $model = $model->whereHas('roles', function($q) use ($params) {
+                return $q->where('id', $params['role']);
+            });
+        }
+
         if ($query != '') {
             $model = $model->where(function($q) use ($query) {
                 return $q->where('name', 'like', "%{$query}%")
+                    ->orWhere('phone', 'like', "%{$query}%")
                     ->orWhere('email', 'like', "%{$query}%");
             });
         }

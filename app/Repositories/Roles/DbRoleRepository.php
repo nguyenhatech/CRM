@@ -53,12 +53,36 @@ class DbRoleRepository extends BaseRepository implements RoleRepository
 
     public function syncPermissions($model, $permissions)
     {
-        $permissions = collect($permissions);
-        $ids = $permissions->map(function ($permission) {
-            return $permission['id'];
-        })->toArray();
+        return $model->perms()->sync($permissions);
+    }
 
-        return $model->perms()->sync($ids);
+    /**
+     * Lưu thông tin 1 bản ghi mới
+     *
+     * @param  array $data
+     * @return Eloquent
+     */
+    public function store($data)
+    {
+        $model = $this->model->create($data);
+        $this->syncPermissions($model, $data['permissions']);
+        return $this->getById($model->id);
+    }
+
+    /**
+     * Cập nhật thông tin 1 bản ghi theo ID
+     *
+     * @param  integer $id ID bản ghi
+     * @return bool
+     */
+    public function update($id, $data)
+    {
+        $model = $this->getById($id);
+        $model->fill($data)->save();
+
+        $this->syncPermissions($model, $data['permissions']);
+
+        return $this->getById($id);
     }
 
 }
