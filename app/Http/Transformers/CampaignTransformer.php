@@ -24,6 +24,7 @@ class CampaignTransformer extends TransformerAbstract
             'id'          => $campaign->uuid,
             'client_id'   => $campaign->client_id,
             'template_id' => $campaign->template_id,
+            'template'    => $campaign->template,
             'cgroup_id'   => $campaign->cgroup_id,
             'uuid'        => $campaign->uuid,
             'name'        => $campaign->name,

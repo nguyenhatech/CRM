@@ -13,7 +13,7 @@ class Campaign extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id','template_id','cgroup_id','uuid','name','description','start_date','end_date','status'];
+    public $fillable = ['client_id','template_id', 'template','cgroup_id','uuid','name','description','start_date','end_date','status'];
 
     public $dates = ['start_date', 'end_date'];
 

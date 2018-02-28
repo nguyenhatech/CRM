@@ -153,13 +153,20 @@ class UserController extends ApiController
             return $this->notFoundResponse();
         }
 
-        $this->validationRules = array_except($this->validationRules, ['name', 'email', 'status', 'roles', 'roles']);
+        $this->validationRules = [
+            'password'  => 'required|min:6'
+        ];
+        $this->validationMessages = [
+            'password.required'     => 'Vui lòng nhập mật khẩu',
+            'password.min'          => 'Mật khẩu cần lớn hơn :min kí tự'
+        ];
 
         \DB::beginTransaction();
 
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
             $data = $request->all();
+            $data['password'] = bcrypt($data['password']);
             $data = array_only($data, ['password']);
             $model = $this->getResource()->update($id, $data);
 

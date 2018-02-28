@@ -21,7 +21,7 @@ class CampaignController extends ApiController
     protected $campaign;
 
     protected $validationRules = [
-        'template_id' => 'required',
+        'template'    => 'required',
         'cgroup_id'   => 'required',
         'name'        => 'required|max:191',
         'description' => 'nullable',
@@ -31,7 +31,7 @@ class CampaignController extends ApiController
     ];
 
     protected $validationMessages = [
-        'template_id.required'      => 'Chưa chọn mẫu email',
+        'template.required'         => 'Chưa nhập mẫu email',
         'cgroup_id.required'        => 'Chưa chọn nhóm khách hàng',
         'name.required'             => 'Chưa nhập tên',
         'name.max'                  => 'Tên không được quá 191 kí tự',
@@ -71,8 +71,10 @@ class CampaignController extends ApiController
 
             $params = $request->all();
             $params['client_id'] = getCurrentUser()->id;
-            $params['template_id'] = convert_uuid2id($params['template_id']);
             $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
+            if (array_key_exists('template_id', $params)) {
+                $params['template_id'] = convert_uuid2id($params['template_id']);
+            }
 
             $data = $this->getResource()->store($params);
 
@@ -112,8 +114,10 @@ class CampaignController extends ApiController
 
             $params = $request->all();
 
-            $params = array_only($params, ['name', 'description', 'start_date', 'end_date', 'status', 'cgroup_id', 'template_id']);
-            $params['template_id'] = convert_uuid2id($params['template_id']);
+            $params = array_only($params, ['name', 'description', 'start_date', 'end_date', 'status', 'cgroup_id', 'template_id', 'template']);
+            if (array_key_exists('template_id', $params)) {
+                $params['template_id'] = convert_uuid2id($params['template_id']);
+            }
             $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
 
             $model = $this->getResource()->update($id, $params);
@@ -137,14 +141,11 @@ class CampaignController extends ApiController
         $campaign = $this->campaign->getById($id);
 
         if ($campaign) {
-            $group = $campaign->cgroup;
-            foreach ($group->customers as $key => $customer) {
-                try {
-                    $job = new SendEmailChampaign($campaign, $campaign->email_template, $customer);
-                    dispatch($job)->delay(now()->addSeconds(2 + $key));
-                } catch (\Exception $e) {
-                    throw $e;
-                }
+            try {
+                $job = new SendEmailChampaign($campaign, $campaign->cgroup->customers);
+                dispatch($job)->delay(now()->addSeconds(1));
+            } catch (\Exception $e) {
+                throw $e;
             }
             return $this->infoResponse([]);
         } else {
