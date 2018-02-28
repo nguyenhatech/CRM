@@ -8,12 +8,16 @@ use Nh\Http\Controllers\Api\TransformerTrait;
 
 use Nh\Repositories\Customers\CustomerRepository;
 use Nh\Http\Transformers\CustomerTransformer;
+use Nh\Repositories\Cgroups\CgroupRepository;
+use Illuminate\Support\Facades\Storage;
+use Excel;
 
 class CustomerController extends ApiController
 {
     use TransformerTrait, RestfulHandler;
 
     protected $customer;
+    protected $cgroups;
 
     protected $validationRules = [
         'name'            => 'required|min:5|max:255',
@@ -46,9 +50,10 @@ class CustomerController extends ApiController
         'company_address'            => 'Địa chỉ cơ quan cần nhỏ hơn :max kí tự',
     ];
 
-    public function __construct(CustomerRepository $customer, CustomerTransformer $transformer)
+    public function __construct(CustomerRepository $customer, CustomerTransformer $transformer, CgroupRepository $cgroups)
     {
         $this->customer = $customer;
+        $this->cgroups = $cgroups;
         $this->setTransformer($transformer);
     }
 
@@ -142,6 +147,35 @@ class CustomerController extends ApiController
                 'exception' => $validationException->getMessage()
             ]);
         }
+    }
+
+    public function importExcel(Request $request)
+    {
+        $excelPath = $request->file('file')->storeAs('excel', time() . 'customer.csv');
+        Excel::load('/storage/app/' . $excelPath, function ($reader) use ($request) {
+            $results = $reader->get();
+            foreach ($results as $key => $row) {
+                $params = [];
+                $params['name'] = array_get($row, $request['name'], '');
+                $params['phone'] = array_get($row, $request['phone'], '');
+                $params['address'] = array_get($row, $request['address'], '');
+                $params['email'] = array_get($row, $request['email'], '');
+                $params['level'] = array_get($row, $request['level'], '');
+                $customer = $this->getResource()->storeOrUpdate($params);
+                if ($request['group_id']) {
+                    $group = $this->cgroups->getById($request['group_id']);
+                    if ($group) {
+                        $customer->groups()->attach([$group->id]);
+                    }
+                }
+            }
+        });
+        Storage::delete($excelPath);
+        $response = array_merge([
+            'code' => 200,
+            'status' => 'success',
+        ]);
+        return response()->json($response, $response['code']);
     }
 
 }

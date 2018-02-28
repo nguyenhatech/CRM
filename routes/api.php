@@ -21,6 +21,7 @@ Route::group([
     Route::resource('clients', 'ClientController');
     Route::resource('customers', 'CustomerController');
     Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
+    Route::post('customers/import-excel', 'CustomerController@importExcel');
     Route::resource('cgroups', 'CgroupController');
     Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
     Route::post('cgroups/{id}/add-customer', 'CgroupController@addCustomer');
