@@ -1,12 +1,12 @@
 <?php
 
-namespace Goship\Http\Controllers\Api\V1;
+namespace Nh\Http\Controllers\Api\V1;
 
 use Illuminate\Http\Request;
 use Laravel\Passport\ClientRepository;
-use Goship\Hocs\CarrierConstant;
-use Goship\Hocs\Webhooks\WebhookRepository;
-use Goship\Http\Controllers\Api\ResponseHandler;
+use Nh\Hocs\CarrierConstant;
+use Nh\Hocs\Webhooks\WebhookRepository;
+use Nh\Http\Controllers\Api\ResponseHandler;
 
 class DeveloperController extends ApiController
 {
