@@ -73,7 +73,44 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
         $data['client_id'] = getCurrentUser()->id;
 
         $model = $this->model->create($data);
+        /**
+         * update level customer
+         * @var [type]
+         */
+        if ($model->status == PaymentHistory::PAY_SUCCESS) {
+            event(new \Nh\Events\UpdateLevelCustomer($model->customer));
+            event(new \Nh\Events\PaymentSuccess($model));
+        }
+
         return $this->getById($model->id);
+    }
+
+    /**
+     * Cập nhật thông tin 1 bản ghi theo ID
+     *
+     * @param  integer $id ID bản ghi
+     * @return bool
+     */
+    public function update($id, $data)
+    {
+        $record = $this->getById($id);
+
+        if (isset($data['status']) && $data['status'] == PaymentHistory::PAY_SUCCESS) {
+            $data['payment_at'] = \Carbon\Carbon::now()->format('Y-m-d');
+        }
+
+        $record->fill($data)->save();
+
+        /**
+         * update level customer
+         * @var [type]
+         */
+        if ($record->status == PaymentHistory::PAY_SUCCESS) {
+            event(new \Nh\Events\UpdateLevelCustomer($record->customer));
+            event(new \Nh\Events\PaymentSuccess($record));
+        }
+
+        return $this->getById($id);
     }
 
 

@@ -245,3 +245,12 @@ function list_level() {
         LEVEL_DIAMOND => 'Kim cương'
     ];
 }
+
+function list_level_point() {
+    return [
+        LEVEL_NORMAL  => 0,
+        LEVEL_SILVER  => 10000,
+        LEVEL_GOLD    => 25000,
+        LEVEL_DIAMOND => 50000
+    ];
+}

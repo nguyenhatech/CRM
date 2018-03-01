@@ -13,9 +13,12 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        'Nh\Events\Event' => [
-            'Nh\Listeners\EventListener',
+        \Nh\Events\UpdateLevelCustomer::class => [
+            \Nh\Listeners\UpdateLevelCustomerListener::class,
         ],
+        \Nh\Events\PaymentSuccess::class => [
+            \Nh\Listeners\UpdateLastPaymentListener::class
+        ]
     ];
 
     /**
