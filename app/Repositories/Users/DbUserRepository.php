@@ -3,6 +3,7 @@
 namespace Nh\Repositories\Users;
 use Nh\Repositories\BaseRepository;
 use Nh\Repositories\UploadTrait;
+use Nh\Repositories\Roles\Role;
 use Nh\User;
 
 class DbUserRepository extends BaseRepository implements UserRepository
@@ -39,18 +40,50 @@ class DbUserRepository extends BaseRepository implements UserRepository
         $query = array_get($params, 'q', '');
         $model = $this->model;
 
+        if (!getCurrentUser()->isSuperAdmin()) {
+            $model = $model->whereHas('roles', function($q) {
+                return $q->where('type', '<>', Role::TYPE_SYSTEM);
+            });
+        }
+
         if (!empty($sorting)) {
             $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
+        }
+
+        if (array_key_exists('status', $params) && !is_null($params['status'])) {
+            $model = $model->where('status', $params['status']);
+        }
+        if (array_key_exists('role', $params) && !is_null($params['role'])) {
+            $model = $model->whereHas('roles', function($q) use ($params) {
+                return $q->where('id', $params['role']);
+            });
         }
 
         if ($query != '') {
             $model = $model->where(function($q) use ($query) {
                 return $q->where('name', 'like', "%{$query}%")
+                    ->orWhere('phone', 'like', "%{$query}%")
                     ->orWhere('email', 'like', "%{$query}%");
             });
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);
+    }
+
+    /**
+     * Lưu thông tin 1 bản ghi mới
+     *
+     * @param  array $data
+     * @return Eloquent
+     */
+    public function store($data)
+    {
+        $model = $this->model->create($data);
+
+        $roles = array_get($data, 'roles', []);
+
+        $model->roles()->sync($roles);
+        return $this->getById($model->id);
     }
 
     /**
@@ -68,6 +101,15 @@ class DbUserRepository extends BaseRepository implements UserRepository
         }
 
         $record->fill($data)->save();
+        $roles = array_get($data, 'roles', '');
+        if ($roles != '') {
+            if (!getCurrentUser()->isSuperAdmin()) {
+                $sysRoles = $record->roles()->where('type' , \Nh\Repositories\Roles\Role::TYPE_SYSTEM)->get()->pluck('id')->toArray();
+                $roles = array_merge($sysRoles, $roles);
+            }
+
+            $record->roles()->sync($roles);
+        };
 
         return $this->getById($id);
     }

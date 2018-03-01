@@ -10,7 +10,8 @@ class CampaignTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
         'client',
-        'cgroup'
+        'cgroup',
+        'template'
     ];
 
     public function transform(Campaign $campaign = null)
@@ -20,18 +21,19 @@ class CampaignTransformer extends TransformerAbstract
         }
 
         $data = [
-            'id'          => $campaign->id,
+            'id'          => $campaign->uuid,
             'client_id'   => $campaign->client_id,
             'template_id' => $campaign->template_id,
+            'template'    => $campaign->template,
             'cgroup_id'   => $campaign->cgroup_id,
             'uuid'        => $campaign->uuid,
             'name'        => $campaign->name,
             'description' => $campaign->description,
-            'start_date'  => $campaign->start_date ? $campaign->start_date->format('d-m-Y') : null,
-            'end_date'    => $campaign->end_date ? $campaign->end_date->format('d-m-Y') : null,
+            'start_date'  => $campaign->start_date ? $campaign->start_date->format('Y-m-d H:i:s') : null,
+            'end_date'    => $campaign->end_date ? $campaign->end_date->format('Y-m-d H:i:s') : null,
             'status'      => $campaign->status,
             'status_txt'  => $campaign->getStatusText(),
-            'created_at'  => $campaign->created_at ? $campaign->created_at->format('d-m-Y H:i:s') : null,
+            'created_at'  => $campaign->created_at ? $campaign->created_at->format('Y-m-d H:i:s') : null,
         ];
 
         return $data;
@@ -53,5 +55,14 @@ class CampaignTransformer extends TransformerAbstract
         }
 
         return $this->item($campaign->cgroup, new CgroupTransformer());
+    }
+
+    public function includeTemplate(Campaign $campaign = null)
+    {
+        if (is_null($campaign)) {
+            return $this->null();
+        }
+
+        return $this->item($campaign->email_template, new EmailTemplateTransformer());
     }
 }

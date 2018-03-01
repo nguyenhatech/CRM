@@ -2,7 +2,7 @@
 
 namespace Nh\Http\Transformers;
 
-use Nh\Role;
+use Nh\Repositories\Roles\Role;
 use League\Fractal\TransformerAbstract;
 
 class RoleTransformer extends TransformerAbstract

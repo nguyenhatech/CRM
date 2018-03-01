@@ -28,7 +28,7 @@ class PromotionTransformer extends TransformerAbstract
             'image_path'        => $promotion->getImage(),
             'title'             => $promotion->title,
             'description'       => $promotion->description,
-            'content'           => $promotion->content,
+            'content'           => $promotion->content ? $promotion->content : '',
             'amount'            => $promotion->amount,
             'amount_max'        => $promotion->amount_max,
             'quantity'          => $promotion->quantity,
@@ -37,7 +37,7 @@ class PromotionTransformer extends TransformerAbstract
             'date_end'          => $promotion->date_end,
             'status'            => $promotion->status,
             'status_txt'        => $promotion->getStatusText(),
-            'created_at'        => $promotion->created_at ? $promotion->created_at->format('d-m-Y H:i:s') : null,
+            'created_at'        => $promotion->created_at ? $promotion->created_at->format('Y-m-d H:i:s') : null,
         ];
 
         return $data;

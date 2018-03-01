@@ -2,7 +2,7 @@
 
 namespace Nh\Http\Transformers;
 
-use Nh\Permission;
+use Nh\Repositories\Permissions\Permission;
 use League\Fractal\TransformerAbstract;
 
 class PermissionTransformer extends TransformerAbstract

@@ -10,6 +10,7 @@ use Nh\Http\Controllers\Api\RestfulHandler;
 use Nh\Http\Controllers\Api\TransformerTrait;
 
 use Nh\Repositories\Cgroups\CgroupRepository;
+use Nh\Repositories\Customers\CustomerRepository;
 use Nh\Http\Transformers\CgroupTransformer;
 
 class CgroupController extends ApiController
@@ -17,6 +18,7 @@ class CgroupController extends ApiController
     use TransformerTrait, RestfulHandler;
 
     protected $cgroup;
+    protected $customer;
 
     protected $validationRules = [
         'name'          => 'required|max:193',
@@ -29,9 +31,10 @@ class CgroupController extends ApiController
         'description.max'       =>  'Mô tả quá dài'
     ];
 
-    public function __construct(CgroupRepository $cgroup, CgroupTransformer $transformer)
+    public function __construct(CgroupRepository $cgroup, CgroupTransformer $transformer, CustomerRepository $customer)
     {
     	$this->cgroup = $cgroup;
+        $this->customer = $customer;
     	$this->setTransformer($transformer);
     }
 
@@ -79,11 +82,48 @@ class CgroupController extends ApiController
 
     public function addCustomer(Request $request, $id)
     {
+        $this->validationRules = [
+            'name'            => 'required|min:5|max:255',
+            'email'           => 'nullable|required_without_all:phone|email|max:255',
+            'phone'           => 'nullable|required_without_all:email|digits_between:8,12',
+            'home_phone'      => 'nullable|digits_between:8,12',
+            'company_phone'   => 'nullable|digits_between:8,12',
+            'website'         => 'nullable|url',
+            'dob'             => 'nullable|date_format:Y-m-d',
+            'job'             => 'max:255',
+            'address'         => 'max:255',
+            'company_address' => 'max:255'
+        ];
+        $this->validationMessages = [
+            'name.required'              => 'Tên không được để trống',
+            'name.min'                   => 'Tên cần lớn hơn :min kí tự',
+            'name.max'                   => 'Tên cần nhỏ hơn :max kí tự',
+            'email.required_without_all' => 'Email hoặc số điện thoại không được để trống',
+            'email.email'                => 'Email không đúng định dạng',
+            'email.max'                  => 'Email cần nhỏ hơn :max kí tự',
+            'phone.required_without_all' => 'Số điện thoại hoặc email không được để trống',
+            'phone.digits_between'       => 'Số điện thoại cần nằm trong khoảng :min đến :max số',
+            'home_phone.digits_between'  => 'Số điện thoại bàn cần nằm trong khoảng :min đến :max số',
+            'home_phone.company_phone'   => 'Số điện thoại cơ quan cần nằm trong khoảng :min đến :max số',
+            'website.url'                => 'Website không đúng định dạng',
+            'dob.date_format'            => 'Ngày sinh không đúng định dạng Y-m-d',
+            'job'                        => 'Nghề nghiệp cần nhỏ hơn :max kí tự',
+            'address'                    => 'Địa chỉ cần nhỏ hơn :max kí tự',
+            'company_address'            => 'Địa chỉ cơ quan cần nhỏ hơn :max kí tự',
+        ];
+
         DB::beginTransaction();
 
         try {
             $customerId = array_get($request->all(), 'customer_id', 0);
-            $customerId = convert_uuid2id($customerId);
+            if ($customerId) {
+                $customerId = convert_uuid2id($customerId);
+            } else {
+                $this->validate($request, $this->validationRules, $this->validationMessages);
+                $customer = $this->customer->storeOrUpdate($request->all());
+                $customerId = $customer->id;
+            }
+            
             $group = $this->getResource()->getById($id);
             if ($group) {
                 $group->customers()->attach($customerId);

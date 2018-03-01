@@ -21,12 +21,14 @@ Route::group([
     Route::resource('clients', 'ClientController');
     Route::resource('customers', 'CustomerController');
     Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
+    Route::post('customers/import-excel', 'CustomerController@importExcel');
     Route::resource('cgroups', 'CgroupController');
     Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
     Route::post('cgroups/{id}/add-customer', 'CgroupController@addCustomer');
     Route::post('cgroups/{id}/remove-customer', 'CgroupController@removeCustomer');
     Route::resource('payment-histories', 'PaymentHistoryController');
     Route::resource('promotions', 'PromotionController');
+    Route::post('promotions/{id}/active', 'PromotionController@active');
     Route::post('promotions/upload-image', 'PromotionController@uploadImage');
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
@@ -39,8 +41,13 @@ Route::group([
     Route::resource('roles', 'RoleController');
     Route::get('permissions/by-role', 'PermissionController@getByRole');
     Route::resource('permissions', 'PermissionController');
+    Route::resource('users', 'UserController');
+    Route::post('users/upload-avatar', 'UserController@uploadAvatar');
+    Route::put('users/{id}/reset-password', 'UserController@resetPassword');
+    Route::put('users/{id}/active', 'UserController@active');
 
     Route::resource('campaigns', 'CampaignController');
+    Route::get('campaigns/send-email/{id}', 'CampaignController@sendEmail');
     // developer
     Route::get('/developer/client', [
         'as' => 'developer.client',

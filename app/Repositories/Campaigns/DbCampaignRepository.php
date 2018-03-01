@@ -14,7 +14,7 @@ class DbCampaignRepository extends BaseRepository implements CampaignRepository
     {
         if (!is_numeric($id)) {
             $id = strtolower($id);
-            $id = \Hashids::decode($id)[0];
+            $id = convert_uuid2id($id);
         }
         return $this->model->find($id);
     }
