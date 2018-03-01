@@ -18,6 +18,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         \Nh\Events\PaymentSuccess::class => [
             \Nh\Listeners\UpdateLastPaymentListener::class
+        ],
+        \Nh\Events\DownLevelCustomer::class => [
+            \Nh\Listeners\DownLevelCustomerListener::class
         ]
     ];
 

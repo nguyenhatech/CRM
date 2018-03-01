@@ -46,14 +46,15 @@ class CronLevelOutOfDate extends Command
                 'customer_id'  => $customer->id,
                 'description'  => 'Tụt hạng sau 3 tháng không có giao dịch',
                 'total_amount' => 0,
-                'total_point'  => $customer->getTotalPoint() - (list_level_point()[$customer->level] - 1000),
+                'total_point'  => -($customer->getTotalPoint() - (list_level_point()[$customer->level] - 1000)),
                 'payment_at'   => \Carbon\Carbon::now(),
                 'status'       => PaymentHistory::PAY_SUCCESS,
                 'type'         => PaymentHistory::TYPE_DIRECT
             ]);
 
-            event(new \Nh\Events\UpdateLevelCustomer($paymentHistory->customer));
             event(new \Nh\Events\PaymentSuccess($paymentHistory));
+            event(new \Nh\Events\UpdateLevelCustomer($paymentHistory->customer));
+            event(new \Nh\Events\DownLevelCustomer($paymentHistory->customer));
         }
     }
 }
