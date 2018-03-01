@@ -4,8 +4,7 @@ namespace Nh\Http\Controllers\Api\V1;
 
 use Illuminate\Http\Request;
 use Laravel\Passport\ClientRepository;
-use Nh\Hocs\CarrierConstant;
-use Nh\Hocs\Webhooks\WebhookRepository;
+use Nh\Repositories\Webhooks\WebhookRepository;
 use Nh\Http\Controllers\Api\ResponseHandler;
 
 class DeveloperController extends ApiController
@@ -66,7 +65,7 @@ class DeveloperController extends ApiController
             $wh->store([
                 'client_id' => \Auth::user()->id,
                 'event_id' => $request->get('event'),
-                'event' => $wh->model->event_list[$request->get('event')],
+                'event' => \Nh\Repositories\Webhooks\Webhook::getEvents()[$request->get('event')],
                 'endpoint' => $request->get('endpoint'),
             ]);
             return $this->successResponse(['data' => ['Add subscription successful.']], false);

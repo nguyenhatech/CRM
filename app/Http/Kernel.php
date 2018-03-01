@@ -66,5 +66,8 @@ class Kernel extends HttpKernel
         'role' => \Nh\Http\Middleware\EntrustRole::class,
         'permission' => \Zizaco\Entrust\Middleware\EntrustPermission::class,
         'ability' => \Nh\Http\Middleware\EntrustAbility::class,
+        'horizon' => [
+            \App\Http\Middleware\AuthenticateHorizon::class
+        ]
     ];
 }

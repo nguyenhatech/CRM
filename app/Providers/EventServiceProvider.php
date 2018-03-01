@@ -13,9 +13,19 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        'Nh\Events\Event' => [
-            'Nh\Listeners\EventListener',
+        \Nh\Events\UpdateLevelCustomer::class => [
+            \Nh\Listeners\UpdateLevelCustomerListener::class,
         ],
+        \Nh\Events\PaymentSuccess::class => [
+            \Nh\Listeners\UpdateLastPaymentListener::class,
+            \Nh\Listeners\SendPaymentToMerchant::class
+        ],
+        \Nh\Events\DownLevelCustomer::class => [
+            \Nh\Listeners\DownLevelCustomerListener::class
+        ],
+        \Nh\Events\InfoCustomer::class => [
+            \Nh\Listeners\SendCustomerToMerchant::class
+        ]
     ];
 
     /**

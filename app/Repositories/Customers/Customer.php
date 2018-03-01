@@ -9,13 +9,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Customer extends Entity
 {
     use SoftDeletes;
-    protected $dates = ['deleted_at', 'dob'];
+    protected $dates = ['deleted_at', 'dob', 'last_payment'];
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    public $fillable = ['uuid', 'name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'level', 'avatar'];
+    public $fillable = ['uuid', 'name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'level', 'avatar', 'last_payment'];
 
     /**
      * Full path of images.
@@ -45,7 +45,7 @@ class Customer extends Entity
         });
 
         static::addGlobalScope('customers', function (Builder $builder) {
-            if (!getCurrentUser()->isSuperAdmin()) {
+            if (getCurrentUser() && !getCurrentUser()->isSuperAdmin()) {
                 $builder->whereHas('client', function ($builder) {
                     $builder->where('id', getCurrentUser()->id);
                 });
