@@ -87,10 +87,6 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
         ]]);
 
         event(new \Nh\Events\InfoCustomer($model));
-        try {
-        } catch (Exception $e) {
-            throw $e;
-        }
 
         return $this->getById($model->id);
     }
