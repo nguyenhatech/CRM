@@ -40,7 +40,7 @@ class CronLevelOutOfDate extends Command
      */
     public function handle()
     {
-        $customers = $this->customer->whereRaw('DATEDIFF(NOW(), last_payment) >= 0')->get();
+        $customers = $this->customer->whereRaw('DATEDIFF(NOW(), last_payment) >= 92g')->get();
         foreach ($customers as $customer) {
             $paymentHistory = $this->paymentHistory->create([
                 'customer_id'  => $customer->id,

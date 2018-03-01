@@ -28,7 +28,7 @@ class DownLevelCustomerListener implements ShouldQueue
      */
     public function handle(DownLevelCustomer $event)
     {
-        $customer = $event->paymentHistory->customer;
+        $customer = $event->customer;
         $customer->last_payment = null;
         $customer->save();
     }
