@@ -20,7 +20,7 @@ class CustomerTransformer extends TransformerAbstract
 
         $data = [
             'id'              => $customer->uuid,
-            'name'            => $customer->name,
+            'name'            => $customer->name ? $customer->name : $customer->email,
             'email'           => $customer->email,
             'phone'           => $customer->phone,
             'home_phone'      => $customer->home_phone,
@@ -43,7 +43,8 @@ class CustomerTransformer extends TransformerAbstract
             'total_amount'    => $customer->getTotalAmount(),
             'total_point'     => $customer->getTotalPoint(),
             'created_at'      => $customer->created_at ? $customer->created_at->format('d-m-Y H:i:s') : null,
-            'updated_at'      => $customer->updated_at ? $customer->updated_at->format('d-m-Y H:i:s') : null
+            'updated_at'      => $customer->updated_at ? $customer->updated_at->format('d-m-Y H:i:s') : null,
+            'last_payment'      => $customer->last_payment ? $customer->last_payment->format('d-m-Y H:i:s') : null
         ];
 
         return $data;

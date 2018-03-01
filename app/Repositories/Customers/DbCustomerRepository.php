@@ -85,6 +85,9 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
             'client_id'   => getCurrentUser()->id,
             'customer_id' => $model->id
         ]]);
+
+        event(new \Nh\Events\InfoCustomer($model));
+
         return $this->getById($model->id);
     }
 
