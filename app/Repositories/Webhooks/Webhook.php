@@ -16,9 +16,13 @@ class Webhook extends Entity
      * [$event_list description]
      * @var [type]
      */
-    public $event_list = [
+    public static $event_list = [
         self::WH_ALL             => 'Tất cả'
     ];
+
+    public static function getEvents() {
+        return self::$event_list;
+    }
 
     /**
      * The attributes that are mass assignable.
