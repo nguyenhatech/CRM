@@ -14,9 +14,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         \Illuminate\Support\Facades\Schema::defaultStringLength(191);
-        \Horizon::auth(function ($request) {
-             return \Auth::user() && \Auth::user()->isSuperAdmin();
-        });
+        // \Horizon::auth(function ($request) {
+        //      return \Auth::user() && \Auth::user()->isSuperAdmin();
+        // });
     }
 
     /**
