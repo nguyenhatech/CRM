@@ -17,10 +17,14 @@ class EventServiceProvider extends ServiceProvider
             \Nh\Listeners\UpdateLevelCustomerListener::class,
         ],
         \Nh\Events\PaymentSuccess::class => [
-            \Nh\Listeners\UpdateLastPaymentListener::class
+            \Nh\Listeners\UpdateLastPaymentListener::class,
+            \Nh\Listeners\SendPaymentToMerchant::class
         ],
         \Nh\Events\DownLevelCustomer::class => [
             \Nh\Listeners\DownLevelCustomerListener::class
+        ],
+        \Nh\Events\InfoCustomer::class => [
+            \Nh\Listeners\SendCustomerToMerchant::class
         ]
     ];
 

@@ -12,8 +12,8 @@ class Webhook extends Entity
      */
     const WH_ALL         = 0;
     const WH_TRANSACTION = 1;
-    const WH_REWARD_POINT = 2;
-    const WH_CUSTOMER = 3;
+    const WH_CUSTOMER = 2;
+    const WH_REWARD_POINT = 3;
 
     /**
      * [$event_list description]
