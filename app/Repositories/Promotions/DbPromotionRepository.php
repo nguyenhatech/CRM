@@ -9,7 +9,7 @@ use Carbon\Carbon;
 class DbPromotionRepository extends BaseRepository implements PromotionRepository
 {
     use UploadTrait;
-    
+
     public function __construct(Promotion $promotion)
     {
         $this->model = $promotion;
@@ -74,14 +74,15 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      */
     public function check($params)
     {
-        $code        = array_get($params, 'code', '');
-        $total_money = (int) array_get($params, 'total_money', 0);
+        $code          = array_get($params, 'code', '');
+        $total_money   = (int) array_get($params, 'total_money', 0);
+        $type          = array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
+        $result        = new \stdClass();
 
         $promotion = $this->model->where('client_id', getCurrentUser()->id)
                                 ->where('status', Promotion::ENABLE)
                                 ->where('date_start', '<=',  Carbon::now())
                                 ->where('date_end', '>=',  Carbon::now())
-                                ->where('quantity', '>',  0)
                                 ->where('code', strtoupper($code))->first();
 
         if (! is_null($promotion)) {
@@ -89,31 +90,34 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             // Nếu trường amount_max = 0 thì lấy luôn số tiền vừa tính được
             // Nếu không thì lấy theo trường amount_max
 
-            // Nếu là %
+            // Nếu khách chạy thoe tuyến thì lấy trường amount , theo chặng thì amount_segment
+            $ratio = $type === Promotion::ROUTE ? $promotion->amount : $promotion->amount_segment;
+
+            // Nếu là giảm theo %
             if ($promotion->type == Promotion::PERCENT) {
                 // Nếu số tiền tối đa = 0 thì lấy theo tỉ lê %
                 if (! $promotion->amount_max) {
-                    $amount = (int) $promotion->amount * $total_money * 0.01;
+                    $amount = (int) $ratio  * $total_money * 0.01;
                 } else {
                     // Nếu không lấy theo số tiền max nếu như tỉ lệ % nhân ra lớn hơn
-                    $amountCaculator = (int) $promotion->amount * $total_money * 0.01;
+                    $amountCaculator = (int) $ratio * $total_money * 0.01;
                     $amountInDB      = (int) $promotion->amount_max;
-
                     $amount          = $amountCaculator > $amountInDB ? $amountInDB : $amountCaculator;
                 }
             } else {
-                $amount = $promotion->amount;
+                // Nếu là giảm theo số tiền
+                $amount = $ratio;
             }
 
-            return [
-                'valid'  => true,
-                'amount' => $amount
-            ];
+            $result->error = false;
+            $result->message = 'Mã khuyến mại hợp lệ';
+            $result->amount = $amount;
         } else {
-            return [
-                'valid' => false
-            ];
+            $result->error = true;
+            $result->message = 'Mã khuyến mại không hợp lệ';
         }
+
+        return $result;
     }
 
 }
