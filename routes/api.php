@@ -14,6 +14,10 @@ use Illuminate\Http\Request;
 */
 
 Route::post('login', ['as' => 'login', 'uses' => 'LoginController@login']);
+Route::post('/developer/login', [
+    'as' => 'developer.login',
+    'uses' => 'LoginController@loginForDeveloper'
+]);
 
 Route::group([
     'middleware' => 'auth:api',
@@ -79,4 +83,8 @@ Route::group([
         'as' => 'developer.add_webhook',
         'uses' => 'DeveloperController@add'
     ]);
+
+    Route::prefix('statistic')->group(function () {
+        Route::get('rate-of-use-promotion', 'StatisticController@getRateOfUsePromotion');
+    });
 });

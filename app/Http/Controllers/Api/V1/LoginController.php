@@ -93,4 +93,69 @@ class LoginController extends ApiController
         }
     }
 
+    public function loginForDeveloper(Request $request)
+    {
+        try {
+            $this->validationRules['client_id'] = 'required';
+            $this->validationRules['client_secret'] = 'required';
+
+            $this->validationMessages['client_id.required'] = 'Vui lòng nhập client_id';
+            $this->validationMessages['client_secret.required'] = 'Vui lòng nhập client_secret';
+
+            $this->validate($request, $this->validationRules, $this->validationMessages);
+            $params = $request->all();
+
+            $raw_password = $params['password'];
+            $params['password'] = bcrypt($params['password']);
+            if (Auth::attempt(['email' => $params['username'], 'password' => $raw_password])) {
+                if (!Auth::user()->isActive()) {
+                    Auth::logout();
+                    return response()->json([
+                        'message' => 'Tài khoản chưa được xác thực',
+                        'status' => 'error',
+                        'code' => 401
+                    ], 401);
+                }
+
+                // Issue token
+                $guzzle = new Guzzle;
+                $url = env('APP_URL') . '/oauth/token';
+
+                $options = [
+                    'json' => [
+                        'grant_type'    => 'password',
+                        'client_id'     => $params['client_id'],
+                        'client_secret' => $params['client_secret'],
+                        'username'      => $params['username'],
+                        'password'      => $raw_password,
+                    ]
+                ];
+
+                $result = $guzzle->request('POST', $url, $options)->getBody()->getContents();
+                $result = json_decode($result, true);
+
+                return $this->successResponse($result, false);
+            }
+            return $this->errorResponse([
+                'errors' => ['Thông tin đăng nhập không chính xác.']
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $validationException) {
+            return $this->errorResponse([
+                'errors' => $validationException->validator->errors(),
+                'exception' => $validationException->getMessage()
+            ]);
+        } catch (\GuzzleHttp\Exception\ClientException $clientException) {
+            // DO NOT REMOVE THIS
+            // $errorMsg = $clientException->getMessage();
+            // $errorMsg = explode("\n", $errorMsg);
+            // $errorMsg = json_decode($errorMsg[1], true);
+            // return $this->errorResponse([
+            //     'errors' => [$errorMsg['message']]
+            // ], $clientException->getCode());
+
+            return $this->errorResponse([
+                'errors' => ['Tài khoản developer chưa được xác thực.']
+            ], $clientException->getCode());
+        }
+    }
 }
