@@ -34,6 +34,7 @@ class CheckPromotionController extends ApiController
     public function __construct(PromotionRepository $promotion)
     {
         $this->promotion = $promotion;
+        $this->checkPermission('promotion');
     }
 
     public function getResource()

@@ -30,6 +30,7 @@ class AccountController extends ApiController
     {
         $this->account = $user;
         $this->setTransformer($transformer);
+        $this->checkPermission('user');
     }
 
     public function getResource()
