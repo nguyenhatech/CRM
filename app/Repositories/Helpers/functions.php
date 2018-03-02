@@ -254,3 +254,15 @@ function list_level_point() {
         LEVEL_DIAMOND => 50000
     ];
 }
+
+/**
+ * [generateWebhookToken description]
+ * @param  [type] $data          [description]
+ * @param  [type] $client_secret [description]
+ * @return [type]                [description]
+ */
+function generateWebhookToken($data, $client_secret)
+{
+    $data = json_encode($data);
+    return base64_encode(hash_hmac('sha256', $data, $client_secret, true));
+}

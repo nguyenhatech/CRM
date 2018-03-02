@@ -8,24 +8,28 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Nh\Repositories\Campaigns\Campaign;
+use Nh\Repositories\Helpers\SpeedSMSAPI;
 
-class SendEmailChampaign implements ShouldQueue
+class SendSMSCampaign implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable;
 
     public $tries = 5;
 
-    protected $campaign;
-    protected $customers;
+    public $campaign;
+    public $customers;
+    public $content;
+
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(Campaign $campaign, $customers)
+    public function __construct(Campaign $campaign, $customers, $content)
     {
         $this->campaign = $campaign;
         $this->customers = $customers;
+        $this->content = $content;
     }
 
     /**
@@ -35,12 +39,15 @@ class SendEmailChampaign implements ShouldQueue
      */
     public function handle()
     {
+        $phones = [];
         foreach ($this->customers as $key => $customer) {
-            if ($customer->email) {
-                $html = str_replace('***name***', $customer->name, $this->campaign->template);
-                $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
-                $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->sent();
+            if ($customer->phone) {
+                array_push($phones, $customer->phone);
             }
         }
+        $sms = new SpeedSMSAPI();
+        $result = $sms->sendSMS($phones, $this->content, SpeedSMSAPI::SMS_TYPE_CSKH, "", 1);
+        \Log::info('SendSMS');
+        \Log::info($result);
     }
 }
