@@ -38,6 +38,7 @@ class CampaignTransformer extends TransformerAbstract
             'status'        => $campaign->status,
             'status_txt'    => $campaign->getStatusText(),
             'period'        => $campaign->period,
+            'period_text'   => $campaign->getPeriodText(),
             'created_at'    => $campaign->created_at ? $campaign->created_at->format('Y-m-d H:i:s') : null,
         ];
 
