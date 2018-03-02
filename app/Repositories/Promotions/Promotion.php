@@ -55,6 +55,9 @@ class Promotion extends Entity
 
     public function getImage()
     {
+        if (strrpos($this->image, 'http://') || strrpos($this->image, 'https://')) {
+            return $this->image;
+        }
         return $this->image == '' ? '' : get_asset($this->imgPath . '/' . $this->image);
     }
 
