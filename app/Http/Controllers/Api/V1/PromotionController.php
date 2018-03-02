@@ -75,6 +75,7 @@ class PromotionController extends ApiController
     {
         $this->promotion = $promotion;
         $this->setTransformer($transformer);
+        $this->checkPermission('promotion');
     }
 
     public function getResource()

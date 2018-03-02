@@ -37,6 +37,7 @@ class PaymentHistoryController extends ApiController
     {
         $this->paymentHistory = $paymentHistory;
         $this->setTransformer($transformer);
+        $this->checkPermission('payment_history');
     }
 
     public function getResource()
