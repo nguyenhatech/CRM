@@ -27,6 +27,11 @@ class HelperController extends ApiController
                     'levels' => \Nh\Repositories\Customers\Customer::getListLevel(),
                 ];
                 break;
+            case 'period-campaigns':
+                $result = [
+                    'periods' => \Nh\Repositories\Campaigns\Campaign::getListPeriod(),
+                ];
+                break;
         }
 
         return response()->json($result, 200);
