@@ -47,5 +47,7 @@ class SendSMSCampaign implements ShouldQueue
         }
         $sms = new SpeedSMSAPI();
         $result = $sms->sendSMS($phones, $this->content, SpeedSMSAPI::SMS_TYPE_CSKH, "", 1);
+        \Log::info('SendSMS');
+        \Log::info($result);
     }
 }
