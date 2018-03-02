@@ -24,7 +24,7 @@ class PromotionController extends ApiController
         'code'              => 'required|max:50',
         'type'              => 'required|numeric',
         'amount'            => 'required|numeric|min:0',
-        'amount_max'        => 'required|numeric|min:0',
+        'amount_max'        => 'nullable|numeric|min:0',
         'quantity'          => 'nullable|numeric|min:0',
         'quantity_per_user' => 'nullable|numeric|min:0',
         'date_start'        => 'required|date_format:Y-m-d H:i:s',
@@ -121,7 +121,7 @@ class PromotionController extends ApiController
                     return $this->errorResponse([
                         'errors' => [
                             'name' => [
-                                'Số lượng phần trăm giảm giá không được vượt quá 100%'
+                                'Phần trăm giảm giá không được vượt quá 100%'
                             ]
                         ]
                     ]);

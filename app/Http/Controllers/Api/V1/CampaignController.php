@@ -9,10 +9,13 @@ use Nh\Http\Controllers\Api\V1\ApiController;
 use Nh\Http\Controllers\Api\RestfulHandler;
 use Nh\Http\Controllers\Api\TransformerTrait;
 
+use Nh\Repositories\Campaigns\Campaign;
+
 use Nh\Repositories\Campaigns\CampaignRepository;
 use Nh\Http\Transformers\CampaignTransformer;
 
-use Nh\Jobs\SendEmailChampaign;
+use Nh\Jobs\SendEmailCampaign;
+use Nh\Jobs\SendSMSCampaign;
 
 class CampaignController extends ApiController
 {
@@ -22,22 +25,24 @@ class CampaignController extends ApiController
 
     protected $validationRules = [
         'template'    => 'required',
-        'cgroup_id'   => 'required',
+        'cgroup_id'   => 'nullable|required_without_all:customers',
         'name'        => 'required|max:191',
         'description' => 'nullable',
-        'start_date'  => 'date_format:Y-m-d H:i:s',
-        'end_date'    => 'date_format:Y-m-d H:i:s',
-        'status'      => 'nullable|numeric'
+        'status'      => 'nullable|numeric',
+        'customers'   => 'nullable|required_without_all:cgroup_id|array',
+        'target_type' => 'required|numeric'
     ];
 
     protected $validationMessages = [
         'template.required'         => 'Chưa nhập mẫu email',
         'cgroup_id.required'        => 'Chưa chọn nhóm khách hàng',
+        'customers.required'        => 'Chưa chọn khách hàng',
+        'customers.array'           => 'Danh sách khách hàng chưa đúng định dạng.',
         'name.required'             => 'Chưa nhập tên',
         'name.max'                  => 'Tên không được quá 191 kí tự',
-        'start_date.date_format'    => 'Ngày bắt đầu chưa đúng định dạng',
-        'end_date.date_format'      => 'Ngày kết thúc chưa đúng định dạng',
-        'status.numeric'            => 'Trạng thái sai định dạng'
+        'status.numeric'            => 'Trạng thái sai định dạng',
+        'target_type.required'      => 'Chưa chọn loại mục tiêu',
+        'target_type.numeric'       => 'Chọn đối tượng mục tiêu chưa đúng'
     ];
 
     public function __construct(CampaignRepository $campaign, CampaignTransformer $transformer)
@@ -72,9 +77,19 @@ class CampaignController extends ApiController
 
             $params = $request->all();
             $params['client_id'] = getCurrentUser()->id;
-            $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
+
+            if (array_key_exists('cgroup_id', $params)) {
+                $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
+            }
             if (array_key_exists('template_id', $params)) {
                 $params['template_id'] = convert_uuid2id($params['template_id']);
+            }
+            if (array_key_exists('customers', $params)) {
+                $customers = [];
+                foreach ($params['customers'] as $uuid) {
+                    array_push($customers, convert_uuid2id($uuid));
+                }
+                $params['customers'] = $customers;
             }
 
             $data = $this->getResource()->store($params);
@@ -103,23 +118,27 @@ class CampaignController extends ApiController
 
         try {
 
-            $this->validationRules = [
-                'name'        => 'nullable|max:191',
-                'description' => 'nullable',
-                'start_date'  => 'nullable|date_format:Y-m-d H:i:s',
-                'end_date'    => 'nullable|date_format:Y-m-d H:i:s',
-                'status'      => 'nullable|numeric'
-            ];
-
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $params = $request->all();
 
-            $params = array_only($params, ['name', 'description', 'start_date', 'end_date', 'status', 'cgroup_id', 'template_id', 'template']);
+            $params = array_only($params, ['name', 'description', 'start_date', 'end_date', 'status', 'cgroup_id', 'template_id', 'template', 'sms_template', 'target_type', 'period', 'customers']);
             if (array_key_exists('template_id', $params)) {
                 $params['template_id'] = convert_uuid2id($params['template_id']);
             }
-            $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
+            if (array_key_exists('cgroup_id', $params)) {
+                $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
+            }
+            if (array_key_exists('template_id', $params)) {
+                $params['template_id'] = convert_uuid2id($params['template_id']);
+            }
+            if (array_key_exists('customers', $params)) {
+                $customers = [];
+                foreach ($params['customers'] as $uuid) {
+                    array_push($customers, convert_uuid2id($uuid));
+                }
+                $params['customers'] = $customers;
+            }
 
             $model = $this->getResource()->update($id, $params);
 
@@ -142,8 +161,15 @@ class CampaignController extends ApiController
         $campaign = $this->campaign->getById($id);
 
         if ($campaign) {
+            $customers = [];
+
+            if ($campaign->target_type == Campaign::GROUP_TARGET) {
+                $customers = $campaign->cgroup->customers;
+            } else {
+                $customers = $campaign->customers;
+            }
             try {
-                $job = new SendEmailChampaign($campaign, $campaign->cgroup->customers);
+                $job = new SendEmailCampaign($campaign, $customers);
                 dispatch($job)->delay(now()->addSeconds(1));
             } catch (\Exception $e) {
                 throw $e;
@@ -151,6 +177,43 @@ class CampaignController extends ApiController
             return $this->infoResponse([]);
         } else {
             return $this->notFoundResponse();
+        }
+    }
+
+    public function sendSMS(Request $request, $id)
+    {
+        try {
+            $this->validate(
+                $request, 
+                ['content'          => 'required'], 
+                ['content.required' => 'Nội dung tin nhắn không được để trống']
+            );
+            $campaign = $this->campaign->getById($id);
+
+            if ($campaign) {
+                $customers = [];
+                if ($campaign->target_type == Campaign::GROUP_TARGET) {
+                    $customers = $campaign->cgroup->customers;
+                } else {
+                    $customers = $campaign->customers;
+                }
+                try {
+                    $job = new SendSMSCampaign($campaign, $customers, $request->content);
+                    dispatch($job)->delay(now()->addSeconds(1));
+                } catch (\Exception $e) {
+                    throw $e;
+                }
+                return $this->infoResponse([]);
+            } else {
+                return $this->notFoundResponse();
+            }
+        } catch (\Illuminate\Validation\ValidationException $validationException) {
+            return $this->errorResponse([
+                'errors' => $validationException->validator->errors(),
+                'exception' => $validationException->getMessage()
+            ]);
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 
