@@ -34,22 +34,17 @@ class PaymentHistory extends Entity
     {
         static::created(function ($model) {
             $model->uuid = \Hashids::encode($model->id);
-            $model->client_id = getCurrentUser()->id;
+            if (getCurrentUser()) {
+                $model->client_id = getCurrentUser()->id;
+            }
             if ($model->type == self::TYPE_DIRECT) {
                 $model->status = self::PAY_SUCCESS;
+                $model->payment_at = \Carbon\Carbon::now();
             }
             if ($model->total_amount < 0) {
-                $model->total_point = floor(-$model->total_amount / 1000);
+                $model->total_point = floor(abs($model->total_amount) / 1000);
             }
             $model->save();
-        });
-
-        static::updating(function ($model) {
-            $old = $model->getDirty();
-            if ($old['status'] != $model->status && $model->status == self::PAY_SUCCESS) {
-                $model->payment_at = \Carbon\Carbon::now()->format('Y-m-d');
-                // $model->save();
-            }
         });
 
         parent::boot();

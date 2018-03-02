@@ -245,3 +245,24 @@ function list_level() {
         LEVEL_DIAMOND => 'Kim cương'
     ];
 }
+
+function list_level_point() {
+    return [
+        LEVEL_NORMAL  => 0,
+        LEVEL_SILVER  => 10000,
+        LEVEL_GOLD    => 25000,
+        LEVEL_DIAMOND => 50000
+    ];
+}
+
+/**
+ * [generateWebhookToken description]
+ * @param  [type] $data          [description]
+ * @param  [type] $client_secret [description]
+ * @return [type]                [description]
+ */
+function generateWebhookToken($data, $client_secret)
+{
+    $data = json_encode($data);
+    return base64_encode(hash_hmac('sha256', $data, $client_secret, true));
+}

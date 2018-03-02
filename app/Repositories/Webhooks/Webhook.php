@@ -10,15 +10,25 @@ class Webhook extends Entity
     /**
      * Webhook constants
      */
-    const WH_ALL             = 0;
+    const WH_ALL         = 0;
+    const WH_TRANSACTION = 1;
+    const WH_CUSTOMER = 2;
+    const WH_REWARD_POINT = 3;
 
     /**
      * [$event_list description]
      * @var [type]
      */
-    public $event_list = [
-        self::WH_ALL             => 'Tất cả'
+    public static $event_list = [
+        self::WH_ALL          => 'Tất cả',
+        self::WH_TRANSACTION  => 'Thông tin giao dịch',
+        self::WH_REWARD_POINT => 'Điểm thưởng',
+        self::WH_CUSTOMER     => 'Khách hàng',
     ];
+
+    public static function getEvents() {
+        return self::$event_list;
+    }
 
     /**
      * The attributes that are mass assignable.

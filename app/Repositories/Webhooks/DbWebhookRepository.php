@@ -16,7 +16,7 @@ class DbWebhookRepository extends BaseRepository implements WebhookRepository
      */
     public function getEvents()
     {
-        return $this->model->event_list;
+        return Webhook::getEvents();
     }
 
     /**
