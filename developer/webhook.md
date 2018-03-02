@@ -202,3 +202,185 @@ Nếu request tới 1 api mà không có thông tin xác thực, bạn sẽ nh�
     }
 
 Hãy chắc chắn là bạn đã thêm một header Authorization cho các request.
+
+**Lấy danh sách mã khuyến mại**
+
+**GET** `https://apicrm.havaz.vn/api/v2/promotions`
+
+Thiết lập thông tin header:
+
+    Accept: application/json
+    Content-Type: application/json
+
+Response:
+
+    {
+        "code": 200,
+        "status": "success",
+        "data": [
+            {
+                "id": 2,
+                "client_id": 2,
+                "code": "OHOHOH",
+                "type": 1,
+                "type_txt": "%",
+                "image": "2018_01_30_0d33ca9ee0c07e24bf8c7733c3696f45.jpg",
+                "image_path": "http:\/\/crm.test\/storage\/images\/promotions\/2018_01_30_0d33ca9ee0c07e24bf8c7733c3696f45.jpg",
+                "title": "khuyen mai",
+                "description": "day la mo ta",
+                "content": "day la noi dung",
+                "amount": 20,
+                "amount_max": 0,
+                "quantity": 0,
+                "quantity_per_user": 0,
+                "date_start": "2018-01-05 15:15:15",
+                "date_end": "2018-01-20 20:20:20",
+                "status": 1,
+                "status_txt": "Đã kích hoạt",
+                "created_at": "2018-03-02 09:20:20"
+            }
+        ],
+        "meta": {
+            "pagination": {
+                "total": 1,
+                "count": 1,
+                "per_page": 25,
+                "current_page": 1,
+                "total_pages": 1,
+                "links": []
+            }
+        }
+    }
+Lấy tất cả khuyến mại không phân trang:
+
+**GET** `https://apicrm.havaz.vn/api/v2/promotions?limit=-1`
+
+
+**Tạo mã khuyến mại**
+
+**POST** `https://apicrm.havaz.vn/api/v2/promotions`
+
+Thiết lập thông tin header:
+
+    Accept: application/json
+    Content-Type: application/json
+Request body:
+
+    {
+        "id": 1,
+        "code": "OHOHOH",
+        "title": "khuyen mai",
+        "type": 1,
+        "image": "https://your_url.vn/2018_01_30_0d33ca9ee0c07e24bf8c7733c3696f45.jpg",
+        "description": "day la mo ta",
+        "content": "day la noi dung",
+        "amount": 20,
+        "amount_max": 0,
+        "amount_segment": 0,
+        "quantity": 10,
+        "quantity_per_user": 10,
+        "date_start": "2018-01-05 6:00:00",
+        "date_end": "2018-01-20 6:00:00",
+        "status": 1
+    }
+
+Thông tin request như sau:
+- `id`: Mã hệ thống
+- `code`: Mã khuyến mại  (required|max:50)
+- `title`: Tiêu đề  (required)
+- `type`: Loại khuyến mại  (required|numeric)
+- `image`: Đường dẫn ảnh khuyến mại của bạn  khuyến mại
+- `description`: Mô tả
+- `content`: Nội dung
+- `amount`: Tiền giảm cả tuyến  (required|numeric|min:0)
+- `amount_max`: Tiền giảm tối đa (nullable|numeric|min:0)
+- `amount_segment`: Tiền giảm theo chặng ( nullable|numeric|min:0)
+- `quantity`: Số lượt dùng (Mặc định không giới hạn)   ( nullable|numeric|min:0)
+- `quantity_per_user`: Số lượt dùng tối đa mỗi khách (Mặc định không giới hạn)  ( nullable|numeric|min:0)
+- `date_start`: Ngày giờ bắt đầu áp dụng khuyến mại (required|date_format:Y-m-d H:i:s)
+- `date_end`: Ngày giờ kết thúc áp dụng khuyến mại (required|date_format:Y-m-d H:i:s)
+- `status`: Trạng thái khuyến mại (nullable|numeric)
+
+Loại khuyến mại `type`
+``` php
+    [
+        0: "VNĐ" // Tiền mặt
+        1: "%" // Phần trăm
+    ]
+```
+Trạng thái khuyến mại `status`
+``` php
+    [
+        0: "Chưa kích hoạt"
+        1: "Đã kích hoạt"
+    ]
+```
+
+**Cập nhật mã khuyến mại**
+
+**PUT** `https://apicrm.havaz.vn/api/v2/promotions/{id}`
+
+Thiết lập thông tin header:
+
+```
+Accept: application/json
+Content-Type: application/json
+
+```
+
+Request body:
+
+```
+{
+    "code": "OHOHOH",
+    "title": "khuyen mai",
+    "type": 1,
+    "image": "https://your_url.vn/2018_01_30_0d33ca9ee0c07e24bf8c7733c3696f45.jpg",
+    "description": "day la mo ta",
+    "content": "day la noi dung",
+    "amount": 20,
+    "amount_max": 0,
+    "amount_segment": 0,
+    "quantity": 10,
+    "quantity_per_user": 10,
+    "date_start": "2018-01-05 6:00:00",
+    "date_end": "2018-01-20 6:00:00",
+    "status": 1
+}
+```
+**Cập nhật trạng thái mã khuyến mại**
+
+**POST** `https://apicrm.havaz.vn/api/v2/promotions/{id}/active`
+
+Trạng thái khuyến mại `status`
+``` php
+    [
+        0: "Chưa kích hoạt"
+        1: "Đã kích hoạt"
+    ]
+```
+
+Thiết lập thông tin header:
+
+```
+Accept: application/json
+Content-Type: application/json
+```
+Request body:
+
+```
+{
+    "status": 1,
+}
+```
+
+**Xóa mã khuyến mại**
+
+**DELETE** `https://apicrm.havaz.vn/api/v2/promotions/{id}`
+
+Thiết lập thông tin header:
+
+```
+Accept: application/json
+Content-Type: application/json
+```
