@@ -48,6 +48,7 @@ Route::group([
 
     Route::resource('campaigns', 'CampaignController');
     Route::get('campaigns/send-email/{id}', 'CampaignController@sendEmail');
+    Route::post('campaigns/send-sms/{id}', 'CampaignController@sendSMS');
     // developer
     Route::get('/developer/client', [
         'as' => 'developer.client',

@@ -65,4 +65,48 @@ class DbCampaignRepository extends BaseRepository implements CampaignRepository
         return $size < 0 ? $model->get() : $model->paginate($size);
     }
 
+    /**
+     * Đồng bộ relation
+     * @param  [type] $model     [description]
+     * @param  [type] $customers [description]
+     * @return [type]            [description]
+     */
+    public function syncCustomers($model, $customers)
+    {
+        return $model->customers()->sync($customers);
+    }
+
+    /**
+     * Lưu thông tin 1 bản ghi mới
+     *
+     * @param  array $data
+     * @return Eloquent
+     */
+    public function store($data)
+    {
+        $model = $this->model->create($data);
+        if ($model->target_type === Campaign::MANUAL_TARGET) {
+            $this->syncCustomers($model, $data['customers']);
+        }
+        return $this->getById($model->id);
+    }
+
+    /**
+     * Cập nhật thông tin 1 bản ghi theo ID
+     *
+     * @param  integer $id ID bản ghi
+     * @return bool
+     */
+    public function update($id, $data)
+    {
+        $model = $this->getById($id);
+        if ($model->target_type === Campaign::MANUAL_TARGET && array_key_exists('customers', $data)) {
+            $this->syncCustomers($model, $data['customers']);
+        } else {
+            $this->syncCustomers($model, []);
+        }
+        $model->fill($data)->save();
+        return $this->getById($id);
+    }
+
 }

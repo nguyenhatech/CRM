@@ -13,16 +13,34 @@ class Campaign extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id','template_id', 'template','cgroup_id','uuid','name','description','start_date','end_date','status'];
+    public $fillable = ['client_id','template_id', 'template','cgroup_id','uuid','name','description', 'status', 'target_type', 'sms_template', 'period'];
 
     public $dates = ['start_date', 'end_date'];
 
     const PEDDING = 0;
     const RUNING = 1;
 
+    const GROUP_TARGET = 1;
+    const MANUAL_TARGET = 2;
+
+    const DAY_PERIOD = 1;
+    const WEEK_PERIOD = 2;
+    const MONTH_PERIOD = 3;
+
     const LIST_STATUS = [
         self::PEDDING => 'Ngừng chạy',
         self::RUNING => 'Đang chạy'
+    ];
+
+    const TARGET_TYPE = [
+        self::GROUP_TARGET => 'Nhóm khách hàng',
+        self::MANUAL_TARGET => 'Chọn từ danh sách'
+    ];
+
+    const PERIODS = [
+        self::DAY_PERIOD => 'Mỗi ngày',
+        self::WEEK_PERIOD => 'Mỗi tuần',
+        self::MONTH_PERIOD => 'Mỗi tháng'
     ];
 
     protected static function boot()
@@ -46,6 +64,11 @@ class Campaign extends Entity
         return array_key_exists($this->status, self::LIST_STATUS) ? self::LIST_STATUS[$this->status] : 'Không xác định';
     }
 
+    public static function getListPeriod()
+    {
+        return self::PERIODS;
+    }
+
     public function client()
     {
         return $this->belongsTo('Nh\User', 'client_id', 'id');
@@ -59,6 +82,10 @@ class Campaign extends Entity
     public function email_template()
     {
         return $this->belongsTo('Nh\Repositories\EmailTemplates\EmailTemplate', 'template_id', 'id');
+    }
+
+    public function customers() {
+        return $this->belongsToMany('Nh\Repositories\Customers\Customer', 'customer_campaigns', 'campaign_id', 'customer_id');
     }
 
 }
