@@ -39,7 +39,7 @@ class RoleController extends ApiController
     {
         $this->role = $role;
         $this->setTransformer($transformer);
-        // $this->checkPermission('role');
+        $this->checkPermission('role');
     }
 
     public function getResource()

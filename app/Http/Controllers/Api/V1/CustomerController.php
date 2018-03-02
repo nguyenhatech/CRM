@@ -55,6 +55,7 @@ class CustomerController extends ApiController
         $this->customer = $customer;
         $this->cgroups = $cgroups;
         $this->setTransformer($transformer);
+        $this->checkPermission('customer');
     }
 
     public function getResource()

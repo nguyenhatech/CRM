@@ -39,7 +39,7 @@ class PermissionController extends ApiController
         $this->setTransformer($transformer);
         $permission = app()->make(\Nh\Repositories\Permissions\Permission::class);
         $this->validationRules['prefix.*'] .= implode(",", array_keys($permission->getPrefixs()));
-        // $this->checkPermission('permission');
+        $this->checkPermission('permission');
         // $this->middleware("ability:superadmin,permission.index")->only(['index', 'getByRole']);
     }
 

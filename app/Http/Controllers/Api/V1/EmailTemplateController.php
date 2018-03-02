@@ -37,6 +37,7 @@ class EmailTemplateController extends ApiController
     {
         $this->emailTemplate = $emailTemplate;
         $this->setTransformer($transformer);
+        $this->checkPermission('email_template');
     }
 
     public function getResource()
