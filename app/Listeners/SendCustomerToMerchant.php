@@ -45,7 +45,6 @@ class SendCustomerToMerchant
                 'status' => 'success',
                 'data' => [
                     'uuid'         => $customer->uuid,
-                    'client_id'    => $client->id,
                     'name'         => $customer->name,
                     'phone'        => $customer->phone,
                     'email'        => $customer->email,
@@ -54,8 +53,6 @@ class SendCustomerToMerchant
                     'avatar'       => $customer->avatar,
                     'avatar_path'  => $customer->getAvatar(),
                     'webhook_type' => Webhook::WH_CUSTOMER,
-                    'updated_at'   => $customer->updated_at->format('Y-m-d H:i:s'),
-                    'created_at'   => $customer->created_at->format('Y-m-d H:i:s')
                 ]
             ];
 

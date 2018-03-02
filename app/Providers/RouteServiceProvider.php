@@ -37,6 +37,8 @@ class RouteServiceProvider extends ServiceProvider
     {
         $this->mapApiRoutes();
 
+        $this->mapApiV2Routes();
+
         $this->mapWebRoutes();
 
         //
@@ -69,5 +71,26 @@ class RouteServiceProvider extends ServiceProvider
              ->middleware('api')
              ->namespace($this->namespace . '\Api\V1')
              ->group(base_path('routes/api.php'));
+    }
+
+    /**
+     * Listing api version 2.0 for client request
+     *
+     * @version 2.0
+     *
+     * These routes are typically stateless.
+     *
+     * @return void
+     */
+    protected function mapApiV2Routes()
+    {
+        Route::group([
+            'middleware' => 'api',
+            'namespace' => $this->namespace . '\Api\V2',
+            'prefix' => 'api/v2',
+        ], function ($router) {
+            config(['cors.allowedOrigins' => ['*']]);
+            require base_path('routes/api_v2.php');
+        });
     }
 }
