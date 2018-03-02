@@ -155,7 +155,7 @@ Hãy bảo mật kỹ thông tin Client Secret, đó là thông tin quan trọng
 
 Để lấy token, bạn cần thực hiện một POST request như sau:
 
-**POST** `https://apicrm.havaz.vn/developer/login`
+**POST** `https://apicrm.havaz.vn/api/v2/login`
 
 Thiết lập thông tin header:
 
