@@ -36,6 +36,7 @@ class CgroupController extends ApiController
     	$this->cgroup = $cgroup;
         $this->customer = $customer;
     	$this->setTransformer($transformer);
+        $this->checkPermission('cgroup');
     }
 
     public function getResource()
@@ -123,7 +124,7 @@ class CgroupController extends ApiController
                 $customer = $this->customer->storeOrUpdate($request->all());
                 $customerId = $customer->id;
             }
-            
+
             $group = $this->getResource()->getById($id);
             if ($group) {
                 $group->customers()->attach($customerId);

@@ -1,6 +1,6 @@
 <?php
 
-namespace Nh\Http\Controllers\Api\V1;
+namespace Nh\Http\Controllers\Api\V2;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,8 +12,9 @@ use Nh\Http\Controllers\Api\TransformerTrait;
 use Nh\Repositories\Promotions\PromotionRepository;
 use Nh\Repositories\Promotions\Promotion;
 use Nh\Http\Transformers\PromotionTransformer;
+use Nh\Http\Controllers\Controller;
 
-class PromotionController extends ApiController
+class PromotionController extends Controller
 {
     use TransformerTrait, RestfulHandler;
 
@@ -24,7 +25,6 @@ class PromotionController extends ApiController
         'code'              => 'required|max:50',
         'type'              => 'required|numeric',
         'amount'            => 'required|numeric|min:0',
-        'amount_segment'    => 'nullable|numeric|min:0',
         'amount_max'        => 'nullable|numeric|min:0',
         'quantity'          => 'nullable|numeric|min:0',
         'quantity_per_user' => 'nullable|numeric|min:0',
@@ -76,7 +76,6 @@ class PromotionController extends ApiController
     {
         $this->promotion = $promotion;
         $this->setTransformer($transformer);
-        $this->checkPermission('promotion');
     }
 
     public function getResource()
@@ -113,34 +112,20 @@ class PromotionController extends ApiController
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $params = $request->all();
-            $amount = (int) array_get($params, 'amount', null);
 
-            $type   = array_get($params, 'type', Promotion::PERCENT);
+            $type   = array_get($params, 'type', null);
 
-            // Nếu kiểu là giảm theo phần trăm
-            if ($type == Promotion::PERCENT) {
+            if (! is_null($type) && $type == Promotion::PERCENT) {
+                $amount = (int) array_get($params, 'amount', null);
                 if ($amount > 100) {
                     return $this->errorResponse([
                         'errors' => [
-                            'amount' => [
+                            'name' => [
                                 'Phần trăm giảm giá không được vượt quá 100%'
                             ]
                         ]
                     ]);
                 }
-
-            }
-            // Check amount_segment phải nhỏ hơn amount
-            $amount_segment = (int) array_get($params, 'amount_segment', null);
-            if (! is_null($amount_segment) && $amount_segment >= $amount) {
-                $message = $type == Promotion::PERCENT ? 'Phần trăm' : 'Số tiền';
-                return $this->errorResponse([
-                    'errors' => [
-                        'amount_segment' => [
-                            $message . ' giảm theo chặng không thể lớn hơn theo tuyến'
-                        ]
-                    ]
-                ]);
             }
 
             // Check Code of User là hợp lệ

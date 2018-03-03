@@ -38,9 +38,10 @@ class Campaign extends Entity
     ];
 
     const PERIODS = [
-        self::DAY_PERIOD => 'Mỗi ngày',
-        self::WEEK_PERIOD => 'Mỗi tuần',
-        self::MONTH_PERIOD => 'Mỗi tháng'
+        0                   => 'Không',
+        self::DAY_PERIOD    => 'Mỗi ngày',
+        self::WEEK_PERIOD   => 'Mỗi tuần',
+        self::MONTH_PERIOD  => 'Mỗi tháng'
     ];
 
     protected static function boot()
@@ -62,6 +63,11 @@ class Campaign extends Entity
     public function getStatusText()
     {
         return array_key_exists($this->status, self::LIST_STATUS) ? self::LIST_STATUS[$this->status] : 'Không xác định';
+    }
+
+    public function getPeriodText()
+    {
+        return self::PERIODS[$this->period];
     }
 
     public static function getListPeriod()

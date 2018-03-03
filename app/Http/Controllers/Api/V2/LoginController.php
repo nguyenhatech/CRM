@@ -1,6 +1,6 @@
 <?php
 
-namespace Nh\Http\Controllers\Api\V1;
+namespace Nh\Http\Controllers\Api\V2;
 
 use Nh\Repositories\Users\UserRepository;
 use Nh\Http\Controllers\Api\RestfulHandler;
@@ -8,8 +8,9 @@ use Nh\Http\Controllers\Api\TransformerTrait;
 use GuzzleHttp\Client as Guzzle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Nh\Http\Controllers\Controller;
 
-class LoginController extends ApiController
+class LoginController extends Controller
 {
     use TransformerTrait, RestfulHandler;
 
@@ -21,17 +22,21 @@ class LoginController extends ApiController
     }
 
     protected $validationRules = [
-        'username' => 'required|email|max:255',
-        'password' => 'required|min:6|max:255',
+        'client_id'     => 'required',
+        'client_secret' => 'required',
+        'username'      => 'required|email|max:255',
+        'password'      => 'required|min:6|max:255',
     ];
 
     protected $validationMessages = [
-        'username.required' => 'Vui lòng nhập email',
-        'username.email'    => 'Email không đúng định dạng',
-        'username.max'      => 'Email cần nhỏ hơn :max kí tự',
-        'password.required' => 'Vui lòng nhập mật khẩu',
-        'password.min'      => 'Mật khẩu cần lớn hơn :min kí tự',
-        'password.max'      => 'Mật khẩu cần nhỏ hơn :max kí tự',
+        'client_id.required'     => 'Vui lòng nhập client_id',
+        'client_secret.required' => 'Vui lòng nhập client_secret',
+        'username.required'      => 'Vui lòng nhập email',
+        'username.email'         => 'Email không đúng định dạng',
+        'username.max'           => 'Email cần nhỏ hơn :max kí tự',
+        'password.required'      => 'Vui lòng nhập mật khẩu',
+        'password.min'           => 'Mật khẩu cần lớn hơn :min kí tự',
+        'password.max'           => 'Mật khẩu cần nhỏ hơn :max kí tự',
     ];
 
     public function login(Request $request)
@@ -58,8 +63,8 @@ class LoginController extends ApiController
                 $options = [
                     'json' => [
                         'grant_type'    => 'password',
-                        'client_id'     => env('CLIENT_ID', 0),
-                        'client_secret' => env('CLIENT_SECRET', ''),
+                        'client_id'     => $params['client_id'],
+                        'client_secret' => $params['client_secret'],
                         'username'      => $params['username'],
                         'password'      => $raw_password,
                     ]
@@ -92,4 +97,5 @@ class LoginController extends ApiController
             ], $clientException->getCode());
         }
     }
+
 }

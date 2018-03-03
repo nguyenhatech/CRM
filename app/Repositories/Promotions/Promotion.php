@@ -14,7 +14,7 @@ class Promotion extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description'];
+    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description'];
 
     /**
      * Full path of images.
@@ -53,8 +53,14 @@ class Promotion extends Entity
         self::PERCENT => '%'
     ];
 
+    const ROUTE = 1; // Hình thức khách hàng đi theo tuyến
+    const SEGMENT = 2; // Hình thức khách hàng đi theo chặng
+
     public function getImage()
     {
+        if (strrpos($this->image, 'http://') || strrpos($this->image, 'https://')) {
+            return $this->image;
+        }
         return $this->image == '' ? '' : get_asset($this->imgPath . '/' . $this->image);
     }
 

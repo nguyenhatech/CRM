@@ -16,12 +16,13 @@ class UserController extends ApiController
     protected $user;
 
     protected $validationRules = [
-        'name'         => 'required|min:5|max:255',
-        'email'        => 'required|email|unique:users,email',
-        'phone'        => 'nullable|digits_between:8,12|unique:users,phone',
-        'status'       => 'boolean',
-        'roles'        => 'array',
-        'roles.*'      => 'required|exists:roles,id'
+        'name'     => 'required|min:5|max:255',
+        'email'    => 'required|email|unique:users,email',
+        'phone'    => 'required|digits_between:8,12|unique:users,phone',
+        'password' => 'required|min:6',
+        'status'   => 'boolean',
+        'roles'    => 'array',
+        'roles.*'  => 'required|exists:roles,id'
     ];
 
     protected $validationMessages = [
@@ -47,7 +48,7 @@ class UserController extends ApiController
     {
         $this->user = $user;
         $this->setTransformer($transformer);
-        // $this->checkPermission('user');
+        $this->checkPermission('user');
     }
 
     public function getResource()
@@ -98,6 +99,7 @@ class UserController extends ApiController
 
         $this->validationRules = array_except($this->validationRules, ['email']);
         $this->validationRules['phone'] = 'nullable|digits_between:8,12';
+        $this->validationRules['password'] = 'nullable|min:6';
 
         \DB::beginTransaction();
 

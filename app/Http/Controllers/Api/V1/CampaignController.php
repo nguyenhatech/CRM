@@ -49,6 +49,7 @@ class CampaignController extends ApiController
     {
         $this->campaign = $campaign;
         $this->setTransformer($transformer);
+        $this->checkPermission('campaign');
     }
 
     public function getResource()
