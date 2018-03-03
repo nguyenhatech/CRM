@@ -19,9 +19,10 @@ Route::group([
     'middleware' => 'auth:api',
 ], function () {
     Route::resource('clients', 'ClientController');
-    Route::resource('customers', 'CustomerController');
-    Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
+    Route::get('customers/export-excel', 'CustomerController@exportExcel');
     Route::post('customers/import-excel', 'CustomerController@importExcel');
+    Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
+    Route::resource('customers', 'CustomerController');
     Route::resource('cgroups', 'CgroupController');
     Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
     Route::post('cgroups/{id}/add-customer', 'CgroupController@addCustomer');
