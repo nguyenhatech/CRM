@@ -20,7 +20,8 @@ class CheckPromotionController extends ApiController
 
     protected $validationRules = [
         'code'        => 'required|max:50',
-        'total_money' => 'required|numeric|min:1000'
+        'total_money' => 'required|numeric|min:1000',
+        'type'        => 'required|in:1,2',
     ];
 
     protected $validationMessages = [
@@ -28,7 +29,9 @@ class CheckPromotionController extends ApiController
         'code.max'             => 'Mã code có chiều dài tối đa chỉ 50 kí tự',
         'total_money.required' => 'Vui lòng nhập tổng số tiền đơn hàng',
         'total_money.numeric'  => 'Số tiền đơn hàng phải là kiểu số',
-        'total_money.min'      => 'Số tiền đơn hàng tối thiểu là 1000 đồng'
+        'total_money.min'      => 'Số tiền đơn hàng tối thiểu là 1000 đồng',
+        'type.required'        => 'Hình thức khách đi không thể bỏ trống',
+        'type.in'              => 'Hình thức khách đi chỉ có thể là theo tuyến hoặc chặng',
     ];
 
     public function __construct(PromotionRepository $promotion)
@@ -50,6 +53,10 @@ class CheckPromotionController extends ApiController
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $data = $this->getResource()->check($request->all());
+
+            if ($data->error) {
+                return $this->errorResponse($data);
+            }
 
             DB::commit();
             return $this->infoResponse($data);

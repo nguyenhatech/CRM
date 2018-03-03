@@ -13,7 +13,7 @@ class PaymentHistory extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id', 'customer_id', 'uuid', 'description', 'total_amount', 'total_point', 'payment_at', 'status', 'type'];
+    public $fillable = ['client_id', 'customer_id', 'uuid', 'description', 'total_amount', 'promotion_code', 'total_point', 'payment_at', 'status', 'type'];
 
     const PAY_PENDDING = 0; // Chờ giao dịch
     const PAY_SUCCESS = 1; // Thành công

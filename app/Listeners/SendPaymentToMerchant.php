@@ -44,8 +44,7 @@ class SendPaymentToMerchant
             'status' => 'success',
             'data' => [
                 'uuid'         => $paymentHistory->uuid,
-                'client_id'    => $paymentHistory->client_id,
-                'customer_id'  => $paymentHistory->customer_id,
+                'customer_id'  => $paymentHistory->customer->uuid,
                 'description'  => $paymentHistory->description,
                 'total_amount' => $paymentHistory->total_amount,
                 'total_point'  => $paymentHistory->total_point,
@@ -55,8 +54,6 @@ class SendPaymentToMerchant
                 'status'       => $paymentHistory->status,
                 'webhook_type' => Webhook::WH_TRANSACTION,
                 'payment_at'   => $paymentHistory->payment_at->format('Y-m-d'),
-                'updated_at'   => $paymentHistory->updated_at->format('Y-m-d H:i:s'),
-                'created_at'   => $paymentHistory->created_at->format('Y-m-d H:i:s')
             ]
         ];
 

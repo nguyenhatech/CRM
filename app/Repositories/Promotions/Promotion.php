@@ -53,8 +53,14 @@ class Promotion extends Entity
         self::PERCENT => '%'
     ];
 
+    const ROUTE = 1; // Hình thức khách hàng đi theo tuyến
+    const SEGMENT = 2; // Hình thức khách hàng đi theo chặng
+
     public function getImage()
     {
+        if (strrpos($this->image, 'http://') || strrpos($this->image, 'https://')) {
+            return $this->image;
+        }
         return $this->image == '' ? '' : get_asset($this->imgPath . '/' . $this->image);
     }
 

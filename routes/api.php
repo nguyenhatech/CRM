@@ -80,4 +80,8 @@ Route::group([
         'as' => 'developer.add_webhook',
         'uses' => 'DeveloperController@add'
     ]);
+
+    Route::prefix('statistic')->group(function () {
+        Route::get('rate-of-use-promotion', 'StatisticController@getRateOfUsePromotion');
+    });
 });
