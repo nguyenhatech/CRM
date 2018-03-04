@@ -91,7 +91,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         if (! is_null($promotion)) {
             // Nếu quantity = 0 thì sử dụng không giới hạn
             // Nếu quantity != 0 thì cần check số lượng hợp lệ hay không ?
-            if ($promotion->quantity != 0) {
+            if ($promotion->quantity) {
                 $paymentHistoryRepo = \App::make('Nh\Repositories\PaymentHistories\PaymentHistory');
                 $countUsed = $paymentHistoryRepo->where('client_id', $promotion->client_id)
                                                 ->where('promotion_code', strtoupper($code))
@@ -99,8 +99,35 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                 if ($countUsed >= $promotion->quantity) {
                     $result->error = true;
-                    $result->message = 'Mã khuyến mãi đã hết hạn sử dụng';
+                    $result->message = 'Mã khuyến mãi đã quá số lượt sử dụng';
                     return $result;
+                }
+            }
+
+            // Nếu mã tồn tại theo số lượt của User thì kiểm tra
+            if ($promotion->quantity_per_user) {
+
+                $email = array_get($params, 'email', null);
+                $phone = array_get($params, 'phone', null);
+
+                if (!is_null($email) || !is_null($phone)) {
+
+                    $customerRepo = \App::make('Nh\Repositories\Customers\CustomerRepository');
+                    $customer = $customerRepo->checkExist($email, $phone);
+
+                    if (! is_null($customer)) {
+                        $paymentHistoryRepo = \App::make('Nh\Repositories\PaymentHistories\PaymentHistory');
+                        $countUsed = $paymentHistoryRepo->where('client_id', $promotion->client_id)
+                                                        ->where('promotion_code', strtoupper($code))
+                                                        ->where('customer_id', $customer->id)
+                                                        ->get()->count();
+
+                        if ($countUsed >= $promotion->quantity_per_user) {
+                            $result->error = true;
+                            $result->message = 'Mã khuyến mãi này đã hết số lượt sử dụng';
+                            return $result;
+                        }
+                    }
                 }
             }
 
