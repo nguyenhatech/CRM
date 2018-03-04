@@ -99,7 +99,7 @@ class User extends Authenticatable
     }
 
     public function isAdmin () {
-        return $this->hasRole(['admin']) || $this->hasRole(['superadmin']);
+        return $this->hasRole(['system.admin']) || $this->hasRole(['superadmin']);
     }
 
     public function getAvatar()
