@@ -79,13 +79,27 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $type          = array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
         $result        = new \stdClass();
 
-        $promotion = $this->model->where('client_id', getCurrentUser()->id)
-                                ->where('status', Promotion::ENABLE)
+        $promotion = $this->model->where('status', Promotion::ENABLE)
                                 ->where('date_start', '<=',  Carbon::now())
                                 ->where('date_end', '>=',  Carbon::now())
                                 ->where('code', strtoupper($code))->first();
 
         if (! is_null($promotion)) {
+            // Nếu quantity = 0 thì sử dụng không giới hạn
+            // Nếu quantity != 0 thì cần check số lượng hợp lệ hay không ?
+            if ($promotion->quantity != 0) {
+                $paymentHistoryRepo = \App::make('Nh\Repositories\PaymentHistories\PaymentHistory');
+                $countUsed = $paymentHistoryRepo->where('client_id', $promotion->client_id)
+                                                ->where('promotion_code', strtoupper($code))
+                                                ->get()->count();
+
+                if ($countUsed >= $promotion->quantity) {
+                    $result->error = true;
+                    $result->message = 'Mã khuyến mãi đã hết hạn sử dụng';
+                    return $result;
+                }
+            }
+
             // Kiểm tra nếu giảm theo % thì tính số tiền dựa theo booking
             // Nếu trường amount_max = 0 thì lấy luôn số tiền vừa tính được
             // Nếu không thì lấy theo trường amount_max
