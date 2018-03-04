@@ -91,9 +91,6 @@ class PromotionController extends ApiController
         $pageSize = $request->get('limit', 25);
         $sort = explode(':', $request->get('sort', 'id:1'));
 
-        // Gán mặc định trường Client_id là User đang đăng nhập
-        $params['client_id'] = getCurrentUser()->id;
-
         $datas = $this->getResource()->getByQuery($params, $pageSize, $sort);
 
         return $this->successResponse($datas);
