@@ -15,6 +15,8 @@ class PaymentHistory extends Entity
      */
     public $fillable = ['client_id', 'customer_id', 'uuid', 'description', 'total_amount', 'promotion_code', 'total_point', 'payment_at', 'status', 'type'];
 
+    protected $dates = ['payment_at'];
+
     const PAY_PENDDING = 0; // Chờ giao dịch
     const PAY_SUCCESS = 1; // Thành công
     const PAY_CANCEL = 2; // Hủy
