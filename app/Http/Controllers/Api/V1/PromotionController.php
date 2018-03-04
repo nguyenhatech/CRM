@@ -21,7 +21,7 @@ class PromotionController extends ApiController
 
     protected $validationRules = [
         'client_id'         => 'required|exists:users,id',
-        'code'              => 'required|max:50|unique:promotions',
+        'code'              => 'required|max:50|unique:promotions,code',
         'type'              => 'required|numeric',
         'amount'            => 'required|numeric|min:0',
         'amount_segment'    => 'nullable|numeric|min:0',
