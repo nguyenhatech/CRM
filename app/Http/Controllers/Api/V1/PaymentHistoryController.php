@@ -21,7 +21,7 @@ class PaymentHistoryController extends ApiController
         'description'    => 'required|min:5',
         'total_amount'   => 'numeric',
         'total_point'    => 'numeric',
-        'promotion_code' => 'max:191|exists:promotions,code'
+        // 'promotion_code' => 'max:191|exists:promotions,code'
     ];
 
     protected $validationMessages = [
