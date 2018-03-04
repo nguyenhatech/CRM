@@ -49,6 +49,10 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $model = $model->where('client_id', $client_id);
         }
 
+        if (!getCurrentUser()->isAdmin()) {
+            $model = $model->where('client_id', getCurrentUser()->id);
+        }
+
         if (! is_null($expired_status)) {
             if ($expired_status) {
                 $model = $model->where('date_end', '<', $now);
