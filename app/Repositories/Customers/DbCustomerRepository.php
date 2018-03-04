@@ -123,7 +123,7 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
     public function delete($id)
     {
         $record = $this->getById($id);
-        if (!getCurrentUser()->isSuperAdmin()) {
+        if (!getCurrentUser()->isAdmin()) {
             return $record->client()->detach([[
                 'client_id'   => getCurrentUser()->id,
                 'customer_id' => $record->id
