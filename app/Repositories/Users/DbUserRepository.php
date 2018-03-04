@@ -39,7 +39,7 @@ class DbUserRepository extends BaseRepository implements UserRepository
     {
         $query = array_get($params, 'q', '');
         $model = $this->model;
-        $model = $model->where('id', '>', 1);
+        $model = $model->where('id', '>', 1)->where('id', '!=', getCurrentUser()->id);
 
         if (!getCurrentUser()->isAdmin()) {
             $model = $model->whereHas('roles', function($q) {
