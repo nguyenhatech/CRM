@@ -13,7 +13,6 @@ class Webhook extends Entity
     const WH_ALL         = 0;
     const WH_TRANSACTION = 1;
     const WH_CUSTOMER = 2;
-    const WH_REWARD_POINT = 3;
 
     /**
      * [$event_list description]
@@ -22,7 +21,6 @@ class Webhook extends Entity
     public static $event_list = [
         self::WH_ALL          => 'Tất cả',
         self::WH_TRANSACTION  => 'Thông tin giao dịch',
-        self::WH_REWARD_POINT => 'Điểm thưởng',
         self::WH_CUSTOMER     => 'Khách hàng',
     ];
 

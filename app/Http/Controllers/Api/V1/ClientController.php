@@ -46,6 +46,7 @@ class ClientController extends ApiController
     {
         $this->client = $user;
         $this->setTransformer($transformer);
+        $this->checkPermission('user');
     }
 
     public function getResource()
