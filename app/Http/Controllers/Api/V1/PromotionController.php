@@ -21,7 +21,7 @@ class PromotionController extends ApiController
 
     protected $validationRules = [
         'client_id'         => 'required|exists:users,id',
-        'code'              => 'required|max:50',
+        'code'              => 'required|max:50|unique:promotions,code',
         'type'              => 'required|numeric',
         'amount'            => 'required|numeric|min:0',
         'amount_segment'    => 'nullable|numeric|min:0',
@@ -41,6 +41,7 @@ class PromotionController extends ApiController
 
         'code.required'             => 'Vui lòng nhập mã giảm giá',
         'code.max'                  => 'Mã giảm giá có chiều dài tối đa là 50 kí tự',
+        'code.unique'               => 'Mã giảm giá này đã tồn tại trên hệ thống',
 
         'type.required'             => 'Vui lòng nhập kiểu giảm giá',
         'type.numeric'              => 'Kiểu giảm giá phải là kiểu số',
@@ -89,9 +90,6 @@ class PromotionController extends ApiController
         $params = $request->all();
         $pageSize = $request->get('limit', 25);
         $sort = explode(':', $request->get('sort', 'id:1'));
-
-        // Gán mặc định trường Client_id là User đang đăng nhập
-        $params['client_id'] = getCurrentUser()->id;
 
         $datas = $this->getResource()->getByQuery($params, $pageSize, $sort);
 

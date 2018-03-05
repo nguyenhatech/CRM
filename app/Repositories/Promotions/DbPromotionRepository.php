@@ -49,6 +49,10 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $model = $model->where('client_id', $client_id);
         }
 
+        if (!getCurrentUser()->isAdmin()) {
+            $model = $model->where('client_id', getCurrentUser()->id);
+        }
+
         if (! is_null($expired_status)) {
             if ($expired_status) {
                 $model = $model->where('date_end', '<', $now);
@@ -79,13 +83,54 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $type          = array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
         $result        = new \stdClass();
 
-        $promotion = $this->model->where('client_id', getCurrentUser()->id)
-                                ->where('status', Promotion::ENABLE)
+        $promotion = $this->model->where('status', Promotion::ENABLE)
                                 ->where('date_start', '<=',  Carbon::now())
                                 ->where('date_end', '>=',  Carbon::now())
                                 ->where('code', strtoupper($code))->first();
 
         if (! is_null($promotion)) {
+            // Nếu quantity = 0 thì sử dụng không giới hạn
+            // Nếu quantity != 0 thì cần check số lượng hợp lệ hay không ?
+            if ($promotion->quantity) {
+                $paymentHistoryRepo = \App::make('Nh\Repositories\PaymentHistories\PaymentHistory');
+                $countUsed = $paymentHistoryRepo->where('client_id', $promotion->client_id)
+                                                ->where('promotion_code', strtoupper($code))
+                                                ->get()->count();
+
+                if ($countUsed >= $promotion->quantity) {
+                    $result->error = true;
+                    $result->message = 'Mã khuyến mãi đã quá số lượt sử dụng';
+                    return $result;
+                }
+            }
+
+            // Nếu mã tồn tại theo số lượt của User thì kiểm tra
+            if ($promotion->quantity_per_user) {
+
+                $email = array_get($params, 'email', null);
+                $phone = array_get($params, 'phone', null);
+
+                if (!is_null($email) || !is_null($phone)) {
+
+                    $customerRepo = \App::make('Nh\Repositories\Customers\CustomerRepository');
+                    $customer = $customerRepo->checkExist($email, $phone);
+
+                    if (! is_null($customer)) {
+                        $paymentHistoryRepo = \App::make('Nh\Repositories\PaymentHistories\PaymentHistory');
+                        $countUsed = $paymentHistoryRepo->where('client_id', $promotion->client_id)
+                                                        ->where('promotion_code', strtoupper($code))
+                                                        ->where('customer_id', $customer->id)
+                                                        ->get()->count();
+
+                        if ($countUsed >= $promotion->quantity_per_user) {
+                            $result->error = true;
+                            $result->message = 'Mã khuyến mãi này đã hết số lượt sử dụng';
+                            return $result;
+                        }
+                    }
+                }
+            }
+
             // Kiểm tra nếu giảm theo % thì tính số tiền dựa theo booking
             // Nếu trường amount_max = 0 thì lấy luôn số tiền vừa tính được
             // Nếu không thì lấy theo trường amount_max
