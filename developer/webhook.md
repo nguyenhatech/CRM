@@ -1,8 +1,9 @@
+
 ## 1. Tài khoản API
 
 ### 1.1.Lấy API Key
 Truy cập vào: http://crm.havaz.vn sau đó vào trang:
-![enter image description here](http://crm.havaz.vn/images/developer.png)
+![enter image description here](http://apicrm.havaz.vn/images/developer.png)
 
 Tại trang **Kết nối tài khoản developers** click nút **Generate**, hệ thống sẽ tự động sinh Client ID và Client Secret cho bạn. Thông tin này được sử dụng để lấy token.
 
