@@ -22,6 +22,8 @@ class CheckPromotionController extends ApiController
         'code'        => 'required|max:50',
         'total_money' => 'required|numeric|min:1000',
         'type'        => 'required|in:1,2',
+        'email'       => 'nullable|max:50',
+        'phone'       => 'nullable|digits_between:8,12'
     ];
 
     protected $validationMessages = [

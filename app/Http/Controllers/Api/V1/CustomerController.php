@@ -107,7 +107,7 @@ class CustomerController extends ApiController
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
             $data = $request->all();
-            $data = array_except($data, ['email', 'level']);
+            $data = array_except($data, ['email', 'level', 'last_payment']);
             $model = $this->getResource()->update($id, $data);
 
             \DB::commit();

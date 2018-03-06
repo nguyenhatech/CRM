@@ -45,7 +45,7 @@ class Customer extends Entity
         });
 
         static::addGlobalScope('customers', function (Builder $builder) {
-            if (getCurrentUser() && !getCurrentUser()->isSuperAdmin()) {
+            if (getCurrentUser() && !getCurrentUser()->isAdmin()) {
                 $builder->whereHas('client', function ($builder) {
                     $builder->where('id', getCurrentUser()->id);
                 });
