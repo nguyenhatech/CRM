@@ -28,6 +28,7 @@ class CustomerTransformer extends TransformerAbstract
             'fax'             => $customer->fax,
             'sex'             => $customer->sex,
             'sex_txt'         => $customer->sexText(),
+            'identification_number' => $customer->identification_number,
             'facebook_id'     => $customer->facebook_id,
             'google_id'       => $customer->google_id,
             'website'         => $customer->website,

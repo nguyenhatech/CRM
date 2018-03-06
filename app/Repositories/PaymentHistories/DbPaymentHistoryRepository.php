@@ -36,6 +36,8 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
     {
         $query = array_get($params, 'q', '');
         $customerId = array_get($params, 'customer_id', null);
+        $startDate = array_get($params, 'start_date', null);
+        $endDate = array_get($params, 'end_date', null);
         $model = $this->model;
 
         if (!empty($sorting)) {
@@ -44,8 +46,16 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
 
         if ($query != '') {
             $model = $model->where(function($q) use ($query) {
-                return $q->where('description', 'like', "%{$query}%");
+                return $q->where('description', 'like', "%{$query}%")
+                            ->orWhere('uuid', 'like', "%{$query}%");
             });
+        }
+
+        if ($startDate) {
+            $model = $model->where('created_at', '>=', $startDate);
+        }
+        if ($endDate) {
+            $model = $model->where('created_at', '<=', $endDate);
         }
 
         if ($customerId) {

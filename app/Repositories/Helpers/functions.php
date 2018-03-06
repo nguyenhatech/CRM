@@ -211,6 +211,12 @@ function removeTitle($str, $keyReplace = ' ')
     return str_replace($keyReplace, "-", $str);
 }
 
+function formatToTextSimple($str)
+{
+    $str = vn_str_filter($str);
+    return str_replace(" ", "_", $str);
+}
+
 function getCurrentUser($guard = '')
 {
     if (Auth::check()) {
