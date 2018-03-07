@@ -9,7 +9,7 @@ use Carbon\Carbon;
 class CgroupTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
-        'customers'
+        'attributes'
     ];
 
      public function transform(Cgroup $cgroup = null)
@@ -39,5 +39,14 @@ class CgroupTransformer extends TransformerAbstract
         }
 
         return $this->collection($cgroup->customers, new CustomerTransformer());
+    }
+
+    public function includeAttributes(Cgroup $cgroup = null)
+    {
+        if (is_null($cgroup)) {
+            return $this->null();
+        }
+
+        return $this->collection($cgroup->attributes, new CgroupAttributeTransformer());
     }
 }

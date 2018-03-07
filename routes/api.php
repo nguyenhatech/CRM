@@ -23,10 +23,9 @@ Route::group([
     Route::post('customers/import-excel', 'CustomerController@importExcel');
     Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
     Route::resource('customers', 'CustomerController');
+    Route::get('cgroups/{id}/customers', 'CgroupController@getCustomers');
     Route::resource('cgroups', 'CgroupController');
     Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
-    Route::post('cgroups/{id}/add-customer', 'CgroupController@addCustomer');
-    Route::post('cgroups/{id}/remove-customer', 'CgroupController@removeCustomer');
     Route::resource('payment-histories', 'PaymentHistoryController');
     Route::resource('promotions', 'PromotionController');
     Route::post('promotions/{id}/active', 'PromotionController@active');
@@ -84,4 +83,6 @@ Route::group([
     Route::prefix('statistic')->group(function () {
         Route::get('rate-of-use-promotion', 'StatisticController@getRateOfUsePromotion');
     });
+
+    Route::resource('cities', 'CityController')->only('index', 'show');
 });

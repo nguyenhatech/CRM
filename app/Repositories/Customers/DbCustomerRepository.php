@@ -57,11 +57,28 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
         if ($query != '') {
             $model = $model->where(function($q) use ($query) {
                 return $q->where('name', 'like', "%{$query}%")
-                    ->orWhere('email', 'like', "%{$query}%");
+                    ->orWhere('email', 'like', "%{$query}%")
+                    ->orWhere('phone', 'like', "%{$query}%");
             });
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);
+    }
+
+    /**
+     * Lấy tất cả khách hàng theo filter của group
+     *
+     * @param  array $filters Mảng các điều kiện where
+     * @return Illuminate\Pagination\Paginator
+     */
+    public function getByGroup($filters)
+    {
+        $model = $this->model;
+        foreach ($filters as $key => $filter) {
+            $model = $model->where($filter['attribute'], $filter['operation'], $filter['value']);
+        }
+
+        return $model->get();
     }
 
     public function storeOrUpdate($data) {
