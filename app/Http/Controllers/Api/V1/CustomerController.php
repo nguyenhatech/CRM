@@ -10,6 +10,7 @@ use Nh\Repositories\Customers\CustomerRepository;
 use Nh\Http\Transformers\CustomerTransformer;
 use Nh\Repositories\Cgroups\CgroupRepository;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Input;
 use Excel;
 
 class CustomerController extends ApiController
@@ -152,26 +153,18 @@ class CustomerController extends ApiController
 
     public function importExcel(Request $request)
     {
-        $excelPath = $request->file('file')->storeAs('excel', time() . 'customer.csv');
-        Excel::load('/storage/app/' . $excelPath, function ($reader) use ($request) {
+        $excelPath = Input::file('file')->getRealPath();
+        Excel::load($excelPath, function ($reader) use ($request) {
             $results = $reader->get();
             foreach ($results as $key => $row) {
                 $params = [];
-                $params['name'] = array_get($row, $request['name'], '');
-                $params['phone'] = array_get($row, $request['phone'], '');
-                $params['address'] = array_get($row, $request['address'], '');
-                $params['email'] = array_get($row, $request['email'], '');
-                $params['level'] = array_get($row, $request['level'], '');
+                $params['name'] = array_get($row, formatToTextSimple($request['name']), '');
+                $params['phone'] = array_get($row, formatToTextSimple($request['phone']), '');
+                $params['address'] = array_get($row, formatToTextSimple($request['address']), '');
+                $params['email'] = array_get($row, formatToTextSimple($request['email']), '');
                 $customer = $this->getResource()->storeOrUpdate($params);
-                if ($request['group_id']) {
-                    $group = $this->cgroups->getById($request['group_id']);
-                    if ($group) {
-                        $customer->groups()->attach([$group->id]);
-                    }
-                }
             }
         });
-        Storage::delete($excelPath);
         $response = array_merge([
             'code' => 200,
             'status' => 'success',
