@@ -111,4 +111,28 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
         return $this->getById($id);
     }
 
+    public function getCustomers($id)
+    {
+        $cgroup = $this->getById($id);
+        if ($cgroup) {
+            $params = [];
+            foreach ($cgroup->attributes->all() as $filter) {
+                if ($filter->attribute == 'age_min' || $filter->attribute == 'age_max') {
+                    array_push($params, ['attribute' => 'dob', 'operation' => $filter->operation, 'value' => Carbon::now()->subYears($filter->value)->toDateString()]);
+                } else if ($filter->attribute == 'created_at_min' || $filter->attribute == 'created_at_max') {
+                    $time = '';
+                    if ($filter->operation == '>=' || $filter->operation == '<') {
+                        $time = ' 00:00:00';
+                    } else $time = ' 23:59:59';
+                    array_push($params, ['attribute' => 'created_at', 'operation' => $filter->operation, 'value' => $filter->value . $time]);
+                } else {
+                    array_push($params, ['attribute' => $filter->attribute, 'operation' => $filter->operation, 'value' => $filter->value]);
+                }
+            }
+            $customer = \App::make('Nh\Repositories\Customers\CustomerRepository');
+            return $customer->getByGroup($params);
+        }
+        return false;
+    }
+
 }

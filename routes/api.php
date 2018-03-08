@@ -23,7 +23,6 @@ Route::group([
     Route::post('customers/import-excel', 'CustomerController@importExcel');
     Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
     Route::resource('customers', 'CustomerController');
-    Route::get('cgroups/{id}/customers', 'CgroupController@getCustomers');
     Route::resource('cgroups', 'CgroupController');
     Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
     Route::resource('payment-histories', 'PaymentHistoryController');
