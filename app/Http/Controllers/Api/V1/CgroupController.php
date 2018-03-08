@@ -67,36 +67,6 @@ class CgroupController extends ApiController
             $params = $request->all();
             $data = $this->getResource()->store($params);
 
-            foreach ($params['filters'] as $key => $filter) {
-                if ($filter == 'age_min' || $filter == 'created_at_min') {
-                    $attribute = [
-                        'cgroup_id' => $data->id,
-                        'attribute' => $key,
-                        'operation' => '>=',
-                        'value'     => $filter
-                    ];
-                    $this->cgroupAttribute->store($attribute);
-                } else if ($filter == 'age_max' || $filter == 'created_at_max') {
-                    $attribute = [
-                        'cgroup_id' => $data->id,
-                        'attribute' => $key,
-                        'operation' => '<=',
-                        'value'     => $filter
-                    ];
-                    $this->cgroupAttribute->store($attribute);
-                } else {
-                    if ($filter) {
-                        $attribute = [
-                            'cgroup_id' => $data->id,
-                            'attribute' => $key,
-                            'operation' => '=',
-                            'value'     => $filter
-                        ];
-                        $this->cgroupAttribute->store($attribute);
-                    }
-                }
-            }
-
             DB::commit();
             return $this->successResponse($data);
         } catch (\Illuminate\Validation\ValidationException $validationException) {
@@ -123,18 +93,6 @@ class CgroupController extends ApiController
             $this->validate($request, $this->validationRules, $this->validationMessages);
             $params = $request->all();
             $model = $this->getResource()->update($id, $params);
-
-            foreach ($model->attributes as $key => $oldFilter) {
-                $newValue = array_get($params['filters'], $oldFilter->attribute, '');
-                if ($newValue !== $oldFilter->value) {
-                    $newFilter = $oldFilter->toArray();
-                    $newFilter['value'] = $newValue;
-                    $this->cgroupAttribute->update(
-                        $newFilter['id'],
-                        $newFilter = array_only($newFilter, ['attribute', 'operation', 'value'])
-                    );
-                }
-            }
 
             DB::commit();
             return $this->successResponse($model);

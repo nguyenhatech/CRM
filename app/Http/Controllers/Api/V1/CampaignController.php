@@ -11,6 +11,7 @@ use Nh\Http\Controllers\Api\TransformerTrait;
 
 use Nh\Repositories\Campaigns\Campaign;
 
+use Nh\Repositories\Cgroups\CgroupRepository;
 use Nh\Repositories\Campaigns\CampaignRepository;
 use Nh\Http\Transformers\CampaignTransformer;
 
@@ -22,21 +23,19 @@ class CampaignController extends ApiController
     use TransformerTrait, RestfulHandler;
 
     protected $campaign;
+    protected $cgroup;
 
     protected $validationRules = [
         'template'    => 'required',
-        'cgroup_id'   => 'nullable|required_without_all:customers',
         'name'        => 'required|max:191',
         'description' => 'nullable',
         'status'      => 'nullable|numeric',
-        'customers'   => 'nullable|required_without_all:cgroup_id|array',
+        'customers'   => 'array',
         'target_type' => 'required|numeric'
     ];
 
     protected $validationMessages = [
         'template.required'         => 'Chưa nhập mẫu email',
-        'cgroup_id.required'        => 'Chưa chọn nhóm khách hàng',
-        'customers.required'        => 'Chưa chọn khách hàng',
         'customers.array'           => 'Danh sách khách hàng chưa đúng định dạng.',
         'name.required'             => 'Chưa nhập tên',
         'name.max'                  => 'Tên không được quá 191 kí tự',
@@ -45,9 +44,10 @@ class CampaignController extends ApiController
         'target_type.numeric'       => 'Chọn đối tượng mục tiêu chưa đúng'
     ];
 
-    public function __construct(CampaignRepository $campaign, CampaignTransformer $transformer)
+    public function __construct(CampaignRepository $campaign, CgroupRepository $cgroup, CampaignTransformer $transformer)
     {
         $this->campaign = $campaign;
+        $this->cgroup = $cgroup;
         $this->setTransformer($transformer);
         $this->checkPermission('campaign');
     }
@@ -91,6 +91,12 @@ class CampaignController extends ApiController
                 }
                 $params['customers'] = $customers;
             }
+            if (array_key_exists('filters', $params)) {
+                $cgroupParams = ['name' => 'Chiến dịch ' . $params['name']];
+                $cgroupParams['filters'] = $params['filters'];
+                $cgroup = $this->cgroup->store($cgroupParams);
+                $params['group_id'] = $cgroup->id;
+            }
 
             $data = $this->getResource()->store($params);
 
@@ -110,7 +116,8 @@ class CampaignController extends ApiController
 
     public function update(Request $request, $id)
     {
-        if (!$data = $this->getResource()->getById($id)) {
+        $data = $this->getResource()->getById($id);
+        if (!$data) {
             return $this->notFoundResponse();
         }
 
@@ -122,7 +129,7 @@ class CampaignController extends ApiController
 
             $params = $request->all();
 
-            $params = array_only($params, ['name', 'description', 'start_date', 'end_date', 'status', 'cgroup_id', 'template_id', 'template', 'sms_template', 'target_type', 'period', 'customers']);
+            $params = array_only($params, ['name', 'description', 'status', 'cgroup_id', 'template', 'sms_template', 'target_type', 'period', 'customers', 'runtime', 'filters']);
             if (array_key_exists('template_id', $params)) {
                 $params['template_id'] = convert_uuid2id($params['template_id']);
             }
@@ -138,6 +145,10 @@ class CampaignController extends ApiController
                     array_push($customers, convert_uuid2id($uuid));
                 }
                 $params['customers'] = $customers;
+            }
+            if (array_key_exists('filters', $params)) {
+                $cgroupParams['filters'] = $params['filters'];
+                $cgroup = $this->cgroup->update($data->cgroup_id, $cgroupParams);
             }
 
             $model = $this->getResource()->update($id, $params);

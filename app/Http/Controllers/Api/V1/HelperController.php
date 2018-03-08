@@ -41,6 +41,15 @@ class HelperController extends ApiController
                     'jobs' => $jobs,
                 ];
                 break;
+            case 'target-campaigns':
+                $targets = [];
+                foreach (\Nh\Repositories\Campaigns\Campaign::TARGET_TYPE as $key => $value) {
+                    array_push($targets, ['value' => $key, 'text' => $value]);
+                }
+                $result = [
+                    'targets' => $targets,
+                ];
+                break;
         }
 
         return response()->json($result, 200);
