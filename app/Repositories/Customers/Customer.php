@@ -37,6 +37,8 @@ class Customer extends Entity
      */
     public $imgHeight = 200;
 
+    const JOBS = ['Khách du lịch', 'Nhân viên văn phòng', 'Sinh viên', 'Buôn bán', 'Lao động tự do'];
+
     protected static function boot()
     {
         static::created(function ($model) {

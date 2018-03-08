@@ -162,7 +162,9 @@ class CustomerController extends ApiController
                 $params['phone'] = array_get($row, formatToTextSimple($request['phone']), '');
                 $params['address'] = array_get($row, formatToTextSimple($request['address']), '');
                 $params['email'] = array_get($row, formatToTextSimple($request['email']), '');
-                $customer = $this->getResource()->storeOrUpdate($params);
+                if ($params['name'] && $params['phone']) {
+                    $customer = $this->getResource()->storeOrUpdate($params);
+                }
             }
         });
         $response = array_merge([

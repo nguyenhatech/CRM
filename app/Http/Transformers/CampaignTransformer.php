@@ -35,6 +35,7 @@ class CampaignTransformer extends TransformerAbstract
             'description'   => $campaign->description,
             'start_date'    => $campaign->start_date ? $campaign->start_date->format('Y-m-d H:i:s') : null,
             'end_date'      => $campaign->end_date ? $campaign->end_date->format('Y-m-d H:i:s') : null,
+            'runtime'       => $campaign->runtime ? $campaign->runtime : null,
             'status'        => $campaign->status,
             'status_txt'    => $campaign->getStatusText(),
             'period'        => $campaign->period,

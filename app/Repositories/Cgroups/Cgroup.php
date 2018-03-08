@@ -62,4 +62,9 @@ class Cgroup extends Entity
     {
         return $this->belongsToMany('Nh\Repositories\Customers\Customer', 'customer_cgroups', 'cgroup_id', 'customer_id');
     }
+
+    public function attributes()
+    {
+        return $this->hasMany('Nh\Repositories\CgroupAttributes\CgroupAttribute', 'cgroup_id', 'id');
+    }
 }

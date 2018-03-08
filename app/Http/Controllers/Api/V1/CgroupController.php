@@ -4,12 +4,14 @@ namespace Nh\Http\Controllers\Api\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 use Nh\Http\Controllers\Api\V1\ApiController;
 use Nh\Http\Controllers\Api\RestfulHandler;
 use Nh\Http\Controllers\Api\TransformerTrait;
 
 use Nh\Repositories\Cgroups\CgroupRepository;
+use Nh\Repositories\CgroupAttributes\CgroupAttributeRepository;
 use Nh\Repositories\Customers\CustomerRepository;
 use Nh\Http\Transformers\CgroupTransformer;
 
@@ -19,6 +21,7 @@ class CgroupController extends ApiController
 
     protected $cgroup;
     protected $customer;
+    protected $cgroupAttribute;
 
     protected $validationRules = [
         'name'          => 'required|max:193',
@@ -31,10 +34,11 @@ class CgroupController extends ApiController
         'description.max'       =>  'Mô tả quá dài'
     ];
 
-    public function __construct(CgroupRepository $cgroup, CgroupTransformer $transformer, CustomerRepository $customer)
+    public function __construct(CgroupRepository $cgroup, CgroupTransformer $transformer, CustomerRepository $customer, CgroupAttributeRepository $cgroupAttribute)
     {
     	$this->cgroup = $cgroup;
         $this->customer = $customer;
+        $this->cgroupAttribute = $cgroupAttribute;
     	$this->setTransformer($transformer);
         $this->checkPermission('cgroup');
     }
@@ -60,12 +64,8 @@ class CgroupController extends ApiController
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
-            $data = $this->getResource()->store($request->all());
-            $customers = [];
-            foreach ($request->customers as $key => $customer) {
-                $customers[$key] = convert_uuid2id($customer);
-            }
-            $data->customers()->attach($customers);
+            $params = $request->all();
+            $data = $this->getResource()->store($params);
 
             DB::commit();
             return $this->successResponse($data);
@@ -81,85 +81,21 @@ class CgroupController extends ApiController
         }
     }
 
-    public function addCustomer(Request $request, $id)
+    public function update(Request $request, $id)
     {
-        $this->validationRules = [
-            'name'            => 'required|min:5|max:255',
-            'email'           => 'nullable|required_without_all:phone|email|max:255',
-            'phone'           => 'nullable|required_without_all:email|digits_between:8,12',
-            'home_phone'      => 'nullable|digits_between:8,12',
-            'company_phone'   => 'nullable|digits_between:8,12',
-            'website'         => 'nullable|url',
-            'dob'             => 'nullable|date_format:Y-m-d',
-            'job'             => 'max:255',
-            'address'         => 'max:255',
-            'company_address' => 'max:255'
-        ];
-        $this->validationMessages = [
-            'name.required'              => 'Tên không được để trống',
-            'name.min'                   => 'Tên cần lớn hơn :min kí tự',
-            'name.max'                   => 'Tên cần nhỏ hơn :max kí tự',
-            'email.required_without_all' => 'Email hoặc số điện thoại không được để trống',
-            'email.email'                => 'Email không đúng định dạng',
-            'email.max'                  => 'Email cần nhỏ hơn :max kí tự',
-            'phone.required_without_all' => 'Số điện thoại hoặc email không được để trống',
-            'phone.digits_between'       => 'Số điện thoại cần nằm trong khoảng :min đến :max số',
-            'home_phone.digits_between'  => 'Số điện thoại bàn cần nằm trong khoảng :min đến :max số',
-            'home_phone.company_phone'   => 'Số điện thoại cơ quan cần nằm trong khoảng :min đến :max số',
-            'website.url'                => 'Website không đúng định dạng',
-            'dob.date_format'            => 'Ngày sinh không đúng định dạng Y-m-d',
-            'job'                        => 'Nghề nghiệp cần nhỏ hơn :max kí tự',
-            'address'                    => 'Địa chỉ cần nhỏ hơn :max kí tự',
-            'company_address'            => 'Địa chỉ cơ quan cần nhỏ hơn :max kí tự',
-        ];
-
-        DB::beginTransaction();
-
-        try {
-            $customerId = array_get($request->all(), 'customer_id', 0);
-            if ($customerId) {
-                $customerId = convert_uuid2id($customerId);
-            } else {
-                $this->validate($request, $this->validationRules, $this->validationMessages);
-                $customer = $this->customer->storeOrUpdate($request->all());
-                $customerId = $customer->id;
-            }
-
-            $group = $this->getResource()->getById($id);
-            if ($group) {
-                $group->customers()->attach($customerId);
-            }
-            DB::commit();
-            return $this->infoResponse([
-                    'Thêm khách hàng vào nhóm thành công!'
-                ]);
-        } catch (\Illuminate\Validation\ValidationException $validationException) {
-            DB::rollback();
-            return $this->errorResponse([
-                'errors' => $validationException->validator->errors(),
-                'exception' => $validationException->getMessage()
-            ]);
-        } catch (\Exception $e) {
-            DB::rollback();
-            throw $e;
+        if (!$data = $this->getResource()->getById($id)) {
+            return $this->notFoundResponse();
         }
-    }
 
-    public function removeCustomer(Request $request, $id)
-    {
         DB::beginTransaction();
 
         try {
-            $customerId = array_get($request->all(), 'customer_id', 0);
-            $customerId = convert_uuid2id($customerId);
-            $group = $this->getResource()->getById($id);
-            if ($group) {
-                $group->customers()->detach($customerId);
-            }
+            $this->validate($request, $this->validationRules, $this->validationMessages);
+            $params = $request->all();
+            $model = $this->getResource()->update($id, $params);
+
             DB::commit();
-            return $this->infoResponse([
-                    'Xóa khách hàng khỏi nhóm thành công!'
-                ]);
+            return $this->successResponse($model);
         } catch (\Illuminate\Validation\ValidationException $validationException) {
             DB::rollback();
             return $this->errorResponse([
@@ -210,6 +146,7 @@ class CgroupController extends ApiController
 
         try {
             $data->customers()->detach();
+            $data->attributes()->delete();
             $this->getResource()->delete($id);
 
             DB::commit();

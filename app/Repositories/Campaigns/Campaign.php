@@ -13,32 +13,34 @@ class Campaign extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id','template_id', 'template','cgroup_id','uuid','name','description', 'status', 'target_type', 'sms_template', 'period'];
+    public $fillable = ['client_id','template_id', 'template','cgroup_id','uuid','name','description', 'status', 'target_type', 'sms_template', 'period', 'runtime'];
 
     public $dates = ['start_date', 'end_date'];
 
     const PEDDING = 0;
-    const RUNING = 1;
+    const RUNING  = 1;
 
-    const GROUP_TARGET = 1;
+    const GROUP_TARGET  = 1;
     const MANUAL_TARGET = 2;
+    const FILTER_TARGET = 3;
 
-    const DAY_PERIOD = 1;
-    const WEEK_PERIOD = 2;
+    const DAY_PERIOD   = 1;
+    const WEEK_PERIOD  = 2;
     const MONTH_PERIOD = 3;
 
     const LIST_STATUS = [
         self::PEDDING => 'Ngừng chạy',
-        self::RUNING => 'Đang chạy'
+        self::RUNING  => 'Đang chạy'
     ];
 
     const TARGET_TYPE = [
-        self::GROUP_TARGET => 'Nhóm khách hàng',
+        self::FILTER_TARGET => 'Bộ lọc',
+        self::GROUP_TARGET  => 'Nhóm khách hàng',
         self::MANUAL_TARGET => 'Chọn từ danh sách'
     ];
 
     const PERIODS = [
-        0                   => 'Không',
+        0                   => 'Một lần',
         self::DAY_PERIOD    => 'Mỗi ngày',
         self::WEEK_PERIOD   => 'Mỗi tuần',
         self::MONTH_PERIOD  => 'Mỗi tháng'

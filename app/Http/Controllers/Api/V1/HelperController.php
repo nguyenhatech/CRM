@@ -32,6 +32,24 @@ class HelperController extends ApiController
                     'periods' => \Nh\Repositories\Campaigns\Campaign::getListPeriod(),
                 ];
                 break;
+            case 'customer-jobs':
+                $jobs = [];
+                foreach (\Nh\Repositories\Customers\Customer::JOBS as $key => $value) {
+                    array_push($jobs, ['value' => $key, 'text' => $value]);
+                }
+                $result = [
+                    'jobs' => $jobs,
+                ];
+                break;
+            case 'target-campaigns':
+                $targets = [];
+                foreach (\Nh\Repositories\Campaigns\Campaign::TARGET_TYPE as $key => $value) {
+                    array_push($targets, ['value' => $key, 'text' => $value]);
+                }
+                $result = [
+                    'targets' => $targets,
+                ];
+                break;
         }
 
         return response()->json($result, 200);
