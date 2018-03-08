@@ -174,8 +174,8 @@ class CampaignController extends ApiController
         if ($campaign) {
             $customers = [];
 
-            if ($campaign->target_type == Campaign::GROUP_TARGET) {
-                $customers = $campaign->cgroup->customers;
+            if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
+                $customers = $this->campaign->getCustomers($id);
             } else {
                 $customers = $campaign->customers;
             }
@@ -203,7 +203,7 @@ class CampaignController extends ApiController
 
             if ($campaign) {
                 $customers = [];
-                if ($campaign->target_type == Campaign::GROUP_TARGET) {
+                if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
                     $customers = $campaign->cgroup->customers;
                 } else {
                     $customers = $campaign->customers;
