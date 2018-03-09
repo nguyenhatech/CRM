@@ -3,6 +3,7 @@
 namespace Nh\Repositories\Cgroups;
 use Nh\Repositories\BaseRepository;
 use Nh\Repositories\UploadTrait;
+use Illuminate\Support\Carbon;
 
 class DbCgroupRepository extends BaseRepository implements CgroupRepository
 {
@@ -61,33 +62,13 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
         $cgroupAttribute = \App::make('Nh\Repositories\CgroupAttributes\CgroupAttributeRepository');
 
         foreach ($params['filters'] as $key => $filter) {
-            if ($filter == 'age_min' || $filter == 'created_at_min') {
-                $attribute = [
-                    'cgroup_id' => $model->id,
-                    'attribute' => $key,
-                    'operation' => '>=',
-                    'value'     => $filter
-                ];
-                $cgroupAttribute->store($attribute);
-            } else if ($filter == 'age_max' || $filter == 'created_at_max') {
-                $attribute = [
-                    'cgroup_id' => $model->id,
-                    'attribute' => $key,
-                    'operation' => '<=',
-                    'value'     => $filter
-                ];
-                $cgroupAttribute->store($attribute);
-            } else {
-                if ($filter) {
-                    $attribute = [
-                        'cgroup_id' => $model->id,
-                        'attribute' => $key,
-                        'operation' => '=',
-                        'value'     => $filter
-                    ];
-                    $cgroupAttribute->store($attribute);
-                }
-            }
+            $attribute = [
+                'cgroup_id' => $model->id,
+                'attribute' => $key,
+                'operation' => '=',
+                'value'     => $filter
+            ];
+            $cgroupAttribute->store($attribute);
         }
         return $this->getById($model->id);
     }
@@ -117,16 +98,22 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
         if ($cgroup) {
             $params = [];
             foreach ($cgroup->attributes->all() as $filter) {
-                if ($filter->attribute == 'age_min' || $filter->attribute == 'age_max') {
-                    array_push($params, ['attribute' => 'dob', 'operation' => $filter->operation, 'value' => Carbon::now()->subYears($filter->value)->toDateString()]);
-                } else if ($filter->attribute == 'created_at_min' || $filter->attribute == 'created_at_max') {
-                    $time = '';
-                    if ($filter->operation == '>=' || $filter->operation == '<') {
-                        $time = ' 00:00:00';
-                    } else $time = ' 23:59:59';
-                    array_push($params, ['attribute' => 'created_at', 'operation' => $filter->operation, 'value' => $filter->value . $time]);
-                } else {
-                    array_push($params, ['attribute' => $filter->attribute, 'operation' => $filter->operation, 'value' => $filter->value]);
+                switch ($filter->attribute) {
+                    case 'age_min':
+                        array_push($params, ['attribute' => 'dob', 'operation' => '<=', 'value' => Carbon::now()->subYears($filter->value)->toDateString()]);
+                        break;
+                    case 'age_max':
+                        array_push($params, ['attribute' => 'dob', 'operation' => '>=', 'value' => Carbon::now()->subYears($filter->value)->toDateString()]);
+                        break;
+                    case 'created_at_min':
+                        array_push($params, ['attribute' => 'created_at', 'operation' => '>=', 'value' => $filter->value . ' 00:00:00']);
+                        break;
+                    case 'created_at_max':
+                        array_push($params, ['attribute' => 'created_at', 'operation' => '<=', 'value' => $filter->value . ' 23:59:59']);
+                        break;
+                    default:
+                        array_push($params, ['attribute' => $filter->attribute, 'operation' => $filter->operation, 'value' => $filter->value]);
+                        break;
                 }
             }
             $customer = \App::make('Nh\Repositories\Customers\CustomerRepository');
