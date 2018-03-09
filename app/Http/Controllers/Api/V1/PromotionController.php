@@ -289,4 +289,32 @@ class PromotionController extends ApiController
         }
     }
 
+    /**
+     * Thông kê số lượt và số khách dùng mã
+     * @param  int  $id      Promotion ID
+     * @return [type]           [description]
+     */
+    public function statisticQuantityUsed($id)
+    {
+        $statistic = $this->promotion->usedStatistic($id);
+        if ($statistic) {
+            return $this->infoResponse($statistic->first());
+        }
+        return $this->notFoundResponse();
+    }
+
+    /**
+     * Lấy danh sách khách hàng đã dùng mã
+     * @param  string $value [description]
+     * @return [type]        [description]
+     */
+    public function getListCustomerUsed($id)
+    {
+        $customers = $this->promotion->usedCustomers($id);
+        if ($customers) {
+            return $this->infoResponse($customers);
+        }
+        return $this->notFoundResponse();
+    }
+
 }
