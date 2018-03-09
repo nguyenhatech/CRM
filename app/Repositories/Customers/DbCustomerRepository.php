@@ -82,7 +82,7 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
     }
 
     public function storeOrUpdate($data) {
-        $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar']);
+        $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar', 'city_id']);
         $email = array_get($data, 'email', null);
         $phone = array_get($data, 'phone', null);
         // dd($this->checkExist($email, $phone));

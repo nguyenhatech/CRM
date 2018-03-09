@@ -98,22 +98,24 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
         if ($cgroup) {
             $params = [];
             foreach ($cgroup->attributes->all() as $filter) {
-                switch ($filter->attribute) {
-                    case 'age_min':
-                        array_push($params, ['attribute' => 'dob', 'operation' => '<=', 'value' => Carbon::now()->subYears($filter->value)->toDateString()]);
-                        break;
-                    case 'age_max':
-                        array_push($params, ['attribute' => 'dob', 'operation' => '>=', 'value' => Carbon::now()->subYears($filter->value)->toDateString()]);
-                        break;
-                    case 'created_at_min':
-                        array_push($params, ['attribute' => 'created_at', 'operation' => '>=', 'value' => $filter->value . ' 00:00:00']);
-                        break;
-                    case 'created_at_max':
-                        array_push($params, ['attribute' => 'created_at', 'operation' => '<=', 'value' => $filter->value . ' 23:59:59']);
-                        break;
-                    default:
-                        array_push($params, ['attribute' => $filter->attribute, 'operation' => $filter->operation, 'value' => $filter->value]);
-                        break;
+                if (!is_null($filter->value)) {
+                    switch ($filter->attribute) {
+                        case 'age_min':
+                            array_push($params, ['attribute' => 'dob', 'operation' => '<=', 'value' => Carbon::now()->subYears($filter->value)->toDateString()]);
+                            break;
+                        case 'age_max':
+                            array_push($params, ['attribute' => 'dob', 'operation' => '>=', 'value' => Carbon::now()->subYears($filter->value)->toDateString()]);
+                            break;
+                        case 'created_at_min':
+                            array_push($params, ['attribute' => 'created_at', 'operation' => '>=', 'value' => $filter->value . ' 00:00:00']);
+                            break;
+                        case 'created_at_max':
+                            array_push($params, ['attribute' => 'created_at', 'operation' => '<=', 'value' => $filter->value . ' 23:59:59']);
+                            break;
+                        default:
+                            array_push($params, ['attribute' => $filter->attribute, 'operation' => $filter->operation, 'value' => $filter->value]);
+                            break;
+                    }
                 }
             }
             $customer = \App::make('Nh\Repositories\Customers\CustomerRepository');
