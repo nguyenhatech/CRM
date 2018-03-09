@@ -204,7 +204,7 @@ class CampaignController extends ApiController
             if ($campaign) {
                 $customers = [];
                 if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
-                    $customers = $campaign->cgroup->customers;
+                    $customers = $this->campaign->getCustomers($id);
                 } else {
                     $customers = $campaign->customers;
                 }
