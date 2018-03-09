@@ -95,7 +95,7 @@ class CampaignController extends ApiController
                 $cgroupParams = ['name' => 'Chiến dịch ' . $params['name']];
                 $cgroupParams['filters'] = $params['filters'];
                 $cgroup = $this->cgroup->store($cgroupParams);
-                $params['group_id'] = $cgroup->id;
+                $params['cgroup_id'] = $cgroup->id;
             }
 
             $data = $this->getResource()->store($params);
