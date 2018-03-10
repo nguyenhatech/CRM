@@ -165,4 +165,23 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         return $result;
     }
 
+    public function usedStatistic($id)
+    {
+        $promotion = $this->getById($id);
+        $model = $this->model->leftJoin('payment_histories', 'promotions.code', '=', 'payment_histories.promotion_code')
+            ->select(\DB::raw('promotions.id, count(payment_histories.promotion_code) as total_used, count(DISTINCT payment_histories.customer_id) as total_customer'));
+        $model = $model->where('promotions.code', $promotion->code)->groupBy('promotions.id');
+        return $model->get();
+    }
+
+    public function usedCustomers($id)
+    {
+        $promotion = $this->getById($id);
+        $model = $this->model->leftJoin('payment_histories', 'promotions.code', '=', 'payment_histories.promotion_code')
+            ->leftJoin('customers', 'payment_histories.customer_id', '=', 'customers.id')
+            ->select(\DB::raw('customers.id, customers.name, customers.phone, customers.email, count(customers.id) as total_used'));
+        $model = $model->where('promotions.code', $promotion->code)->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email');
+        return $model->get();
+    }
+
 }

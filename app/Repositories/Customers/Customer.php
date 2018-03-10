@@ -15,7 +15,7 @@ class Customer extends Entity
      *
      * @var array
      */
-    public $fillable = ['uuid', 'name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'level', 'avatar', 'last_payment', 'identification_number'];
+    public $fillable = ['uuid', 'name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'level', 'avatar', 'last_payment', 'identification_number', 'city_id'];
 
     /**
      * Full path of images.
@@ -37,7 +37,14 @@ class Customer extends Entity
      */
     public $imgHeight = 200;
 
-    const JOBS = ['Khách du lịch', 'Nhân viên văn phòng', 'Sinh viên', 'Buôn bán', 'Lao động tự do'];
+    const JOBS = [
+        'Khách du lịch',
+        'Nhân viên văn phòng',
+        'Sinh viên',
+        'Kinh doanh',
+        'Lao động tự do',
+        'Khác'
+    ];
 
     protected static function boot()
     {

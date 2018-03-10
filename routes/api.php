@@ -26,9 +26,11 @@ Route::group([
     Route::resource('cgroups', 'CgroupController');
     Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
     Route::resource('payment-histories', 'PaymentHistoryController');
-    Route::resource('promotions', 'PromotionController');
+    Route::get('promotions/{id}/statistic', 'PromotionController@statisticQuantityUsed');
+    Route::get('promotions/{id}/used-customers', 'PromotionController@getListCustomerUsed');
     Route::post('promotions/{id}/active', 'PromotionController@active');
     Route::post('promotions/upload-image', 'PromotionController@uploadImage');
+    Route::resource('promotions', 'PromotionController');
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
     Route::resource('email-templates', 'EmailTemplateController');

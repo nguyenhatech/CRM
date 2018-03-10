@@ -95,7 +95,7 @@ class CampaignController extends ApiController
                 $cgroupParams = ['name' => 'Chiến dịch ' . $params['name']];
                 $cgroupParams['filters'] = $params['filters'];
                 $cgroup = $this->cgroup->store($cgroupParams);
-                $params['group_id'] = $cgroup->id;
+                $params['cgroup_id'] = $cgroup->id;
             }
 
             $data = $this->getResource()->store($params);
@@ -174,8 +174,8 @@ class CampaignController extends ApiController
         if ($campaign) {
             $customers = [];
 
-            if ($campaign->target_type == Campaign::GROUP_TARGET) {
-                $customers = $campaign->cgroup->customers;
+            if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
+                $customers = $this->cgroup->getCustomers($campaign->cgroup_id);
             } else {
                 $customers = $campaign->customers;
             }
@@ -203,8 +203,8 @@ class CampaignController extends ApiController
 
             if ($campaign) {
                 $customers = [];
-                if ($campaign->target_type == Campaign::GROUP_TARGET) {
-                    $customers = $campaign->cgroup->customers;
+                if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
+                    $customers = $this->cgroup->getCustomers($campaign->cgroup_id);
                 } else {
                     $customers = $campaign->customers;
                 }
