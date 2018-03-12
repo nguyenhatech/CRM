@@ -22,6 +22,7 @@ Route::group([
     Route::get('customers/export-excel', 'CustomerController@exportExcel');
     Route::post('customers/import-excel', 'CustomerController@importExcel');
     Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
+    Route::get('customers/update-uuid', 'CustomerController@updateUuid');
     Route::resource('customers', 'CustomerController');
     Route::resource('cgroups', 'CgroupController');
     Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
