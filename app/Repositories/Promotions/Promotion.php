@@ -56,6 +56,12 @@ class Promotion extends Entity
     const ROUTE = 1; // Hình thức khách hàng đi theo tuyến
     const SEGMENT = 2; // Hình thức khách hàng đi theo chặng
 
+    // Danh sách hình thức di chuyển của khách
+    const LIST_FORM_MOVE = [
+        self::ROUTE   => 'Giảm giá cho khách hàng đi cả tuyến',
+        self::SEGMENT => 'Giảm giá cho khách hàng đi theo chặng'
+    ];
+
     public function getImage()
     {
         if (strrpos($this->image, 'http://') == 0 || strrpos($this->image, 'https://') == 0) {
@@ -88,5 +94,15 @@ class Promotion extends Entity
     public function getQuantity()
     {
         return ! $this->quatity ? 'Không giới hạn' : $this->quatity;
+    }
+
+    /**
+     * Trả về hình thức di chuyển của khách
+     * @return [type] [description]
+     */
+    public function getFormMovesText($typeMove)
+    {
+        $typeMove = (int) $typeMove;
+        return array_key_exists($typeMove, self::LIST_FORM_MOVE) ? self::LIST_FORM_MOVE[$typeMove] : 'Không xác định';
     }
 }

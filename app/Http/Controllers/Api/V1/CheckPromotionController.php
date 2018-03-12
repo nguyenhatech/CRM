@@ -20,20 +20,20 @@ class CheckPromotionController extends ApiController
 
     protected $validationRules = [
         'code'        => 'required|max:50',
-        'total_money' => 'required|numeric|min:1000',
+        'ticket_money' => 'required|numeric|min:1000',
         'type'        => 'required|in:1,2',
         'email'       => 'nullable|max:50',
         'phone'       => 'nullable|digits_between:8,12'
     ];
 
     protected $validationMessages = [
-        'code.required'        => 'Vui lòng nhập mã Code cần kiểm tra',
-        'code.max'             => 'Mã code có chiều dài tối đa chỉ 50 kí tự',
-        'total_money.required' => 'Vui lòng nhập tổng số tiền đơn hàng',
-        'total_money.numeric'  => 'Số tiền đơn hàng phải là kiểu số',
-        'total_money.min'      => 'Số tiền đơn hàng tối thiểu là 1000 đồng',
-        'type.required'        => 'Hình thức khách đi không thể bỏ trống',
-        'type.in'              => 'Hình thức khách đi chỉ có thể là theo tuyến hoặc chặng',
+        'code.required'         => 'Vui lòng nhập mã Code cần kiểm tra',
+        'code.max'              => 'Mã code có chiều dài tối đa chỉ 50 kí tự',
+        'ticket_money.required' => 'Vui lòng nhập tổng số tiền đơn hàng',
+        'ticket_money.numeric'  => 'Số tiền đơn hàng phải là kiểu số',
+        'ticket_money.min'      => 'Số tiền đơn hàng tối thiểu là 1000 đồng',
+        'type.required'         => 'Hình thức khách đi không thể bỏ trống',
+        'type.in'               => 'Hình thức khách đi chỉ có thể là theo tuyến hoặc chặng',
     ];
 
     public function __construct(PromotionRepository $promotion)
