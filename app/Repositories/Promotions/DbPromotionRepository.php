@@ -169,7 +169,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
         } else {
             $result->error = true;
-            $result->message = 'Mã khuyến mại không hợp lệ';
+            $result->message = 'Mã khuyến mại không hợp lệ hoặc đã hết hạn';
         }
 
         return $result;

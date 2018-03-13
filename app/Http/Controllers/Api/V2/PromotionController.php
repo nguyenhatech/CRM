@@ -22,9 +22,10 @@ class PromotionController extends Controller
 
     protected $validationRules = [
         'client_id'         => 'required|exists:users,id',
-        'code'              => 'required|max:50',
+        'code'              => 'required|max:50|unique:promotions,code',
         'type'              => 'required|numeric',
         'amount'            => 'required|numeric|min:0',
+        'amount_segment'    => 'nullable|numeric|min:0',
         'amount_max'        => 'nullable|numeric|min:0',
         'quantity'          => 'nullable|numeric|min:0',
         'quantity_per_user' => 'nullable|numeric|min:0',
@@ -41,6 +42,7 @@ class PromotionController extends Controller
 
         'code.required'             => 'Vui lòng nhập mã giảm giá',
         'code.max'                  => 'Mã giảm giá có chiều dài tối đa là 50 kí tự',
+        'code.unique'               => 'Mã giảm giá này đã tồn tại trên hệ thống',
 
         'type.required'             => 'Vui lòng nhập kiểu giảm giá',
         'type.numeric'              => 'Kiểu giảm giá phải là kiểu số',
@@ -89,9 +91,6 @@ class PromotionController extends Controller
         $pageSize = $request->get('limit', 25);
         $sort = explode(':', $request->get('sort', 'id:1'));
 
-        // Gán mặc định trường Client_id là User đang đăng nhập
-        $params['client_id'] = getCurrentUser()->id;
-
         $datas = $this->getResource()->getByQuery($params, $pageSize, $sort);
 
         return $this->successResponse($datas);
@@ -112,20 +111,33 @@ class PromotionController extends Controller
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $params = $request->all();
+            $amount = (int) array_get($params, 'amount', null);
 
-            $type   = array_get($params, 'type', null);
+            $type   = array_get($params, 'type', Promotion::PERCENT);
 
-            if (! is_null($type) && $type == Promotion::PERCENT) {
-                $amount = (int) array_get($params, 'amount', null);
+            // Nếu kiểu là giảm theo phần trăm
+            if ($type == Promotion::PERCENT) {
                 if ($amount > 100) {
                     return $this->errorResponse([
                         'errors' => [
-                            'name' => [
+                            'amount' => [
                                 'Phần trăm giảm giá không được vượt quá 100%'
                             ]
                         ]
                     ]);
                 }
+            }
+            // Check amount_segment phải nhỏ hơn amount
+            $amount_segment = (int) array_get($params, 'amount_segment', null);
+            if (! is_null($amount_segment) && $amount_segment >= $amount) {
+                $message = $type == Promotion::PERCENT ? 'Phần trăm' : 'Số tiền';
+                return $this->errorResponse([
+                    'errors' => [
+                        'amount_segment' => [
+                            $message . ' giảm theo chặng không thể lớn hơn theo tuyến'
+                        ]
+                    ]
+                ]);
             }
 
             // Check Code of User là hợp lệ

@@ -126,7 +126,6 @@ class PromotionController extends ApiController
                         ]
                     ]);
                 }
-
             }
             // Check amount_segment phải nhỏ hơn amount
             $amount_segment = (int) array_get($params, 'amount_segment', null);
