@@ -63,4 +63,9 @@ class PaymentHistory extends Entity
     public function client () {
         return $this->belongsTo('Nh\User', 'client_id');
     }
+
+    public function payment_history_codes()
+    {
+        return $this->hasMany('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode', 'payment_history_id', 'id');
+    }
 }

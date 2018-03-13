@@ -1,18 +1,18 @@
 <?php
 
-namespace Nh\Http\Controllers\Api\V1;
+namespace Nh\Http\Controllers\Api\V2;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-use Nh\Http\Controllers\Api\V1\ApiController;
 use Nh\Http\Controllers\Api\RestfulHandler;
 use Nh\Http\Controllers\Api\TransformerTrait;
 
 use Nh\Repositories\Promotions\PromotionRepository;
 use Nh\Repositories\Promotions\Promotion;
+use Nh\Http\Controllers\Controller;
 
-class CheckPromotionController extends ApiController
+class CheckPromotionController extends Controller
 {
     use TransformerTrait, RestfulHandler;
 
@@ -39,7 +39,6 @@ class CheckPromotionController extends ApiController
     public function __construct(PromotionRepository $promotion)
     {
         $this->promotion = $promotion;
-        $this->checkPermission('promotion');
     }
 
     public function getResource()

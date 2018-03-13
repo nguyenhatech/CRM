@@ -21,4 +21,6 @@ Route::group([
     Route::resource('promotions', 'PromotionController');
     Route::post('promotions/{id}/active', 'PromotionController@active');
     Route::post('promotions/upload-image', 'PromotionController@uploadImage');
+    Route::resource('payment-histories', 'PaymentHistoryController');
+    Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
 });

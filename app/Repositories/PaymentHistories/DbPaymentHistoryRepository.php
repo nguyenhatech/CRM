@@ -77,12 +77,24 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
      */
     public function store($data)
     {
+
         $dataCustomer = array_only($data, ['name', 'email', 'phone']);
         $customer = $this->customer->storeOrUpdate($dataCustomer);
         $data['customer_id'] = $customer->id;
         $data['client_id'] = getCurrentUser()->id;
 
         $model = $this->model->create($data);
+
+        //Lưu mảng mã khuyến mãi ứng với lịch sử giao dịch trên
+        $arr_promotion_codes = array_pluck($data['details'], 'promotion_code');
+        $paymentHistoryCodeRepo = \App::make('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode');
+
+        foreach ($arr_promotion_codes as $key => $code) {
+            $result = $paymentHistoryCodeRepo->create([
+                'payment_history_id' => $model->id,
+                'promotion_code' => $code
+            ]);
+        }
         /**
          * update level customer
          * @var [type]
