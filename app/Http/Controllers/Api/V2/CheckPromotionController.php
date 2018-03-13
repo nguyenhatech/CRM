@@ -22,7 +22,7 @@ class CheckPromotionController extends Controller
         'code'         => 'required|max:50',
         'ticket_money' => 'required|numeric|min:1000',
         'type'         => 'required|in:1,2',
-        'email'        => 'required|max:50',
+        'email'        => 'nullable|max:50',
         'phone'        => 'required|digits_between:8,12'
     ];
 
@@ -34,7 +34,6 @@ class CheckPromotionController extends Controller
         'ticket_money.min'      => 'Số tiền đơn hàng tối thiểu là 1000 đồng',
         'type.required'         => 'Hình thức khách đi không thể bỏ trống',
         'type.in'               => 'Hình thức khách đi chỉ có thể là theo tuyến hoặc chặng',
-        'email.required'        => 'Vui lòng nhập mã Email',
         'phone.required'        => 'Vui lòng nhập mã Phone'
     ];
 
