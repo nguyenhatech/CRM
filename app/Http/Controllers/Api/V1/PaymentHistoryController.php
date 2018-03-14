@@ -16,11 +16,12 @@ class PaymentHistoryController extends ApiController
     protected $paymentHistory;
 
     protected $validationRules = [
-        'email' => 'required_without_all:phone|email|max:255',
-        'phone' => 'required_without_all:email|digits_between:8,12',
-        'description' => 'required|min:5',
-        'total_amount' => 'numeric',
-        'total_point' => 'numeric'
+        'email'          => 'required_without_all:phone|email|max:255',
+        'phone'          => 'required_without_all:email|digits_between:8,12',
+        'description'    => 'required|min:5',
+        'total_amount'   => 'numeric',
+        'total_point'    => 'numeric',
+        // 'promotion_code' => 'max:191|exists:promotions,code'
     ];
 
     protected $validationMessages = [
@@ -30,13 +31,16 @@ class PaymentHistoryController extends ApiController
         'phone.required_without_all' => 'Số điện thoại hoặc email không được để trống',
         'phone.digits_between'       => 'Số điện thoại cần nằm trong khoảng :min đến :max số',
         'total_amount.numeric'       => 'Số tiền giao dịch không đúng định dạng',
-        'total_point.numeric'        => 'Số điểm thưởng giao dịch không đúng định dạng'
+        'total_point.numeric'        => 'Số điểm thưởng giao dịch không đúng định dạng',
+        'promotion_code.max'         => 'Mã khuyến mãi có chiều dài tối đa 191 kí tự',
+        'promotion_code.exists'      => 'Mã khuyến mãi không tồn tại trên hệ thống'
     ];
 
     public function __construct(PaymentHistoryRepository $paymentHistory, PaymentHistoryTransformer $transformer)
     {
         $this->paymentHistory = $paymentHistory;
         $this->setTransformer($transformer);
+        $this->checkPermission('payment_history');
     }
 
     public function getResource()

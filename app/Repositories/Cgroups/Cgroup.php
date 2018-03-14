@@ -45,7 +45,7 @@ class Cgroup extends Entity
         });
 
         static::addGlobalScope('cgroups', function (Builder $builder) {
-            if (!getCurrentUser()->isSuperAdmin()) {
+            if (!getCurrentUser()->isAdmin()) {
                 $builder->where('client_id', getCurrentUser()->id);
             }
         });
@@ -61,5 +61,10 @@ class Cgroup extends Entity
     public function customers()
     {
         return $this->belongsToMany('Nh\Repositories\Customers\Customer', 'customer_cgroups', 'cgroup_id', 'customer_id');
+    }
+
+    public function attributes()
+    {
+        return $this->hasMany('Nh\Repositories\CgroupAttributes\CgroupAttribute', 'cgroup_id', 'id');
     }
 }

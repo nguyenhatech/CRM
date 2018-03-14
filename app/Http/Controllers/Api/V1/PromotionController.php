@@ -21,10 +21,11 @@ class PromotionController extends ApiController
 
     protected $validationRules = [
         'client_id'         => 'required|exists:users,id',
-        'code'              => 'required|max:50',
+        'code'              => 'required|max:50|unique:promotions,code',
         'type'              => 'required|numeric',
         'amount'            => 'required|numeric|min:0',
-        'amount_max'        => 'required|numeric|min:0',
+        'amount_segment'    => 'nullable|numeric|min:0',
+        'amount_max'        => 'nullable|numeric|min:0',
         'quantity'          => 'nullable|numeric|min:0',
         'quantity_per_user' => 'nullable|numeric|min:0',
         'date_start'        => 'required|date_format:Y-m-d H:i:s',
@@ -40,6 +41,7 @@ class PromotionController extends ApiController
 
         'code.required'             => 'Vui lòng nhập mã giảm giá',
         'code.max'                  => 'Mã giảm giá có chiều dài tối đa là 50 kí tự',
+        'code.unique'               => 'Mã giảm giá này đã tồn tại trên hệ thống',
 
         'type.required'             => 'Vui lòng nhập kiểu giảm giá',
         'type.numeric'              => 'Kiểu giảm giá phải là kiểu số',
@@ -75,6 +77,7 @@ class PromotionController extends ApiController
     {
         $this->promotion = $promotion;
         $this->setTransformer($transformer);
+        $this->checkPermission('promotion');
     }
 
     public function getResource()
@@ -87,9 +90,6 @@ class PromotionController extends ApiController
         $params = $request->all();
         $pageSize = $request->get('limit', 25);
         $sort = explode(':', $request->get('sort', 'id:1'));
-
-        // Gán mặc định trường Client_id là User đang đăng nhập
-        $params['client_id'] = getCurrentUser()->id;
 
         $datas = $this->getResource()->getByQuery($params, $pageSize, $sort);
 
@@ -111,20 +111,33 @@ class PromotionController extends ApiController
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $params = $request->all();
+            $amount = (int) array_get($params, 'amount', null);
 
-            $type   = array_get($params, 'type', null);
+            $type   = array_get($params, 'type', Promotion::PERCENT);
 
-            if (! is_null($type) && $type == Promotion::PERCENT) {
-                $amount = (int) array_get($params, 'amount', null);
+            // Nếu kiểu là giảm theo phần trăm
+            if ($type == Promotion::PERCENT) {
                 if ($amount > 100) {
                     return $this->errorResponse([
                         'errors' => [
-                            'name' => [
-                                'Số lượng phần trăm giảm giá không được vượt quá 100%'
+                            'amount' => [
+                                'Phần trăm giảm giá không được vượt quá 100%'
                             ]
                         ]
                     ]);
                 }
+            }
+            // Check amount_segment phải nhỏ hơn amount
+            $amount_segment = (int) array_get($params, 'amount_segment', null);
+            if (! is_null($amount_segment) && $amount_segment >= $amount) {
+                $message = $type == Promotion::PERCENT ? 'Phần trăm' : 'Số tiền';
+                return $this->errorResponse([
+                    'errors' => [
+                        'amount_segment' => [
+                            $message . ' giảm theo chặng không thể lớn hơn theo tuyến'
+                        ]
+                    ]
+                ]);
             }
 
             // Check Code of User là hợp lệ
@@ -273,6 +286,34 @@ class PromotionController extends ApiController
                 'exception' => $validationException->getMessage()
             ]);
         }
+    }
+
+    /**
+     * Thông kê số lượt và số khách dùng mã
+     * @param  int  $id      Promotion ID
+     * @return [type]           [description]
+     */
+    public function statisticQuantityUsed($id)
+    {
+        $statistic = $this->promotion->usedStatistic($id);
+        if ($statistic) {
+            return $this->infoResponse($statistic->first());
+        }
+        return $this->notFoundResponse();
+    }
+
+    /**
+     * Lấy danh sách khách hàng đã dùng mã
+     * @param  string $value [description]
+     * @return [type]        [description]
+     */
+    public function getListCustomerUsed($id)
+    {
+        $customers = $this->promotion->usedCustomers($id);
+        if ($customers) {
+            return $this->infoResponse($customers);
+        }
+        return $this->notFoundResponse();
     }
 
 }

@@ -21,8 +21,6 @@ Route::get('/', function () {
     return "I'm ok";
 });
 
-Auth::routes();
-
 // Disable auth function in api, chỉ giữ lại chức năng quên mật khẩu
 //
 Auth::routes();
@@ -45,3 +43,8 @@ Route::post('/register', function() {
 
 // Route::get('/home', 'HomeController@index')->name('home');
 
+Route::get('/home', 'HomeController@index')->name('home');
+
+Route::post('/test-webhooks', function (\Illuminate\Http\Request $request) {
+    \Log::info($request->all());
+});

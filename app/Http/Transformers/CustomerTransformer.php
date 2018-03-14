@@ -20,7 +20,7 @@ class CustomerTransformer extends TransformerAbstract
 
         $data = [
             'id'              => $customer->uuid,
-            'name'            => $customer->name,
+            'name'            => $customer->name ? $customer->name : $customer->email,
             'email'           => $customer->email,
             'phone'           => $customer->phone,
             'home_phone'      => $customer->home_phone,
@@ -28,22 +28,25 @@ class CustomerTransformer extends TransformerAbstract
             'fax'             => $customer->fax,
             'sex'             => $customer->sex,
             'sex_txt'         => $customer->sexText(),
+            'identification_number' => $customer->identification_number,
             'facebook_id'     => $customer->facebook_id,
             'google_id'       => $customer->google_id,
             'website'         => $customer->website,
             'dob'             => $customer->dob ? $customer->dob->format('Y-m-d') : null,
-            'job'             => $customer->job,
+            'job'             => (int) $customer->job,
             'address'         => $customer->address,
+            'city_id'         => (int) $customer->city_id,
             'company_address' => $customer->company_address,
             'source'          => $customer->source,
             'level'           => $customer->level,
             'level_txt'       => $customer->levelText(),
             'avatar'          => $customer->avatar,
             'avatar_path'     => $customer->getAvatar(),
-            'total_amount'    => $customer->getTotalAmount(),
+            'total_amount'    => abs($customer->getTotalAmount()),
             'total_point'     => $customer->getTotalPoint(),
             'created_at'      => $customer->created_at ? $customer->created_at->format('d-m-Y H:i:s') : null,
-            'updated_at'      => $customer->updated_at ? $customer->updated_at->format('d-m-Y H:i:s') : null
+            'updated_at'      => $customer->updated_at ? $customer->updated_at->format('d-m-Y H:i:s') : null,
+            'last_payment'      => $customer->last_payment ? $customer->last_payment->format('d-m-Y H:i:s') : null
         ];
 
         return $data;

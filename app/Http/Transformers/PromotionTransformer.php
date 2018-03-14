@@ -30,6 +30,7 @@ class PromotionTransformer extends TransformerAbstract
             'description'       => $promotion->description,
             'content'           => $promotion->content ? $promotion->content : '',
             'amount'            => $promotion->amount,
+            'amount_segment'    => $promotion->amount_segment,
             'amount_max'        => $promotion->amount_max,
             'quantity'          => $promotion->quantity,
             'quantity_per_user' => $promotion->quantity_per_user,

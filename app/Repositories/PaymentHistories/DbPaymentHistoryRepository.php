@@ -36,6 +36,8 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
     {
         $query = array_get($params, 'q', '');
         $customerId = array_get($params, 'customer_id', null);
+        $startDate = array_get($params, 'start_date', null);
+        $endDate = array_get($params, 'end_date', null);
         $model = $this->model;
 
         if (!empty($sorting)) {
@@ -44,8 +46,16 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
 
         if ($query != '') {
             $model = $model->where(function($q) use ($query) {
-                return $q->where('description', 'like', "%{$query}%");
+                return $q->where('description', 'like', "%{$query}%")
+                            ->orWhere('uuid', 'like', "%{$query}%");
             });
+        }
+
+        if ($startDate) {
+            $model = $model->where('created_at', '>=', $startDate);
+        }
+        if ($endDate) {
+            $model = $model->where('created_at', '<=', $endDate);
         }
 
         if ($customerId) {
@@ -67,13 +77,62 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
      */
     public function store($data)
     {
-        $dataCustomer = array_only($data, ['email', 'phone']);
+
+        $dataCustomer = array_only($data, ['name', 'email', 'phone']);
         $customer = $this->customer->storeOrUpdate($dataCustomer);
         $data['customer_id'] = $customer->id;
         $data['client_id'] = getCurrentUser()->id;
 
         $model = $this->model->create($data);
+
+        //Lưu mảng mã khuyến mãi ứng với lịch sử giao dịch trên
+        $arr_promotion_codes = array_pluck($data['details'], 'promotion_code');
+        $paymentHistoryCodeRepo = \App::make('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode');
+
+        foreach ($arr_promotion_codes as $key => $code) {
+            $result = $paymentHistoryCodeRepo->create([
+                'payment_history_id' => $model->id,
+                'promotion_code' => $code
+            ]);
+        }
+        /**
+         * update level customer
+         * @var [type]
+         */
+        if ($model->status == PaymentHistory::PAY_SUCCESS) {
+            event(new \Nh\Events\UpdateLevelCustomer($model->customer));
+            event(new \Nh\Events\PaymentSuccess($model));
+        }
+
         return $this->getById($model->id);
+    }
+
+    /**
+     * Cập nhật thông tin 1 bản ghi theo ID
+     *
+     * @param  integer $id ID bản ghi
+     * @return bool
+     */
+    public function update($id, $data)
+    {
+        $record = $this->getById($id);
+
+        if (isset($data['status']) && $data['status'] == PaymentHistory::PAY_SUCCESS) {
+            $data['payment_at'] = \Carbon\Carbon::now()->format('Y-m-d');
+        }
+
+        $record->fill($data)->save();
+
+        /**
+         * update level customer
+         * @var [type]
+         */
+        if ($record->status == PaymentHistory::PAY_SUCCESS) {
+            event(new \Nh\Events\UpdateLevelCustomer($record->customer));
+            event(new \Nh\Events\PaymentSuccess($record));
+        }
+
+        return $this->getById($id);
     }
 
 

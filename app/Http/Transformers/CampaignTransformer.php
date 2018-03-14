@@ -11,7 +11,8 @@ class CampaignTransformer extends TransformerAbstract
     protected $availableIncludes = [
         'client',
         'cgroup',
-        'template'
+        'template',
+        'customers'
     ];
 
     public function transform(Campaign $campaign = null)
@@ -21,19 +22,27 @@ class CampaignTransformer extends TransformerAbstract
         }
 
         $data = [
-            'id'          => $campaign->uuid,
-            'client_id'   => $campaign->client_id,
-            'template_id' => $campaign->template_id,
-            'template'    => $campaign->template,
-            'cgroup_id'   => $campaign->cgroup_id,
-            'uuid'        => $campaign->uuid,
-            'name'        => $campaign->name,
-            'description' => $campaign->description,
-            'start_date'  => $campaign->start_date ? $campaign->start_date->format('Y-m-d H:i:s') : null,
-            'end_date'    => $campaign->end_date ? $campaign->end_date->format('Y-m-d H:i:s') : null,
-            'status'      => $campaign->status,
-            'status_txt'  => $campaign->getStatusText(),
-            'created_at'  => $campaign->created_at ? $campaign->created_at->format('Y-m-d H:i:s') : null,
+            'id'            => $campaign->uuid,
+            'client_id'     => $campaign->client_id,
+            'template_id'   => $campaign->template_id,
+            'template'      => $campaign->template,
+            'sms_template'  => $campaign->sms_template,
+            'cgroup_id'     => $campaign->cgroup_id,
+            'target_type'   => $campaign->target_type,
+            'customers'     => $campaign->customers,
+            'uuid'          => $campaign->uuid,
+            'name'          => $campaign->name,
+            'description'   => $campaign->description,
+            'start_date'    => $campaign->start_date ? $campaign->start_date->format('Y-m-d H:i:s') : null,
+            'end_date'      => $campaign->end_date ? $campaign->end_date->format('Y-m-d H:i:s') : null,
+            'runtime'       => $campaign->runtime ? $campaign->runtime : null,
+            'status'        => $campaign->status,
+            'status_txt'    => $campaign->getStatusText(),
+            'period'        => $campaign->period,
+            'period_text'   => $campaign->getPeriodText(),
+            'email_id'      => $campaign->email_id,
+            'sms_id'        => $campaign->sms_id,
+            'created_at'    => $campaign->created_at ? $campaign->created_at->format('Y-m-d H:i:s') : null,
         ];
 
         return $data;
@@ -64,5 +73,14 @@ class CampaignTransformer extends TransformerAbstract
         }
 
         return $this->item($campaign->email_template, new EmailTemplateTransformer());
+    }
+
+    public function includeCustomers(Campaign $campaign = null)
+    {
+        if (is_null($campaign)) {
+            return $this->null();
+        }
+
+        return $this->collection($campaign->customers, new CustomerTransformer());
     }
 }

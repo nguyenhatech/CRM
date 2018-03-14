@@ -57,15 +57,32 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
         if ($query != '') {
             $model = $model->where(function($q) use ($query) {
                 return $q->where('name', 'like', "%{$query}%")
-                    ->orWhere('email', 'like', "%{$query}%");
+                    ->orWhere('email', 'like', "%{$query}%")
+                    ->orWhere('phone', 'like', "%{$query}%");
             });
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);
     }
 
+    /**
+     * Lấy tất cả khách hàng theo filter của group
+     *
+     * @param  array $filters Mảng các điều kiện where
+     * @return Illuminate\Pagination\Paginator
+     */
+    public function getByGroup($filters)
+    {
+        $model = $this->model;
+        foreach ($filters as $key => $filter) {
+            $model = $model->where($filter['attribute'], $filter['operation'], $filter['value']);
+        }
+
+        return $model->get();
+    }
+
     public function storeOrUpdate($data) {
-        $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar']);
+        $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar', 'city_id']);
         $email = array_get($data, 'email', null);
         $phone = array_get($data, 'phone', null);
         // dd($this->checkExist($email, $phone));
@@ -85,6 +102,9 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
             'client_id'   => getCurrentUser()->id,
             'customer_id' => $model->id
         ]]);
+
+        event(new \Nh\Events\InfoCustomer($model));
+
         return $this->getById($model->id);
     }
 
@@ -120,13 +140,44 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
     public function delete($id)
     {
         $record = $this->getById($id);
-        if (!getCurrentUser()->isSuperAdmin()) {
+        if (!getCurrentUser()->isAdmin()) {
             return $record->client()->detach([[
                 'client_id'   => getCurrentUser()->id,
                 'customer_id' => $record->id
             ]]);
         }
         return $record->delete();
+    }
+
+    /**
+     * Lấy dữ liệu export excel
+     *
+     * @param  integer $size Số bản ghi mặc định 25
+     * @param  array $sorting Sắp xếp
+     * @return Illuminate\Pagination\Paginator
+     */
+    public function exportExcel($params, $size = -1, $sorting = [])
+    {
+        $groups   = array_get($params, 'groups', '');
+        $levels   = array_get($params, 'levels', '');
+        $fields   = array_get($params, 'fields', '');
+        $model    = $this->model->select($fields);
+
+        if (!empty($sorting) && array_key_exists(1, $sorting)) {
+            $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
+        }
+
+        if (!empty($groups)) {
+            $model = $model->whereHas('groups', function ($model) use ($groups) {
+                $model->whereIn('uuid', $groups);
+            });
+        }
+
+        if (!empty($levels)) {
+            $model = $model->whereIn('level', $levels);
+        }
+
+        return $size < 0 ? $model->get() : $model->paginate($size);
     }
 
 }

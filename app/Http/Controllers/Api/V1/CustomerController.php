@@ -8,12 +8,17 @@ use Nh\Http\Controllers\Api\TransformerTrait;
 
 use Nh\Repositories\Customers\CustomerRepository;
 use Nh\Http\Transformers\CustomerTransformer;
+use Nh\Repositories\Cgroups\CgroupRepository;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Input;
+use Excel;
 
 class CustomerController extends ApiController
 {
     use TransformerTrait, RestfulHandler;
 
     protected $customer;
+    protected $cgroups;
 
     protected $validationRules = [
         'name'            => 'required|min:5|max:255',
@@ -46,10 +51,12 @@ class CustomerController extends ApiController
         'company_address'            => 'Địa chỉ cơ quan cần nhỏ hơn :max kí tự',
     ];
 
-    public function __construct(CustomerRepository $customer, CustomerTransformer $transformer)
+    public function __construct(CustomerRepository $customer, CustomerTransformer $transformer, CgroupRepository $cgroups)
     {
         $this->customer = $customer;
+        $this->cgroups = $cgroups;
         $this->setTransformer($transformer);
+        $this->checkPermission('customer');
     }
 
     public function getResource()
@@ -100,7 +107,7 @@ class CustomerController extends ApiController
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
             $data = $request->all();
-            $data = array_except($data, ['email', 'level']);
+            $data = array_except($data, ['email', 'level', 'last_payment']);
             $model = $this->getResource()->update($id, $data);
 
             \DB::commit();
@@ -141,6 +148,84 @@ class CustomerController extends ApiController
                 'errors' => $validationException->validator->errors(),
                 'exception' => $validationException->getMessage()
             ]);
+        }
+    }
+
+    public function importExcel(Request $request)
+    {
+        $excelPath = Input::file('file')->getRealPath();
+        Excel::load($excelPath, function ($reader) use ($request) {
+            $results = $reader->get();
+            foreach ($results as $key => $row) {
+                $params = [];
+                $params['name'] = array_get($row, formatToTextSimple($request['name']), '');
+                $params['phone'] = array_get($row, formatToTextSimple($request['phone']), '');
+                $params['address'] = array_get($row, formatToTextSimple($request['address']), '');
+                $params['email'] = array_get($row, formatToTextSimple($request['email']), '');
+                if ($params['name'] && $params['phone']) {
+                    $customer = $this->getResource()->storeOrUpdate($params);
+                }
+            }
+        });
+        $response = array_merge([
+            'code' => 200,
+            'status' => 'success',
+        ]);
+        return response()->json($response, $response['code']);
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $validationRules = ['fields' => 'required|array|min:1'];
+        $validationMessages = [
+            'fields.required' => 'Chưa có thông tin dữ liệu cần xuất',
+            'fields.array'    => 'Thông tin dữ liệu phải ở dạng mảng',
+            'fields.min'      => 'Cần có ít nhất một thông tin để xuất dữ liệu'
+        ];
+        try {
+            $this->validate($request, $validationRules, $validationMessages);
+            $params = $request->all();
+            $ableFields = ['uuid', 'name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'level'];
+            foreach ($params['fields'] as $key => $field) {
+                if (!in_array($field, $ableFields)) {
+                    $params['fields'] = array_except($params['fields'], [$key]);
+                }
+            }
+            $datas = $this->getResource()->exportExcel($params, -1);
+            $rowPointer = 2;
+
+            $pathToFile = Excel::create('Khach_hang_' . time(), function($excel) use ($rowPointer, $datas, $params) {
+                // Set the title
+                $excel->setTitle('Dữ liệu khách hàng ' . time());
+                $excel->setCreator('Havaz')
+                      ->setCompany('Havaz.vn');
+                $excel->setDescription('Customers by Havaz');
+
+                $excel->sheet('Sheet 1', function($sheet) use ($rowPointer, $datas, $params) {
+                    $sheet->freezeFirstRow();
+                    $sheet->setFontFamily('Roboto');
+                    $sheet->setHeight(1, 25);
+                    $sheet->row(1, $params['fields']);
+                    foreach ($datas as $key => $customer) {
+                        $sheet->row($rowPointer, array_values($customer->toArray()));
+                        $rowPointer++;
+                    }
+                });
+
+            })->store('xlsx', storage_path('/app/public/excels'), true);
+
+            $path = "excels/{$pathToFile['file']}";
+            return $this->infoResponse([
+                'full' => env('APP_URL') . "/storage/" . $path,
+                'path' => env('APP_URL') . "/storage/excels",
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $validationException) {
+            return $this->errorResponse([
+                'errors' => $validationException->validator->errors(),
+                'exception' => $validationException->getMessage()
+            ]);
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 

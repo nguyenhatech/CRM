@@ -23,7 +23,7 @@ class DbRoleRepository extends BaseRepository implements RoleRepository
         $query = array_get($params, 'q', '');
         $model = $this->model->where('name', '!=', 'superadmin');
 
-        if (!getCurrentUser()->isSuperAdmin()) {
+        if (!getCurrentUser()->isAdmin()) {
             $model = $model->where('type', '<>' , Role::TYPE_SYSTEM);
         }
 

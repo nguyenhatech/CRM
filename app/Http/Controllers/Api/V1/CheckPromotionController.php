@@ -19,21 +19,29 @@ class CheckPromotionController extends ApiController
     protected $promotion;
 
     protected $validationRules = [
-        'code'        => 'required|max:50',
-        'total_money' => 'required|numeric|min:1000'
+        'code'         => 'required|max:50',
+        'ticket_money' => 'required|numeric|min:1000',
+        'type'         => 'required|in:1,2',
+        'email'        => 'required|max:50',
+        'phone'        => 'required|digits_between:8,12'
     ];
 
     protected $validationMessages = [
-        'code.required'        => 'Vui lòng nhập mã Code cần kiểm tra',
-        'code.max'             => 'Mã code có chiều dài tối đa chỉ 50 kí tự',
-        'total_money.required' => 'Vui lòng nhập tổng số tiền đơn hàng',
-        'total_money.numeric'  => 'Số tiền đơn hàng phải là kiểu số',
-        'total_money.min'      => 'Số tiền đơn hàng tối thiểu là 1000 đồng'
+        'code.required'         => 'Vui lòng nhập mã Code cần kiểm tra',
+        'code.max'              => 'Mã code có chiều dài tối đa chỉ 50 kí tự',
+        'ticket_money.required' => 'Vui lòng nhập tổng số tiền đơn hàng',
+        'ticket_money.numeric'  => 'Số tiền đơn hàng phải là kiểu số',
+        'ticket_money.min'      => 'Số tiền đơn hàng tối thiểu là 1000 đồng',
+        'type.required'         => 'Hình thức khách đi không thể bỏ trống',
+        'type.in'               => 'Hình thức khách đi chỉ có thể là theo tuyến hoặc chặng',
+        'email.required'         => 'Vui lòng nhập mã Email',
+        'phone.required'         => 'Vui lòng nhập mã Phone'
     ];
 
     public function __construct(PromotionRepository $promotion)
     {
         $this->promotion = $promotion;
+        $this->checkPermission('promotion');
     }
 
     public function getResource()
@@ -49,6 +57,10 @@ class CheckPromotionController extends ApiController
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $data = $this->getResource()->check($request->all());
+
+            if ($data->error) {
+                return $this->errorResponse($data);
+            }
 
             DB::commit();
             return $this->infoResponse($data);

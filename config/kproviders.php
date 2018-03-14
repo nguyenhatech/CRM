@@ -1,5 +1,5 @@
-<?php
-return [
+<?php 
+return [ 
 	Nh\Providers\UserServiceProvider::class,
 	Nh\Providers\RoleServiceProvider::class,
 	Nh\Providers\PermissionServiceProvider::class,
@@ -12,4 +12,7 @@ return [
 	Nh\Providers\CgroupServiceProvider::class,
 	Nh\Providers\CustomerCgroupServiceProvider::class,
 	Nh\Providers\CampaignServiceProvider::class,
+	Nh\Providers\CgroupAttributeServiceProvider::class,
+	Nh\Providers\CityServiceProvider::class,
+	Nh\Providers\PaymentHistoryCodeServiceProvider::class,
 ];

@@ -13,7 +13,9 @@ class PaymentHistory extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id', 'customer_id', 'uuid', 'description', 'total_amount', 'total_point', 'payment_at', 'status', 'type'];
+    public $fillable = ['client_id', 'customer_id', 'uuid', 'description', 'total_amount', 'promotion_code', 'total_point', 'payment_at', 'status', 'type'];
+
+    protected $dates = ['payment_at'];
 
     const PAY_PENDDING = 0; // Chờ giao dịch
     const PAY_SUCCESS = 1; // Thành công
@@ -34,22 +36,17 @@ class PaymentHistory extends Entity
     {
         static::created(function ($model) {
             $model->uuid = \Hashids::encode($model->id);
-            $model->client_id = getCurrentUser()->id;
+            if (getCurrentUser()) {
+                $model->client_id = getCurrentUser()->id;
+            }
             if ($model->type == self::TYPE_DIRECT) {
                 $model->status = self::PAY_SUCCESS;
+                $model->payment_at = \Carbon\Carbon::now();
             }
             if ($model->total_amount < 0) {
-                $model->total_point = floor(-$model->total_amount / 1000);
+                $model->total_point = floor(abs($model->total_amount) / 1000);
             }
             $model->save();
-        });
-
-        static::updating(function ($model) {
-            $old = $model->getDirty();
-            if ($old['status'] != $model->status && $model->status == self::PAY_SUCCESS) {
-                $model->payment_at = \Carbon\Carbon::now()->format('Y-m-d');
-                // $model->save();
-            }
         });
 
         parent::boot();
@@ -65,5 +62,10 @@ class PaymentHistory extends Entity
 
     public function client () {
         return $this->belongsTo('Nh\User', 'client_id');
+    }
+
+    public function payment_history_codes()
+    {
+        return $this->hasMany('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode', 'payment_history_id', 'id');
     }
 }
