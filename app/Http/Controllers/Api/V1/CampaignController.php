@@ -19,6 +19,7 @@ use Nh\Jobs\SendEmailCampaign;
 use Nh\Jobs\SendSMSCampaign;
 
 use Nh\Repositories\Helpers\SpeedSMSAPI;
+use Illuminate\Support\Carbon;
 
 class CampaignController extends ApiController
 {
@@ -80,12 +81,14 @@ class CampaignController extends ApiController
             $params = $request->all();
             $params['client_id'] = getCurrentUser()->id;
 
-            if (array_key_exists('cgroup_id', $params)) {
-                $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
-            }
             if (array_key_exists('template_id', $params)) {
                 $params['template_id'] = convert_uuid2id($params['template_id']);
             }
+            // TH chọn theo nhóm
+            if (array_key_exists('cgroup_id', $params)) {
+                $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
+            }
+            // TH chọn khách thủ công. Convert id để sync
             if (array_key_exists('customers', $params)) {
                 $customers = [];
                 foreach ($params['customers'] as $uuid) {
@@ -93,6 +96,7 @@ class CampaignController extends ApiController
                 }
                 $params['customers'] = $customers;
             }
+            // TH chọn khách bằng filters. Tạo group nếu có filters
             if (array_key_exists('filters', $params)) {
                 $cgroupParams = ['name' => 'Chiến dịch ' . $params['name']];
                 $cgroupParams['filters'] = $params['filters'];
@@ -101,6 +105,12 @@ class CampaignController extends ApiController
             }
 
             $data = $this->getResource()->store($params);
+            // Nếu setup thời gian chạy thì tạo job send email
+            if (array_key_exists('runtime', $params) && !is_null($params['runtime'])) {
+                $time = Carbon::parse($params['runtime']);
+                $time = $time->timestamp - time();
+                $this->sendEmail($data->id, $time);
+            }
 
             DB::commit();
             return $this->successResponse($data);
@@ -131,24 +141,20 @@ class CampaignController extends ApiController
 
             $params = $request->all();
 
-            $params = array_only($params, ['name', 'description', 'status', 'cgroup_id', 'template', 'sms_template', 'target_type', 'period', 'customers', 'runtime', 'filters', 'sms_id', 'email_id']);
-            if (array_key_exists('template_id', $params)) {
-                $params['template_id'] = convert_uuid2id($params['template_id']);
-            }
+            $params = array_only($params, ['name', 'description', 'status', 'cgroup_id', 'template', 'sms_template', 'target_type', 'period', 'customers', 'filters', 'sms_id', 'email_id']);
             if (array_key_exists('cgroup_id', $params)) {
                 $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
             }
-            if (array_key_exists('template_id', $params)) {
-                $params['template_id'] = convert_uuid2id($params['template_id']);
-            }
-            if (array_key_exists('customers', $params)) {
+            // TH chọn khách hàng thủ công
+            if (array_key_exists('customers', $params) && $params['target_type'] == Campaign::MANUAL_TARGET) {
                 $customers = [];
                 foreach ($params['customers'] as $uuid) {
                     array_push($customers, convert_uuid2id($uuid));
                 }
                 $params['customers'] = $customers;
             }
-            if (array_key_exists('filters', $params)) {
+            // TH chọn khách bằng filter
+            if (array_key_exists('filters', $params) && $params['target_type'] == Campaign::FILTER_TARGET) {
                 $cgroupParams['filters'] = $params['filters'];
                 $cgroup = $this->cgroup->update($data->cgroup_id, $cgroupParams);
             }
@@ -169,7 +175,7 @@ class CampaignController extends ApiController
         }
     }
 
-    public function sendEmail($id)
+    public function sendEmail($id, $time = 1)
     {
         $campaign = $this->campaign->getById($id);
 
@@ -183,7 +189,7 @@ class CampaignController extends ApiController
             }
             try {
                 $job = new SendEmailCampaign($campaign, $customers);
-                dispatch($job)->delay(now()->addSeconds(1));
+                dispatch($job)->delay(now()->addSeconds($time));
             } catch (\Exception $e) {
                 throw $e;
             }
