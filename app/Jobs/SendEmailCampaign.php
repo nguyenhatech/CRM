@@ -13,7 +13,7 @@ class SendEmailCampaign implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable;
 
-    public $tries = 5;
+    public $tries = 3;
 
     protected $campaign;
     protected $customers;
@@ -37,14 +37,14 @@ class SendEmailCampaign implements ShouldQueue
     public function handle()
     {
         $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
-        $response;
+        $response = null;
         foreach ($this->customers as $key => $customer) {
             if ($customer->email) {
                 $html = str_replace('***name***', $customer->name, $this->campaign->template);
                 $response = $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->campaign($this->campaign->name)->sendAsCampaign();
             }
         }
-        if ($response->success()) {
+        if (!is_null($response) && $response->success()) {
             $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);
             $campaign = \App::make('Nh\Repositories\Campaigns\CampaignRepository');
             $data = ['email_id' => $response->getData()['Sent'][0]['MessageID']];

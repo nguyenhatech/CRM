@@ -15,7 +15,7 @@ class SendSMSCampaign implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable;
 
-    public $tries = 5;
+    public $tries = 3;
 
     public $campaign;
     public $customers;
