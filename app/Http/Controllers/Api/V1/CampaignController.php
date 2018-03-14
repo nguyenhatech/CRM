@@ -187,9 +187,13 @@ class CampaignController extends ApiController
             } else {
                 $customers = $campaign->customers;
             }
+            if (count($customers->toArray()) == 0) {
+                return $this->errorResponse(['errors' => ['customers' => ['Tập khách hàng rỗng!']]]);
+            }
+            
             try {
                 $job = new SendEmailCampaign($campaign, $customers);
-                dispatch($job)->delay(now()->addSeconds($time));
+                dispatch($job)->delay(now()->addSeconds(5));
             } catch (\Exception $e) {
                 throw $e;
             }
@@ -215,6 +219,9 @@ class CampaignController extends ApiController
                     $customers = $this->cgroup->getCustomers($campaign->cgroup_id);
                 } else {
                     $customers = $campaign->customers;
+                }
+                if (count($customers->toArray()) == 0) {
+                    return $this->errorResponse(['errors' => ['customers' => ['Tập khách hàng rỗng!']]]);
                 }
                 try {
                     $job = new SendSMSCampaign($campaign, $customers, $request->content);
