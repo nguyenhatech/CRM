@@ -79,7 +79,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     public function check($params)
     {
         $code          = array_get($params, 'code', '');
-        $total_money   = (int) array_get($params, 'total_money', 0);
+        $total_money   = (int) array_get($params, 'ticket_money', 0);
         $type          = array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
         $result        = new \stdClass();
 
@@ -92,10 +92,12 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             // Nếu quantity = 0 thì sử dụng không giới hạn
             // Nếu quantity != 0 thì cần check số lượng hợp lệ hay không ?
             if ($promotion->quantity) {
-                $paymentHistoryRepo = \App::make('Nh\Repositories\PaymentHistories\PaymentHistory');
-                $countUsed = $paymentHistoryRepo->where('client_id', $promotion->client_id)
-                                                ->where('promotion_code', strtoupper($code))
-                                                ->get()->count();
+                $paymentHistoryCodeRepo = \App::make('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode');
+
+                $countUsed = $paymentHistoryCodeRepo->where('promotion_code', strtoupper($code))
+                                                ->whereHas('payment_history', function($q) use ($promotion) {
+                                                    $q->where('client_id', $promotion->client_id);
+                                                })->get()->count();
 
                 if ($countUsed >= $promotion->quantity) {
                     $result->error = true;
@@ -116,10 +118,13 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                     $customer = $customerRepo->checkExist($email, $phone);
 
                     if (! is_null($customer)) {
-                        $paymentHistoryRepo = \App::make('Nh\Repositories\PaymentHistories\PaymentHistory');
-                        $countUsed = $paymentHistoryRepo->where('client_id', $promotion->client_id)
-                                                        ->where('promotion_code', strtoupper($code))
-                                                        ->where('customer_id', $customer->id)
+                        $paymentHistoryCodeRepo = \App::make('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode');
+
+                        $countUsed = $paymentHistoryCodeRepo->where('promotion_code', strtoupper($code))
+                                                        ->whereHas('payment_history', function($q) use ($promotion, $customer) {
+                                                            $q->where('client_id', $promotion->client_id)
+                                                            ->where('customer_id', $customer->id);
+                                                        })
                                                         ->get()->count();
 
                         if ($countUsed >= $promotion->quantity_per_user) {
@@ -154,12 +159,17 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 $amount = $ratio;
             }
 
-            $result->error = false;
-            $result->message = 'Mã khuyến mại hợp lệ';
-            $result->amount = $amount;
+            // Trả về thông tin nếu hợp lệ
+            $result->error             = false;
+            $result->message           = 'Mã khuyến mại hợp lệ';
+            $result->quantity_per_user = $promotion->quantity_per_user;
+            $result->quantity          = $promotion->quantity;
+            $result->type              = $promotion->getFormMovesText($type);
+            $result->amount            = $amount;
+
         } else {
             $result->error = true;
-            $result->message = 'Mã khuyến mại không hợp lệ';
+            $result->message = 'Mã khuyến mại không hợp lệ hoặc đã hết hạn';
         }
 
         return $result;
