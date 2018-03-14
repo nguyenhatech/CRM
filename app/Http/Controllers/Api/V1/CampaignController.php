@@ -18,6 +18,8 @@ use Nh\Http\Transformers\CampaignTransformer;
 use Nh\Jobs\SendEmailCampaign;
 use Nh\Jobs\SendSMSCampaign;
 
+use Nh\Repositories\Helpers\SpeedSMSAPI;
+
 class CampaignController extends ApiController
 {
     use TransformerTrait, RestfulHandler;
@@ -129,7 +131,7 @@ class CampaignController extends ApiController
 
             $params = $request->all();
 
-            $params = array_only($params, ['name', 'description', 'status', 'cgroup_id', 'template', 'sms_template', 'target_type', 'period', 'customers', 'runtime', 'filters']);
+            $params = array_only($params, ['name', 'description', 'status', 'cgroup_id', 'template', 'sms_template', 'target_type', 'period', 'customers', 'runtime', 'filters', 'sms_id', 'email_id']);
             if (array_key_exists('template_id', $params)) {
                 $params['template_id'] = convert_uuid2id($params['template_id']);
             }
@@ -226,6 +228,41 @@ class CampaignController extends ApiController
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    public function statisticEmail($id)
+    {
+        $campaign = $this->campaign->getById($id);
+        if ($campaign) {
+            if (is_null($campaign->email_id)) {
+                return $this->infoResponse([]);
+            }
+            $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
+            $message = $mailer->getMessageInfo($campaign->email_id);
+            $listMessage = $mailer->getCampaignMessage($message->getData()[0]['CampaignID']);
+            if ($listMessage->success()) {
+                return $this->infoResponse($listMessage->getData());
+            }
+        }
+        return $this->notFoundResponse();
+    }
+
+    public function statisticSMS($id)
+    {
+        $campaign = $this->campaign->getById($id);
+        if ($campaign) {
+            if (is_null($campaign->sms_id)) {
+                return $this->infoResponse([]);
+            }
+            $smsApi = new SpeedSMSAPI();
+            $smsReport = $smsApi->getSMSStatus($campaign->sms_id);
+            if ($smsReport['status'] == 'success') {
+                return $this->infoResponse($smsReport['data']);
+            } else {
+                return $this->infoResponse([]);
+            }
+        }
+        return $this->notFoundResponse();
     }
 
 }

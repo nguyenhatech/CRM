@@ -29,18 +29,26 @@ class SendEmailCampaign implements ShouldQueue
     }
 
     /**
-     * Execute the job.
+     * Gửi mail cho danh sách khách hàng theo campaign.
+     * Sau khi gửi sẽ lấy campaignId của mail server lưu vào email_id trên campaign hệ thống
      *
      * @return void
      */
     public function handle()
     {
+        $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
+        $response;
         foreach ($this->customers as $key => $customer) {
             if ($customer->email) {
                 $html = str_replace('***name***', $customer->name, $this->campaign->template);
-                $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
-                $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->sent();
+                $response = $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->campaign($this->campaign->name)->sendAsCampaign();
             }
+        }
+        if ($response->success()) {
+            $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);
+            $campaign = \App::make('Nh\Repositories\Campaigns\CampaignRepository');
+            $data = ['email_id' => $response->getData()['Sent'][0]['MessageID']];
+            $campaign->update($this->campaign->id, $data);
         }
     }
 }
