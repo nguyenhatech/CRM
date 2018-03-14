@@ -42,7 +42,7 @@ class CustomerTransformer extends TransformerAbstract
             'level_txt'       => $customer->levelText(),
             'avatar'          => $customer->avatar,
             'avatar_path'     => $customer->getAvatar(),
-            'total_amount'    => $customer->getTotalAmount(),
+            'total_amount'    => abs($customer->getTotalAmount()),
             'total_point'     => $customer->getTotalPoint(),
             'created_at'      => $customer->created_at ? $customer->created_at->format('d-m-Y H:i:s') : null,
             'updated_at'      => $customer->updated_at ? $customer->updated_at->format('d-m-Y H:i:s') : null,

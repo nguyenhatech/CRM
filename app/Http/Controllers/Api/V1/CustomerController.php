@@ -229,14 +229,4 @@ class CustomerController extends ApiController
         }
     }
 
-    public function updateUuid()
-    {
-        $customers = $this->customer->getByQuery([], -1, []);
-        foreach ($customers as $key => $customer) {
-            $customer->uuid = \Hashids::encode($customer->id);
-            $customer->save();
-        }
-        return $this->infoResponse([]);
-    }
-
 }
