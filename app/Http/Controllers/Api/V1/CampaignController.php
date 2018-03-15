@@ -193,7 +193,7 @@ class CampaignController extends ApiController
             
             try {
                 $job = new SendEmailCampaign($campaign, $customers);
-                dispatch($job)->delay(now()->addSeconds(5));
+                dispatch($job)->delay(now()->addSeconds($time));
             } catch (\Exception $e) {
                 throw $e;
             }

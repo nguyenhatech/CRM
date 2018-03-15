@@ -54,7 +54,7 @@ class Campaign extends Entity
         });
 
         static::addGlobalScope('campaigns', function (Builder $builder) {
-            if (getCurrentUser() && !getCurrentUser()->isAdmin()) {
+            if (!getCurrentUser()->isAdmin()) {
                 $builder->where('client_id', getCurrentUser()->id);
             }
         });

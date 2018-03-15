@@ -46,9 +46,8 @@ class SendEmailCampaign implements ShouldQueue
         }
         if (!is_null($response) && $response->success()) {
             $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);
-            $campaign = \App::make('Nh\Repositories\Campaigns\CampaignRepository');
-            $data = ['email_id' => $response->getData()['Sent'][0]['MessageID']];
-            $campaign->update($this->campaign->id, $data);
+            $this->campaign->email_id = $response->getData()['Sent'][0]['MessageID'];
+            $this->campaign->save();
         }
     }
 }
