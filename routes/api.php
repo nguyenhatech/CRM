@@ -30,6 +30,7 @@ Route::group([
     Route::resource('payment-histories', 'PaymentHistoryController');
 
     Route::get('promotions/{id}/statistic', 'PromotionController@statisticQuantityUsed');
+    Route::get('promotions/{id}/statistic-by-time', 'PromotionController@statisticByTime');
     Route::get('promotions/{id}/used-customers', 'PromotionController@getListCustomerUsed');
     Route::post('promotions/{id}/active', 'PromotionController@active');
     Route::post('promotions/upload-image', 'PromotionController@uploadImage');
