@@ -215,14 +215,25 @@ class CampaignController extends ApiController
 
             if ($campaign) {
                 $customers = [];
+                // Lấy danh sách khách hàng theo loại mục tiêu
                 if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
                     $customers = $this->cgroup->getCustomers($campaign->cgroup_id);
                 } else {
                     $customers = $campaign->customers;
                 }
-                if (count($customers->toArray()) == 0) {
+                // Kiểm tra tính khả dung của tập khách hàng và tài khoản SMS
+                $totalCustomer = count($customers->toArray());
+                if ($totalCustomer == 0) {
                     return $this->errorResponse(['errors' => ['customers' => ['Tập khách hàng rỗng!']]]);
+                } else {
+                    $smsApi = new SpeedSMSAPI();
+                    $smsAccountInfo = $smsApi->getUserInfo();
+                    if ($smsAccountInfo['status'] == 'success'
+                        && $smsAccountInfo['data']['balance'] < $totalCustomer * 500) {
+                        return $this->errorResponse(['errors' => ['balance' => ['Tài khoản SMS không đủ tiền!']]]);
+                    }
                 }
+
                 try {
                     $job = new SendSMSCampaign($campaign, $customers, $request->content);
                     dispatch($job)->delay(now()->addSeconds(1));
