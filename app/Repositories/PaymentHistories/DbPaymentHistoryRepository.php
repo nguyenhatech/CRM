@@ -90,10 +90,12 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
         $paymentHistoryCodeRepo = \App::make('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode');
 
         foreach ($arr_promotion_codes as $key => $code) {
-            $result = $paymentHistoryCodeRepo->create([
-                'payment_history_id' => $model->id,
-                'promotion_code' => $code
-            ]);
+            if (! empty($code)) {
+                $result = $paymentHistoryCodeRepo->create([
+                    'payment_history_id' => $model->id,
+                    'promotion_code' => $code
+                ]);
+            }
         }
         /**
          * update level customer
