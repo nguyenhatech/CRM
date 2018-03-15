@@ -310,7 +310,7 @@ class PromotionController extends ApiController
     public function getListCustomerUsed($id)
     {
         $customers = $this->promotion->usedCustomers($id);
-        if ($customers) {
+        if ($customers && !is_null($customers->first()->id)) {
             return $this->infoResponse($customers);
         }
         return $this->notFoundResponse();

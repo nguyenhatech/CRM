@@ -193,7 +193,7 @@ class CampaignController extends ApiController
             
             try {
                 $job = new SendEmailCampaign($campaign, $customers);
-                dispatch($job)->delay(now()->addSeconds($time));
+                dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
             } catch (\Exception $e) {
                 throw $e;
             }
@@ -236,7 +236,7 @@ class CampaignController extends ApiController
 
                 try {
                     $job = new SendSMSCampaign($campaign, $customers, $request->content);
-                    dispatch($job)->delay(now()->addSeconds(1));
+                    dispatch($job)->delay(now()->addSeconds(1))->onQueue(env('APP_NAME'));
                 } catch (\Exception $e) {
                     throw $e;
                 }

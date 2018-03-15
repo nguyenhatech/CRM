@@ -1,3 +1,4 @@
+
 <?php
 
 return [
@@ -60,7 +61,7 @@ return [
         'redis' => [
             'driver' => 'redis',
             'connection' => 'default',
-            'queue' => 'default',
+            'queue' => env('APP_NAME', 'default'),
             'retry_after' => 90,
         ],
 
