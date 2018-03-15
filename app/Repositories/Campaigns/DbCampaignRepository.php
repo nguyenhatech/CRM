@@ -102,8 +102,6 @@ class DbCampaignRepository extends BaseRepository implements CampaignRepository
         $model = $this->getById($id);
         if ($model->target_type === Campaign::MANUAL_TARGET && array_key_exists('customers', $data)) {
             $this->syncCustomers($model, $data['customers']);
-        } else {
-            $this->syncCustomers($model, []);
         }
         $model->fill($data)->save();
         return $this->getById($id);
