@@ -80,16 +80,12 @@ class CampaignController extends ApiController
 
             $params = $request->all();
             $params['client_id'] = getCurrentUser()->id;
-
-            if (array_key_exists('template_id', $params)) {
-                $params['template_id'] = convert_uuid2id($params['template_id']);
-            }
             // TH chọn theo nhóm
             if (array_key_exists('cgroup_id', $params)) {
                 $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
             }
             // TH chọn khách thủ công. Convert id để sync
-            if (array_key_exists('customers', $params)) {
+            if (array_key_exists('customers', $params) && $params['target_type'] == Campaign::MANUAL_TARGET) {
                 $customers = [];
                 foreach ($params['customers'] as $uuid) {
                     array_push($customers, convert_uuid2id($uuid));
@@ -97,7 +93,7 @@ class CampaignController extends ApiController
                 $params['customers'] = $customers;
             }
             // TH chọn khách bằng filters. Tạo group nếu có filters
-            if (array_key_exists('filters', $params)) {
+            if (array_key_exists('filters', $params) && $params['target_type'] == Campaign::FILTER_TARGET) {
                 $cgroupParams = ['name' => 'Chiến dịch ' . $params['name']];
                 $cgroupParams['filters'] = $params['filters'];
                 $cgroup = $this->cgroup->store($cgroupParams);
