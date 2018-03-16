@@ -194,4 +194,14 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         return $model->get();
     }
 
+    public function statisticByTime($id)
+    {
+        $promotion = $this->getById($id);
+
+        $model = $this->model->leftJoin('payment_histories', 'promotions.code', '=', 'payment_histories.promotion_code')->select(\DB::raw('DATE(payment_histories.created_at) as date, COUNT(payment_histories.id) as total'));
+        $model = $model->where('promotions.code', $promotion->code)->groupBy(\DB::raw('DATE(payment_histories.created_at)'));
+
+        return $model->get();
+    }
+
 }

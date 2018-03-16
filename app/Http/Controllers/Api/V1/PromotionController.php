@@ -316,4 +316,29 @@ class PromotionController extends ApiController
         return $this->notFoundResponse();
     }
 
+    /**
+     * Thống kê sử dụng mã khuyến mại theo thời gian
+     * @param  string $value [description]
+     * @return [type]        [description]
+     */
+    public function statisticByTime(Request $request, $id)
+    {
+        $promotion = $this->promotion->getById($id);
+        if ($promotion) {
+            $statistics = $this->promotion->statisticByTime($id);
+            $days = [];
+            $series = [];
+            foreach ($statistics as $key => $data) {
+                array_push($days, $data['date']);
+                array_push($series, $data['total']);
+            }
+            return $this->infoResponse([
+                'days' => $days,
+                'series' => [['name' => 'Lượt sử dụng', 'data' => $series]]
+            ]);
+        }
+
+        return $this->notFoundResponse();
+    }
+
 }

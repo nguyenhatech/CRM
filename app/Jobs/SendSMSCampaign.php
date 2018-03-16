@@ -8,7 +8,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Nh\Repositories\Campaigns\Campaign;
-use Nh\Repositories\Campaigns\CampaignRepository;
 use Nh\Repositories\Helpers\SpeedSMSAPI;
 
 class SendSMSCampaign implements ShouldQueue
@@ -50,9 +49,8 @@ class SendSMSCampaign implements ShouldQueue
         $result = $sms->sendSMS(['01682601994'], $this->content, SpeedSMSAPI::SMS_TYPE_CSKH, "", 1);
         // Cập nhật SMS ID vào campaign
         if ($result['status'] == 'success') {
-            $campaign = \App::make('Nh\Repositories\Campaigns\CampaignRepository');
-            $data = ['sms_id' => $result['data']['tranId']];
-            $campaign->update($this->campaign->id, $data);
+            $this->campaign->sms_id = $result['data']['tranId']];
+            $this->campaign->save();
         }
     }
 }
