@@ -64,7 +64,7 @@ class Promotion extends Entity
     ];
 
     const LIST_TARGET_TYPE_V2 = [
-        0                   => 'Áp dụng cho tất cả các chuyến',
+        0                   => 'Áp dụng cho tất cả các hạng xe',
         self::NORMAL_TICKET => 'Áp dụng cho khách đi xe hạng Thường',
         self::VIP_TICKET    => 'Áp dụng cho khách đi xe hạng Vip',
         self::SUPER_VIP     => 'Áp dụng cho khách đi xe hạng Siêu Vip'
