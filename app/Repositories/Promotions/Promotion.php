@@ -14,7 +14,7 @@ class Promotion extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description'];
+    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type'];
 
     /**
      * Full path of images.
@@ -51,6 +51,16 @@ class Promotion extends Entity
     const LIST_TYPE_PROMOTIONS = [
         self::CASH    => 'đ',
         self::PERCENT => '%'
+    ];
+
+    const NORMAL_TICKET = 1;
+    const VIP_TICKET    = 2;
+    const SUPER_VIP     = 3;
+    const LIST_TARGET_TYPE = [
+        0                   => 'Áp dụng cho tất cả các chuyến',
+        self::NORMAL_TICKET => 'Thường',
+        self::VIP_TICKET    => 'Vip',
+        self::SUPER_VIP     => 'Siêu vip'
     ];
 
     const ROUTE = 1; // Hình thức khách hàng đi theo tuyến
