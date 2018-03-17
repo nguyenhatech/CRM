@@ -96,4 +96,9 @@ class Campaign extends Entity
         return $this->belongsToMany('Nh\Repositories\Customers\Customer', 'customer_campaigns', 'campaign_id', 'customer_id');
     }
 
+    public function sms()
+    {
+        return $this->hasMany('Nh\Repositories\CampaignSms\CampaignSms', 'campaign_id', 'id');
+    }
+
 }
