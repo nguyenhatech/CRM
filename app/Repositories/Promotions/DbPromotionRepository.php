@@ -89,7 +89,11 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                 ->where('date_end', '>=',  Carbon::now())
                                 ->where('code', strtoupper($code))->first();
 
-        if (! is_null($promotion) && $promotion->target_type == $target_type) {
+        $target_valid = false;
+        if ($promotion->target_type == $target_type || $promotion->target_type == 0) {
+            $target_valid = true;
+        }
+        if (! is_null($promotion) && $target_valid) {
             // Nếu quantity = 0 thì sử dụng không giới hạn
             // Nếu quantity != 0 thì cần check số lượng hợp lệ hay không ?
             if ($promotion->quantity) {
@@ -166,7 +170,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $result->quantity_per_user = $promotion->quantity_per_user;
             $result->quantity          = $promotion->quantity;
             $result->type              = $promotion->getFormMovesText($type);
-            $result->target_type       = $promotion->getListTargetTypeText($target_type);
+            $result->target_type       = $promotion->getListTargetTypeText($promotion->target_type);
             $result->amount            = $amount;
 
         } else {
