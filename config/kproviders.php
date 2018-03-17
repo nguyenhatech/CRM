@@ -15,4 +15,5 @@ return [
 	Nh\Providers\CgroupAttributeServiceProvider::class,
 	Nh\Providers\CityServiceProvider::class,
 	Nh\Providers\PaymentHistoryCodeServiceProvider::class,
+	Nh\Providers\CampaignSmsServiceProvider::class,
 ];

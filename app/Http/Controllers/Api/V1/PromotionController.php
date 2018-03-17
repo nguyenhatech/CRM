@@ -23,6 +23,7 @@ class PromotionController extends ApiController
         'client_id'         => 'required|exists:users,id',
         'code'              => 'required|max:50|unique:promotions,code',
         'type'              => 'required|numeric',
+        'target_type'       => 'required|numeric',
         'amount'            => 'required|numeric|min:0',
         'amount_segment'    => 'nullable|numeric|min:0',
         'amount_max'        => 'nullable|numeric|min:0',
@@ -45,6 +46,9 @@ class PromotionController extends ApiController
 
         'type.required'             => 'Vui lòng nhập kiểu giảm giá',
         'type.numeric'              => 'Kiểu giảm giá phải là kiểu số',
+
+        'target_type.required'      => 'Vui lòng nhập kiểu giảm giá',
+        'target_type.numeric'       => 'Kiểu giảm giá phải là kiểu số',
 
         'amount.required'           => 'Vui lòng nhập số lượng giảm giá',
         'amount.numeric'            => 'Số tiền hoặc phần trăm giảm giá phải là kiểu số',
@@ -188,14 +192,14 @@ class PromotionController extends ApiController
 
             $this->validationRules = [
                 'type'              => 'required|numeric',
+                'target_type'       => 'required|numeric',
                 'amount'            => 'required|numeric|min:0',
                 'amount_max'        => 'required|numeric|min:0',
                 'quantity'          => 'nullable|numeric|min:0',
                 'quantity_per_user' => 'nullable|numeric|min:0',
                 'date_start'        => 'required|date_format:Y-m-d H:i:s',
                 'date_end'          => 'required|date_format:Y-m-d H:i:s',
-                'status'            => 'nullable|numeric',
-                'title'             => 'required'
+                'status'            => 'nullable|numeric'
             ];
 
             $this->validate($request, $this->validationRules, $this->validationMessages);
@@ -310,9 +314,34 @@ class PromotionController extends ApiController
     public function getListCustomerUsed($id)
     {
         $customers = $this->promotion->usedCustomers($id);
-        if ($customers) {
+        if ($customers && !is_null($customers->first()->id)) {
             return $this->infoResponse($customers);
         }
+        return $this->notFoundResponse();
+    }
+
+    /**
+     * Thống kê sử dụng mã khuyến mại theo thời gian
+     * @param  string $value [description]
+     * @return [type]        [description]
+     */
+    public function statisticByTime(Request $request, $id)
+    {
+        $promotion = $this->promotion->getById($id);
+        if ($promotion) {
+            $statistics = $this->promotion->statisticByTime($id);
+            $days = [];
+            $series = [];
+            foreach ($statistics as $key => $data) {
+                array_push($days, $data['date']);
+                array_push($series, $data['total']);
+            }
+            return $this->infoResponse([
+                'days' => $days,
+                'series' => [['name' => 'Lượt sử dụng', 'data' => $series]]
+            ]);
+        }
+
         return $this->notFoundResponse();
     }
 

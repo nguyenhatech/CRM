@@ -13,7 +13,7 @@ class Campaign extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id','template_id', 'template','cgroup_id','uuid','name','description', 'status', 'target_type', 'sms_template', 'period', 'runtime', 'email_id', 'sms_id'];
+    public $fillable = ['client_id', 'template','cgroup_id','uuid','name','description', 'status', 'target_type', 'sms_template', 'period', 'runtime', 'email_id', 'sms_id'];
 
     public $dates = ['start_date', 'end_date'];
 
@@ -94,6 +94,11 @@ class Campaign extends Entity
 
     public function customers() {
         return $this->belongsToMany('Nh\Repositories\Customers\Customer', 'customer_campaigns', 'campaign_id', 'customer_id');
+    }
+
+    public function sms()
+    {
+        return $this->hasMany('Nh\Repositories\CampaignSms\CampaignSms', 'campaign_id', 'id');
     }
 
 }

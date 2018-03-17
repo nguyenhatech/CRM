@@ -14,7 +14,7 @@ class Promotion extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description'];
+    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type'];
 
     /**
      * Full path of images.
@@ -51,6 +51,23 @@ class Promotion extends Entity
     const LIST_TYPE_PROMOTIONS = [
         self::CASH    => 'đ',
         self::PERCENT => '%'
+    ];
+
+    const NORMAL_TICKET = 1;
+    const VIP_TICKET    = 2;
+    const SUPER_VIP     = 3;
+    const LIST_TARGET_TYPE = [
+        0                   => 'Áp dụng cho tất cả các chuyến',
+        self::NORMAL_TICKET => 'Thường',
+        self::VIP_TICKET    => 'Vip',
+        self::SUPER_VIP     => 'Siêu vip'
+    ];
+
+    const LIST_TARGET_TYPE_V2 = [
+        0                   => 'Áp dụng cho tất cả các hạng xe',
+        self::NORMAL_TICKET => 'Áp dụng cho khách đi xe hạng Thường',
+        self::VIP_TICKET    => 'Áp dụng cho khách đi xe hạng Vip',
+        self::SUPER_VIP     => 'Áp dụng cho khách đi xe hạng Siêu Vip'
     ];
 
     const ROUTE = 1; // Hình thức khách hàng đi theo tuyến
@@ -104,5 +121,15 @@ class Promotion extends Entity
     {
         $typeMove = (int) $typeMove;
         return array_key_exists($typeMove, self::LIST_FORM_MOVE) ? self::LIST_FORM_MOVE[$typeMove] : 'Không xác định';
+    }
+
+    /**
+     * Trả về hạng xe khách đi
+     * @return [type] [description]
+     */
+    public function getListTargetTypeText($typeTaget)
+    {
+        $typeTaget = (int) $typeTaget;
+        return array_key_exists($typeTaget, self::LIST_TARGET_TYPE_V2) ? self::LIST_TARGET_TYPE_V2[$typeTaget] : 'Không xác định';
     }
 }

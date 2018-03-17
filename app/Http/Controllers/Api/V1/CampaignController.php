@@ -12,6 +12,7 @@ use Nh\Http\Controllers\Api\TransformerTrait;
 use Nh\Repositories\Campaigns\Campaign;
 
 use Nh\Repositories\Cgroups\CgroupRepository;
+use Nh\Repositories\Customers\CustomerRepository;
 use Nh\Repositories\Campaigns\CampaignRepository;
 use Nh\Http\Transformers\CampaignTransformer;
 
@@ -27,6 +28,7 @@ class CampaignController extends ApiController
 
     protected $campaign;
     protected $cgroup;
+    protected $customer;
 
     protected $validationRules = [
         'template'    => 'required',
@@ -47,10 +49,11 @@ class CampaignController extends ApiController
         'target_type.numeric'       => 'Chọn đối tượng mục tiêu chưa đúng'
     ];
 
-    public function __construct(CampaignRepository $campaign, CgroupRepository $cgroup, CampaignTransformer $transformer)
+    public function __construct(CampaignRepository $campaign, CgroupRepository $cgroup, CustomerRepository $customer, CampaignTransformer $transformer)
     {
         $this->campaign = $campaign;
         $this->cgroup = $cgroup;
+        $this->customer = $customer;
         $this->setTransformer($transformer);
         $this->checkPermission('campaign');
     }
@@ -80,16 +83,12 @@ class CampaignController extends ApiController
 
             $params = $request->all();
             $params['client_id'] = getCurrentUser()->id;
-
-            if (array_key_exists('template_id', $params)) {
-                $params['template_id'] = convert_uuid2id($params['template_id']);
-            }
             // TH chọn theo nhóm
             if (array_key_exists('cgroup_id', $params)) {
                 $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
             }
             // TH chọn khách thủ công. Convert id để sync
-            if (array_key_exists('customers', $params)) {
+            if (array_key_exists('customers', $params) && $params['target_type'] == Campaign::MANUAL_TARGET) {
                 $customers = [];
                 foreach ($params['customers'] as $uuid) {
                     array_push($customers, convert_uuid2id($uuid));
@@ -97,7 +96,7 @@ class CampaignController extends ApiController
                 $params['customers'] = $customers;
             }
             // TH chọn khách bằng filters. Tạo group nếu có filters
-            if (array_key_exists('filters', $params)) {
+            if (array_key_exists('filters', $params) && $params['target_type'] == Campaign::FILTER_TARGET) {
                 $cgroupParams = ['name' => 'Chiến dịch ' . $params['name']];
                 $cgroupParams['filters'] = $params['filters'];
                 $cgroup = $this->cgroup->store($cgroupParams);
@@ -175,6 +174,34 @@ class CampaignController extends ApiController
         }
     }
 
+    /**
+     * Lấy danh sách khách hàng của campaign
+     * @param  int          campaign_id
+     * @return response     [description]
+     */
+    public function showCustomers($id)
+    {
+        $campaign = $this->campaign->getById($id);
+
+        if ($campaign) {
+            $customers = [];
+            if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
+                $customers = $this->cgroup->getCustomers($campaign->cgroup_id, 5);
+            } else {
+                $customers = $campaign->customers;
+            }
+            return $this->infoResponse($customers);
+        } else {
+            return $this->notFoundResponse();
+        }
+    }
+
+    /**
+     * Đặt lệnh gửi email
+     * @param  integer  $id   
+     * @param  integer  $time Số giây
+     * @return [type]        [description]
+     */
     public function sendEmail($id, $time = 1)
     {
         $campaign = $this->campaign->getById($id);
@@ -192,8 +219,11 @@ class CampaignController extends ApiController
             }
             
             try {
-                $job = new SendEmailCampaign($campaign, $customers);
-                dispatch($job)->delay(now()->addSeconds(5));
+                $customerChunks = $customers->chunk(1000);
+                foreach ($customerChunks as $chunk) {
+                    $job = new SendEmailCampaign($campaign, $chunk);
+                    dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
+                }
             } catch (\Exception $e) {
                 throw $e;
             }
@@ -203,6 +233,11 @@ class CampaignController extends ApiController
         }
     }
 
+    /**
+     * Đặt lệnh gửi SMS
+     * @param  integer  $id   
+     * @return [type]        [description]
+     */
     public function sendSMS(Request $request, $id)
     {
         try {
@@ -215,17 +250,31 @@ class CampaignController extends ApiController
 
             if ($campaign) {
                 $customers = [];
+                // Lấy danh sách khách hàng theo loại mục tiêu
                 if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
                     $customers = $this->cgroup->getCustomers($campaign->cgroup_id);
                 } else {
                     $customers = $campaign->customers;
                 }
-                if (count($customers->toArray()) == 0) {
+                // Kiểm tra tính khả dung của tập khách hàng và tài khoản SMS
+                $totalCustomer = count($customers->toArray());
+                if ($totalCustomer == 0) {
                     return $this->errorResponse(['errors' => ['customers' => ['Tập khách hàng rỗng!']]]);
+                } else {
+                    $smsApi = new SpeedSMSAPI();
+                    $smsAccountInfo = $smsApi->getUserInfo();
+                    if ($smsAccountInfo['status'] == 'success'
+                        && $smsAccountInfo['data']['balance'] < $totalCustomer * 250) {
+                        return $this->errorResponse(['errors' => ['balance' => ['Tài khoản SMS không đủ tiền!']]]);
+                    }
                 }
+
                 try {
-                    $job = new SendSMSCampaign($campaign, $customers, $request->content);
-                    dispatch($job)->delay(now()->addSeconds(1));
+                    $customerChunks = $customers->chunk(1000);
+                    foreach ($customerChunks as $chunk) {
+                        $job = new SendSMSCampaign($campaign, $chunk, $request->content);
+                        dispatch($job)->delay(now()->addSeconds(1))->onQueue(env('APP_NAME'));
+                    }
                 } catch (\Exception $e) {
                     throw $e;
                 }
@@ -243,6 +292,11 @@ class CampaignController extends ApiController
         }
     }
 
+    /**
+     * Thống kê tỷ lệ gửi email
+     * @param  campaignId
+     * @return [type]     [description]
+     */
     public function statisticEmail($id)
     {
         $campaign = $this->campaign->getById($id);
@@ -260,22 +314,62 @@ class CampaignController extends ApiController
         return $this->notFoundResponse();
     }
 
+    /**
+     * Thống kê tỷ lệ gửi SMS
+     * @param  campaignId
+     * @return [type]     [description]
+     */
     public function statisticSMS($id)
     {
         $campaign = $this->campaign->getById($id);
         if ($campaign) {
-            if (is_null($campaign->sms_id)) {
+            if (!count($campaign->sms)) {
                 return $this->infoResponse([]);
             }
             $smsApi = new SpeedSMSAPI();
-            $smsReport = $smsApi->getSMSStatus($campaign->sms_id);
-            if ($smsReport['status'] == 'success') {
-                return $this->infoResponse($smsReport['data']);
-            } else {
-                return $this->infoResponse([]);
+            $smsReport = [];
+            foreach ($campaign->sms as $smsPack) {
+                $result = $smsApi->getSMSStatus($smsPack->sms_id);
+                if ($result['status'] == 'success') {
+                    $smsReport = array_merge($smsReport, $result['data']);
+                }
             }
+            return $this->infoResponse($smsReport);
         }
         return $this->notFoundResponse();
+    }
+
+    /**
+     * Lấy danh sách khách hàng phù hợp với thuộc tính
+     * @param  Request $request [description]
+     * @return [type]           [description]
+     */
+    public function previewCustomers(Request $request)
+    {
+        $params = [];
+        $filters = array_only($request->all(), ['age_min', 'age_max', 'created_at_min', 'created_at_max', 'level', 'city_id', 'job']);
+        foreach ($filters as $key => $filter) {
+            if (!is_null($filter)) {
+                switch ($key) {
+                    case 'age_min':
+                        array_push($params, ['attribute' => 'dob', 'operation' => '<=', 'value' => Carbon::now()->subYears($filter)->toDateString()]);
+                        break;
+                    case 'age_max':
+                        array_push($params, ['attribute' => 'dob', 'operation' => '>=', 'value' => Carbon::now()->subYears($filter)->toDateString()]);
+                        break;
+                    case 'created_at_min':
+                        array_push($params, ['attribute' => 'created_at', 'operation' => '>=', 'value' => $filter . ' 00:00:00']);
+                        break;
+                    case 'created_at_max':
+                        array_push($params, ['attribute' => 'created_at', 'operation' => '<=', 'value' => $filter . ' 23:59:59']);
+                        break;
+                    default:
+                        array_push($params, ['attribute' => $key, 'operation' => '=', 'value' => $filter]);
+                        break;
+                }
+            }
+        }
+        return $this->infoResponse($this->customer->getByGroup($params, 10));
     }
 
 }
