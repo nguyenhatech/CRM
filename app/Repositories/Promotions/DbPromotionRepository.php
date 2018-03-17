@@ -166,6 +166,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $result->quantity_per_user = $promotion->quantity_per_user;
             $result->quantity          = $promotion->quantity;
             $result->type              = $promotion->getFormMovesText($type);
+            $result->target_type       = $promotion->getListTargetTypeText($target_type);
             $result->amount            = $amount;
 
         } else {
