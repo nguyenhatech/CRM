@@ -219,8 +219,11 @@ class CampaignController extends ApiController
             }
             
             try {
-                $job = new SendEmailCampaign($campaign, $customers);
-                dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
+                $customerChunks = $customers->chunk(1);
+                foreach ($customerChunks as $chunk) {
+                    $job = new SendEmailCampaign($campaign, $chunk);
+                    dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
+                }
             } catch (\Exception $e) {
                 throw $e;
             }
@@ -261,14 +264,17 @@ class CampaignController extends ApiController
                     $smsApi = new SpeedSMSAPI();
                     $smsAccountInfo = $smsApi->getUserInfo();
                     if ($smsAccountInfo['status'] == 'success'
-                        && $smsAccountInfo['data']['balance'] < $totalCustomer * 500) {
+                        && $smsAccountInfo['data']['balance'] < $totalCustomer * 250) {
                         return $this->errorResponse(['errors' => ['balance' => ['Tài khoản SMS không đủ tiền!']]]);
                     }
                 }
 
                 try {
-                    $job = new SendSMSCampaign($campaign, $customers, $request->content);
-                    dispatch($job)->delay(now()->addSeconds(1))->onQueue(env('APP_NAME'));
+                    $customerChunks = $customers->chunk(1000);
+                    foreach ($customerChunks as $chunk) {
+                        $job = new SendSMSCampaign($campaign, $chunk, $request->content);
+                        dispatch($job)->delay(now()->addSeconds(1))->onQueue(env('APP_NAME'));
+                    }
                 } catch (\Exception $e) {
                     throw $e;
                 }
@@ -317,16 +323,18 @@ class CampaignController extends ApiController
     {
         $campaign = $this->campaign->getById($id);
         if ($campaign) {
-            if (is_null($campaign->sms_id)) {
+            if (!count($campaign->sms)) {
                 return $this->infoResponse([]);
             }
             $smsApi = new SpeedSMSAPI();
-            $smsReport = $smsApi->getSMSStatus($campaign->sms_id);
-            if ($smsReport['status'] == 'success') {
-                return $this->infoResponse($smsReport['data']);
-            } else {
-                return $this->infoResponse([]);
+            $smsReport = [];
+            foreach ($campaign->sms as $smsPack) {
+                $result = $smsApi->getSMSStatus($smsPack->sms_id);
+                if ($result['status'] == 'success') {
+                    $smsReport = array_merge($smsReport, $result['data']);
+                }
             }
+            return $this->infoResponse($smsReport);
         }
         return $this->notFoundResponse();
     }
