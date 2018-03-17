@@ -63,6 +63,13 @@ class Promotion extends Entity
         self::SUPER_VIP     => 'Siêu vip'
     ];
 
+    const LIST_TARGET_TYPE_V2 = [
+        0                   => 'Áp dụng cho tất cả các hạng xe',
+        self::NORMAL_TICKET => 'Áp dụng cho khách đi xe hạng Thường',
+        self::VIP_TICKET    => 'Áp dụng cho khách đi xe hạng Vip',
+        self::SUPER_VIP     => 'Áp dụng cho khách đi xe hạng Siêu Vip'
+    ];
+
     const ROUTE = 1; // Hình thức khách hàng đi theo tuyến
     const SEGMENT = 2; // Hình thức khách hàng đi theo chặng
 
@@ -114,5 +121,15 @@ class Promotion extends Entity
     {
         $typeMove = (int) $typeMove;
         return array_key_exists($typeMove, self::LIST_FORM_MOVE) ? self::LIST_FORM_MOVE[$typeMove] : 'Không xác định';
+    }
+
+    /**
+     * Trả về hạng xe khách đi
+     * @return [type] [description]
+     */
+    public function getListTargetTypeText($typeTaget)
+    {
+        $typeTaget = (int) $typeTaget;
+        return array_key_exists($typeTaget, self::LIST_TARGET_TYPE_V2) ? self::LIST_TARGET_TYPE_V2[$typeTaget] : 'Không xác định';
     }
 }
