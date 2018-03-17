@@ -219,7 +219,7 @@ class CampaignController extends ApiController
             }
             
             try {
-                $customerChunks = $customers->chunk(1);
+                $customerChunks = $customers->chunk(1000);
                 foreach ($customerChunks as $chunk) {
                     $job = new SendEmailCampaign($campaign, $chunk);
                     dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
