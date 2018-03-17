@@ -54,6 +54,7 @@ class CheckPromotionController extends Controller
     {
         DB::beginTransaction();
 
+        \Log::info('ERP ' .getCurrentUser()->name . ' : ' . json_encode($request->all()));
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
 

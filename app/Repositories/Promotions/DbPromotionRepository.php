@@ -83,7 +83,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $type        = array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
         $target_type = array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
         $result      = new \stdClass();
-
+        $type = 1;
         $promotion = $this->model->where('status', Promotion::ENABLE)
                                 ->where('date_start', '<=',  Carbon::now())
                                 ->where('date_end', '>=',  Carbon::now())
