@@ -80,8 +80,8 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     {
         $code        = array_get($params, 'code', '');
         $total_money = (int) array_get($params, 'ticket_money', 0);
-        $type        = array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
-        $target_type = array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
+        $type        = (int) array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
+        $target_type = (int) array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
         $result      = new \stdClass();
 
         $promotion = $this->model->where('status', Promotion::ENABLE)
