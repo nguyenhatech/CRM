@@ -12,6 +12,7 @@ use Nh\Http\Controllers\Api\TransformerTrait;
 use Nh\Repositories\Campaigns\Campaign;
 
 use Nh\Repositories\Cgroups\CgroupRepository;
+use Nh\Repositories\Customers\CustomerRepository;
 use Nh\Repositories\Campaigns\CampaignRepository;
 use Nh\Http\Transformers\CampaignTransformer;
 
@@ -27,6 +28,7 @@ class CampaignController extends ApiController
 
     protected $campaign;
     protected $cgroup;
+    protected $customer;
 
     protected $validationRules = [
         'template'    => 'required',
@@ -47,10 +49,11 @@ class CampaignController extends ApiController
         'target_type.numeric'       => 'Chọn đối tượng mục tiêu chưa đúng'
     ];
 
-    public function __construct(CampaignRepository $campaign, CgroupRepository $cgroup, CampaignTransformer $transformer)
+    public function __construct(CampaignRepository $campaign, CgroupRepository $cgroup, CustomerRepository $customer, CampaignTransformer $transformer)
     {
         $this->campaign = $campaign;
         $this->cgroup = $cgroup;
+        $this->customer = $customer;
         $this->setTransformer($transformer);
         $this->checkPermission('campaign');
     }
@@ -171,6 +174,34 @@ class CampaignController extends ApiController
         }
     }
 
+    /**
+     * Lấy danh sách khách hàng của campaign
+     * @param  int          campaign_id
+     * @return response     [description]
+     */
+    public function showCustomers($id)
+    {
+        $campaign = $this->campaign->getById($id);
+
+        if ($campaign) {
+            $customers = [];
+            if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
+                $customers = $this->cgroup->getCustomers($campaign->cgroup_id, 5);
+            } else {
+                $customers = $campaign->customers;
+            }
+            return $this->infoResponse($customers);
+        } else {
+            return $this->notFoundResponse();
+        }
+    }
+
+    /**
+     * Đặt lệnh gửi email
+     * @param  integer  $id   
+     * @param  integer  $time Số giây
+     * @return [type]        [description]
+     */
     public function sendEmail($id, $time = 1)
     {
         $campaign = $this->campaign->getById($id);
@@ -199,6 +230,11 @@ class CampaignController extends ApiController
         }
     }
 
+    /**
+     * Đặt lệnh gửi SMS
+     * @param  integer  $id   
+     * @return [type]        [description]
+     */
     public function sendSMS(Request $request, $id)
     {
         try {
@@ -250,6 +286,11 @@ class CampaignController extends ApiController
         }
     }
 
+    /**
+     * Thống kê tỷ lệ gửi email
+     * @param  campaignId
+     * @return [type]     [description]
+     */
     public function statisticEmail($id)
     {
         $campaign = $this->campaign->getById($id);
@@ -267,6 +308,11 @@ class CampaignController extends ApiController
         return $this->notFoundResponse();
     }
 
+    /**
+     * Thống kê tỷ lệ gửi SMS
+     * @param  campaignId
+     * @return [type]     [description]
+     */
     public function statisticSMS($id)
     {
         $campaign = $this->campaign->getById($id);
@@ -283,6 +329,39 @@ class CampaignController extends ApiController
             }
         }
         return $this->notFoundResponse();
+    }
+
+    /**
+     * Lấy danh sách khách hàng phù hợp với thuộc tính
+     * @param  Request $request [description]
+     * @return [type]           [description]
+     */
+    public function previewCustomers(Request $request)
+    {
+        $params = [];
+        $filters = array_only($request->all(), ['age_min', 'age_max', 'created_at_min', 'created_at_max', 'level', 'city_id', 'job']);
+        foreach ($filters as $key => $filter) {
+            if (!is_null($filter)) {
+                switch ($key) {
+                    case 'age_min':
+                        array_push($params, ['attribute' => 'dob', 'operation' => '<=', 'value' => Carbon::now()->subYears($filter)->toDateString()]);
+                        break;
+                    case 'age_max':
+                        array_push($params, ['attribute' => 'dob', 'operation' => '>=', 'value' => Carbon::now()->subYears($filter)->toDateString()]);
+                        break;
+                    case 'created_at_min':
+                        array_push($params, ['attribute' => 'created_at', 'operation' => '>=', 'value' => $filter . ' 00:00:00']);
+                        break;
+                    case 'created_at_max':
+                        array_push($params, ['attribute' => 'created_at', 'operation' => '<=', 'value' => $filter . ' 23:59:59']);
+                        break;
+                    default:
+                        array_push($params, ['attribute' => $key, 'operation' => '=', 'value' => $filter]);
+                        break;
+                }
+            }
+        }
+        return $this->infoResponse($this->customer->getByGroup($params, 10));
     }
 
 }

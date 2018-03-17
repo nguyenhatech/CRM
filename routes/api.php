@@ -56,11 +56,13 @@ Route::group([
     Route::put('users/{id}/reset-password', 'UserController@resetPassword');
     Route::put('users/{id}/active', 'UserController@active');
 
+    Route::get('campaigns/preview-customer', 'CampaignController@previewCustomers');
     Route::resource('campaigns', 'CampaignController');
     Route::get('campaigns/send-email/{id}', 'CampaignController@sendEmail');
     Route::post('campaigns/send-sms/{id}', 'CampaignController@sendSMS');
     Route::get('campaigns/statistic-sms/{id}', 'CampaignController@statisticSMS');
     Route::get('campaigns/statistic-email/{id}', 'CampaignController@statisticEmail');
+    Route::get('campaigns/list-customer/{id}', 'CampaignController@showCustomers');
     // developer
     Route::get('/developer/client', [
         'as' => 'developer.client',

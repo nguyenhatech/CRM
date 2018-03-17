@@ -71,14 +71,14 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
      * @param  array $filters Mảng các điều kiện where
      * @return Illuminate\Pagination\Paginator
      */
-    public function getByGroup($filters)
+    public function getByGroup($filters, $size = -1)
     {
         $model = $this->model;
         foreach ($filters as $key => $filter) {
             $model = $model->where($filter['attribute'], $filter['operation'], $filter['value']);
         }
 
-        return $model->get();
+        return $size < 0 ? $model->get() : $model->paginate($size);
     }
 
     public function storeOrUpdate($data) {

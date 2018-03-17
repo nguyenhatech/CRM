@@ -50,6 +50,15 @@ class HelperController extends ApiController
                     'targets' => $targets,
                 ];
                 break;
+            case 'target-type-promotions':
+                $targets = [];
+                foreach (\Nh\Repositories\Promotions\Promotion::LIST_TARGET_TYPE as $key => $value) {
+                    array_push($targets, ['value' => $key, 'text' => $value]);
+                }
+                $result = [
+                    'targets' => $targets,
+                ];
+                break;
         }
 
         return response()->json($result, 200);

@@ -92,7 +92,7 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
         return $this->getById($id);
     }
 
-    public function getCustomers($id)
+    public function getCustomers($id, $size = -1)
     {
         $cgroup = $this->getById($id);
         if ($cgroup) {
@@ -119,7 +119,7 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
                 }
             }
             $customer = \App::make('Nh\Repositories\Customers\CustomerRepository');
-            return $customer->getByGroup($params);
+            return $customer->getByGroup($params, $size);
         }
         return false;
     }
