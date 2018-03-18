@@ -61,7 +61,8 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
         $model = $this->model->create($data);
         $cgroupAttribute = \App::make('Nh\Repositories\CgroupAttributes\CgroupAttributeRepository');
 
-        foreach ($params['filters'] as $key => $filter) {
+        $filters = array_only($params['filters'], ['level', 'city_id', 'job', 'age_min', 'age_max', 'created_at_min', 'created_at_max']);
+        foreach ($filters as $key => $filter) {
             $attribute = [
                 'cgroup_id' => $model->id,
                 'attribute' => $key,
@@ -98,7 +99,7 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
         if ($cgroup) {
             $params = [];
             foreach ($cgroup->attributes->all() as $filter) {
-                if (!is_null($filter->value)) {
+                if (!is_null($filter->value) && $filter->attribute != 'page') {
                     switch ($filter->attribute) {
                         case 'age_min':
                             array_push($params, ['attribute' => 'dob', 'operation' => '<=', 'value' => Carbon::now()->subYears($filter->value)->toDateString()]);

@@ -78,7 +78,10 @@ class Customer extends Entity
     }
 
     public function levelText() {
-        return list_level()[$this->level];
+        if (array_key_exists($this->level, list_level())) {
+            return list_level()[$this->level];
+        }
+        return null;
     }
 
     public static function getListLevel()

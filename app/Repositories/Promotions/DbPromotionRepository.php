@@ -80,8 +80,8 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     {
         $code        = array_get($params, 'code', '');
         $total_money = (int) array_get($params, 'ticket_money', 0);
-        $type        = array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
-        $target_type = array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
+        $type        = (int) array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
+        $target_type = (int) array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
         $result      = new \stdClass();
 
         $promotion = $this->model->where('status', Promotion::ENABLE)
@@ -90,9 +90,12 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                 ->where('code', strtoupper($code))->first();
 
         $target_valid = false;
-        if ($promotion->target_type == $target_type || $promotion->target_type == 0) {
-            $target_valid = true;
+        if (! is_null($promotion)) {
+            if ($promotion->target_type == $target_type || $promotion->target_type == 0) {
+                $target_valid = true;
+            }
         }
+
         if (! is_null($promotion) && $target_valid) {
             // Nếu quantity = 0 thì sử dụng không giới hạn
             // Nếu quantity != 0 thì cần check số lượng hợp lệ hay không ?

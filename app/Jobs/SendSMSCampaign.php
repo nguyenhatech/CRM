@@ -49,8 +49,13 @@ class SendSMSCampaign implements ShouldQueue
         $result = $sms->sendSMS($phones, $this->content, SpeedSMSAPI::SMS_TYPE_CSKH, "", 1);
         // Cập nhật SMS ID vào campaign
         if ($result['status'] == 'success') {
-            $this->campaign->sms_id = $result['data']['tranId'];
-            $this->campaign->save();
+            $params = [
+                'campaign_id' => $this->campaign->id,
+                'sms_id'      => $result['data']['tranId'],
+                'total'       => count($phones)
+            ];
+            $campaignSms = \App::make('Nh\Repositories\CampaignSms\CampaignSmsRepository');
+            $campaignSms->store($params);
         }
     }
 }
