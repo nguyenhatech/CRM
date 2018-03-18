@@ -372,4 +372,25 @@ class CampaignController extends ApiController
         return $this->infoResponse($this->customer->getByGroup($params, 10));
     }
 
+    public function destroy($id)
+    {
+        $data = $this->getResource()->getById($id);
+        if (!$data) {
+            return $this->notFoundResponse();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $data->cgroup()->delete();
+            $this->getResource()->delete($id);
+
+            DB::commit();
+            return $this->deleteResponse();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
 }
