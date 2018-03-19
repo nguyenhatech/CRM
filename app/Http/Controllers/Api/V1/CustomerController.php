@@ -11,6 +11,7 @@ use Nh\Http\Transformers\CustomerTransformer;
 use Nh\Repositories\Cgroups\CgroupRepository;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Input;
+use Nh\Jobs\ImportCsvCustomer;
 use Excel;
 
 class CustomerController extends ApiController
@@ -68,6 +69,11 @@ class CustomerController extends ApiController
     {
         $pageSize = $request->get('limit', 25);
         $sort = explode(':', $request->get('sort', 'id:1'));
+
+        // Nếu lọc theo nhóm khách hàng thì sẽ lấy danh sách khách hàng theo nhóm
+        if (array_key_exists('group_id', $request->all()) && $request->group_id != '') {
+            return $this->successResponse($this->cgroups->getCustomers($request->group_id, 40));
+        }
 
         $models = $this->getResource()->getByQuery($request->all(), $pageSize, $sort);
         return $this->successResponse($models);
@@ -153,22 +159,18 @@ class CustomerController extends ApiController
 
     public function importExcel(Request $request)
     {
-        $excelPath = Input::file('file')->getRealPath();
-        Excel::load($excelPath, function ($reader) use ($request) {
-            $results = $reader->get();
-            foreach ($results as $key => $row) {
-                $params = [];
-                $params['name'] = array_get($row, formatToTextSimple($request['name']), '');
-                $params['phone'] = array_get($row, formatToTextSimple($request['phone']), '');
-                $params['address'] = array_get($row, formatToTextSimple($request['address']), '');
-                $params['email'] = array_get($row, formatToTextSimple($request['email']), '');
-                if ($params['name'] && $params['phone']) {
-                    $customer = $this->getResource()->storeOrUpdate($params);
-                }
-            }
-        });
+        $excelPath = $request->file('file')->store('excel');
+        $params = array_except($request->all(), ['file']);
+
+        try {
+            $job = new ImportCsvCustomer($excelPath, $params);
+            dispatch($job)->onQueue(env('APP_NAME'));
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
         $response = array_merge([
-            'code' => 200,
+            'code'   => 200,
             'status' => 'success',
         ]);
         return response()->json($response, $response['code']);

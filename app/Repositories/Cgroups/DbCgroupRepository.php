@@ -122,7 +122,7 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
             $customer = \App::make('Nh\Repositories\Customers\CustomerRepository');
             return $customer->getByGroup($params, $size);
         }
-        return false;
+        return [];
     }
 
 }
