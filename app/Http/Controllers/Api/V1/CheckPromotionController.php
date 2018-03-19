@@ -23,7 +23,7 @@ class CheckPromotionController extends ApiController
         'ticket_money' => 'required|numeric|min:1000',
         'type'         => 'required|in:1,2',
         'target_type'  => 'required|in:0,1,2,3',
-        'email'        => 'required|max:50',
+        'email'        => 'nullable|max:50',
         'phone'        => 'required|digits_between:8,12'
     ];
 
@@ -37,7 +37,6 @@ class CheckPromotionController extends ApiController
         'type.in'               => 'Hình thức khách đi chỉ có thể là theo tuyến hoặc chặng',
         'target_type.required'  => 'Hạng xe không thể để trống',
         'target_type.in'        => 'Hạng xe không hợp lệ',
-        'email.required'        => 'Vui lòng nhập mã Email',
         'phone.required'        => 'Vui lòng nhập mã Phone'
     ];
 
