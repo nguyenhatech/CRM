@@ -81,6 +81,15 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
         return $size < 0 ? $model->get() : $model->paginate($size);
     }
 
+    public function groupCustomer($groupId, $size = 10)
+    {
+        $model = $this->model->whereHas('groups', function ($model) use ($groupId) {
+            $model = $model->where('id', $groupId);
+        });
+
+        return $size < 0 ? $model->get() : $model->paginate($size);
+    }
+
     public function storeOrUpdate($data) {
         $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar', 'city_id']);
         $email = array_get($data, 'email', null);

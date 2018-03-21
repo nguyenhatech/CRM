@@ -99,6 +99,7 @@ class CampaignController extends ApiController
             if (array_key_exists('filters', $params) && $params['target_type'] == Campaign::FILTER_TARGET) {
                 $cgroupParams = ['name' => 'Chiến dịch ' . $params['name']];
                 $cgroupParams['filters'] = $params['filters'];
+                $cgroupParams['method_input_type'] = 1;
                 $cgroup = $this->cgroup->store($cgroupParams);
                 $params['cgroup_id'] = $cgroup->id;
             }
@@ -186,7 +187,7 @@ class CampaignController extends ApiController
         if ($campaign) {
             $customers = [];
             if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
-                $customers = $this->cgroup->getCustomers($campaign->cgroup_id, 5);
+                $customers = $this->customer->groupCustomer($campaign->cgroup->id);
             } else {
                 $customers = $campaign->customers;
             }
@@ -210,7 +211,7 @@ class CampaignController extends ApiController
             $customers = [];
 
             if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
-                $customers = $this->cgroup->getCustomers($campaign->cgroup_id);
+                $customers = $campaign->cgroup->customers;
             } else {
                 $customers = $campaign->customers;
             }
@@ -252,7 +253,7 @@ class CampaignController extends ApiController
                 $customers = [];
                 // Lấy danh sách khách hàng theo loại mục tiêu
                 if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
-                    $customers = $this->cgroup->getCustomers($campaign->cgroup_id);
+                    $customers = $campaign->cgroup->customers;
                 } else {
                     $customers = $campaign->customers;
                 }

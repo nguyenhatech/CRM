@@ -70,11 +70,6 @@ class CustomerController extends ApiController
         $pageSize = $request->get('limit', 25);
         $sort = explode(':', $request->get('sort', 'id:1'));
 
-        // Nếu lọc theo nhóm khách hàng thì sẽ lấy danh sách khách hàng theo nhóm
-        if (array_key_exists('group_id', $request->all()) && $request->group_id != '') {
-            return $this->successResponse($this->cgroups->getCustomers($request->group_id, 40));
-        }
-
         $models = $this->getResource()->getByQuery($request->all(), $pageSize, $sort);
         return $this->successResponse($models);
     }

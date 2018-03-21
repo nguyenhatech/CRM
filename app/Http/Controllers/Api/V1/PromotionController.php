@@ -193,7 +193,7 @@ class PromotionController extends ApiController
                 'type'              => 'required|numeric',
                 'target_type'       => 'required|numeric',
                 'amount'            => 'required|numeric|min:0',
-                'amount_max'        => 'required|numeric|min:0',
+                'amount_max'        => 'nullable|numeric|min:0',
                 'quantity'          => 'nullable|numeric|min:0',
                 'quantity_per_user' => 'nullable|numeric|min:0',
                 'date_start'        => 'required|date_format:Y-m-d H:i:s',

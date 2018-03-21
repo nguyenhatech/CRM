@@ -24,6 +24,9 @@ Route::group([
     Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
     Route::resource('customers', 'CustomerController');
 
+    Route::get('cgroups/{id}/customers', 'CgroupController@getCustomerList');
+    Route::delete('cgroups/{id}/remove-customer/{customerId}', 'CgroupController@removeCustomer');
+    Route::post('cgroups/{id}/add-customer/{customerId}', 'CgroupController@addCustomer');
     Route::resource('cgroups', 'CgroupController');
     Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
 

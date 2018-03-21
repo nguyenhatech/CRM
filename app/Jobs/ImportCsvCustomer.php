@@ -37,7 +37,23 @@ class ImportCsvCustomer implements ShouldQueue
     public function handle()
     {
         $request = $this->data;
-        Excel::load('storage/app/' . $this->filePath, function ($reader) use ($request) {
+        // Tạo nhóm cho tập khách hàng
+        $group = false;
+        $groupRepo = \App::make('Nh\Repositories\Cgroups\CgroupRepository');
+        if (array_key_exists('group_id', $request)) {
+            $group = $groupRepo->getById($request['group_id']);
+        }
+        if (array_key_exists('group_name', $request)) {
+            $params = [
+                'name'              => $request['group_name'],
+                'method_input_type' => 2,
+                'customers'         => []
+            ];
+            $group = $groupRepo->store($params);
+        }
+
+        // Import customer
+        Excel::load('storage/app/' . $this->filePath, function ($reader) use ($request, $group) {
             $results = $reader->get();
             foreach ($results as $key => $row) {
                 $params = [];
@@ -48,13 +64,21 @@ class ImportCsvCustomer implements ShouldQueue
                 $params['sex']      = array_get($row, formatToTextSimple($request['sex']), -1);
                 $params['point']    = array_get($row, formatToTextSimple($request['point']), 0);
                 $params['identification_number'] = array_get($row, formatToTextSimple($request['identification_number']), null);
-                $params['phone'] = '0' . strval(intval($params['phone']));
+
+                $params['phone'] = '0' . strval(intval($params['phone'])); // Chuẩn hóa phone
                 if ($params['name'] && $params['phone']) {
-                    $customer = \App::make('Nh\Repositories\Customers\CustomerRepository');
-                    $customer->storeOrUpdate($params);
+                    $customerRepo = \App::make('Nh\Repositories\Customers\CustomerRepository');
+                    $customer = $customerRepo->storeOrUpdate($params);
+                    // sync group
+                    if ($group) {
+                        $customer->groups()->attach([$group->id]);
+                    }
                 }
             }
         });
+
+        
+
         Storage::delete($this->filePath);
     }
 }
