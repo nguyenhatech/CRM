@@ -156,4 +156,51 @@ class CgroupController extends ApiController
             throw $e;
         }
     }
+
+    public function removeCustomer($id, $customerId)
+    {
+        $group    = $this->getResource()->getById($id);
+        $customer = $this->customer->getById($customerId);
+        if (!$group || !$customer) {
+            return $this->notFoundResponse();
+        }
+
+        DB::beginTransaction();
+        try {
+            $group->customers()->detach($customer->id);
+            DB::commit();
+            return $this->deleteResponse();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    public function addCustomer($id, $customerId)
+    {
+        $group    = $this->getResource()->getById($id);
+        $customer = $this->customer->getById($customerId);
+        if (!$group || !$customer) {
+            return $this->notFoundResponse();
+        }
+
+        DB::beginTransaction();
+        try {
+            $group->customers()->attach($customer->id);
+            DB::commit();
+            return $this->infoResponse($customer);
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    public function getCustomerList($id)
+    {
+        $group = $this->getResource()->getById($id);
+        if ($group) {
+            return $this->infoResponse($this->customer->groupCustomer($group->id));
+        }
+        return $this->notFoundResponse();
+    }
 }

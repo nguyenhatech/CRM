@@ -61,16 +61,35 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
         $model = $this->model->create($data);
         $cgroupAttribute = \App::make('Nh\Repositories\CgroupAttributes\CgroupAttributeRepository');
 
-        $filters = array_only($params['filters'], ['level', 'city_id', 'job', 'age_min', 'age_max', 'created_at_min', 'created_at_max']);
-        foreach ($filters as $key => $filter) {
-            $attribute = [
-                'cgroup_id' => $model->id,
-                'attribute' => $key,
-                'operation' => '=',
-                'value'     => $filter
-            ];
-            $cgroupAttribute->store($attribute);
+        // Lưu filter
+        if (array_key_exists('filters', $params)) {
+            $filters = array_only($params['filters'], ['level', 'city_id', 'job', 'age_min', 'age_max', 'created_at_min', 'created_at_max']);
+            foreach ($filters as $key => $filter) {
+                $attribute = [
+                    'cgroup_id' => $model->id,
+                    'attribute' => $key,
+                    'operation' => '=',
+                    'value'     => $filter
+                ];
+                $cgroupAttribute->store($attribute);
+            }
         }
+
+        // Lưu danh sách khách hàng
+        // Loại 1: lấy theo filter
+        // Loại 2: Theo danh sách đã add
+        if ($params['method_input_type'] == 1) {
+            $customerList = $this->getCustomers($model->id);
+            $customers  = array_pluck($customerList, 'id');
+            $this->syncCustomers($model, $customers);
+        } else {
+            $customers = [];
+            foreach ($params['customers'] as $key => $uuid) {
+                array_push($customers, convert_uuid2id($uuid));
+            }
+            $this->syncCustomers($model, $customers);
+        }
+
         return $this->getById($model->id);
     }
 
@@ -78,21 +97,28 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
     {
         $record = $this->getById($id);
         $record->fill($data)->save();
-        $cgroupAttribute = \App::make('Nh\Repositories\CgroupAttributes\CgroupAttributeRepository');
-        foreach ($record->attributes as $key => $oldFilter) {
-            $newValue = array_get($data['filters'], $oldFilter->attribute, '');
-            if ($newValue !== $oldFilter->value) {
-                $newFilter = $oldFilter->toArray();
-                $newFilter['value'] = $newValue;
-                $cgroupAttribute->update(
-                    $newFilter['id'],
-                    $newFilter = array_only($newFilter, ['attribute', 'operation', 'value'])
-                );
-            }
-        }
+        // Tạm thời ẩn đi update filter
+        // $cgroupAttribute = \App::make('Nh\Repositories\CgroupAttributes\CgroupAttributeRepository');
+        // foreach ($record->attributes as $key => $oldFilter) {
+        //     $newValue = array_get($data['filters'], $oldFilter->attribute, '');
+        //     if ($newValue !== $oldFilter->value) {
+        //         $newFilter = $oldFilter->toArray();
+        //         $newFilter['value'] = $newValue;
+        //         $cgroupAttribute->update(
+        //             $newFilter['id'],
+        //             $newFilter = array_only($newFilter, ['attribute', 'operation', 'value'])
+        //         );
+        //     }
+        // }
         return $this->getById($id);
     }
 
+    /**
+     * Lấy danh sách khách hàng theo filter của group
+     * @param  [type]  $id   [description]
+     * @param  integer $size [description]
+     * @return [type]        [description]
+     */
     public function getCustomers($id, $size = -1)
     {
         $cgroup = $this->getById($id);
@@ -123,6 +149,17 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
             return $customer->getByGroup($params, $size);
         }
         return [];
+    }
+
+    /**
+     * Đồng bộ relation
+     * @param  [type] $model     [description]
+     * @param  [type] $customers [description]
+     * @return [type]            [description]
+     */
+    public function syncCustomers($model, $customers)
+    {
+        return $model->customers()->sync($customers);
     }
 
 }

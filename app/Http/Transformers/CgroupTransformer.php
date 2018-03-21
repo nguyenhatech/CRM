@@ -9,7 +9,8 @@ use Carbon\Carbon;
 class CgroupTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
-        'attributes'
+        'attributes',
+        'customers'
     ];
 
      public function transform(Cgroup $cgroup = null)
