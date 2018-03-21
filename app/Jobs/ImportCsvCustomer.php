@@ -46,6 +46,7 @@ class ImportCsvCustomer implements ShouldQueue
         if (array_key_exists('group_name', $request)) {
             $params = [
                 'name'              => $request['group_name'],
+                'description'       => $request['group_description'],
                 'method_input_type' => 2,
                 'customers'         => []
             ];
