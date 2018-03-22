@@ -46,6 +46,7 @@ class ImportCsvCustomer implements ShouldQueue
         if (array_key_exists('group_name', $request)) {
             $params = [
                 'name'              => $request['group_name'],
+                'description'       => $request['group_description'],
                 'method_input_type' => 2,
                 'customers'         => []
             ];
@@ -62,11 +63,10 @@ class ImportCsvCustomer implements ShouldQueue
                 $params['address']  = array_get($row, formatToTextSimple($request['address']), '');
                 $params['email']    = array_get($row, formatToTextSimple($request['email']), '');
                 $params['sex']      = array_get($row, formatToTextSimple($request['sex']), -1);
-                $params['point']    = array_get($row, formatToTextSimple($request['point']), 0);
                 $params['identification_number'] = array_get($row, formatToTextSimple($request['identification_number']), null);
 
                 $params['phone'] = '0' . strval(intval($params['phone'])); // Chuẩn hóa phone
-                if ($params['name'] && $params['phone']) {
+                if ($params['name'] && $params['phone'] != '00') {
                     $customerRepo = \App::make('Nh\Repositories\Customers\CustomerRepository');
                     $customer = $customerRepo->storeOrUpdate($params);
                     // sync group

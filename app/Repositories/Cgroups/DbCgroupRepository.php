@@ -57,7 +57,11 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
 
     public function store($params) {
         $data = array_only($params, ['name', 'avatar', 'description']);
-        $data['client_id'] = getCurrentUser()->id;
+        if (getCurrentUser()) {
+            $data['client_id'] = getCurrentUser()->id;
+        } else {
+            $data['client_id'] = 0;
+        }
         $model = $this->model->create($data);
         $cgroupAttribute = \App::make('Nh\Repositories\CgroupAttributes\CgroupAttributeRepository');
 

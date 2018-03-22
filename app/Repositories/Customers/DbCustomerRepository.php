@@ -102,16 +102,18 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
             $model = $this->model->create($data);
         }
 
-        $model->client()->detach([[
-            'client_id'   => getCurrentUser()->id,
-            'customer_id' => $model->id
-        ]]);
+        if (getCurrentUser()) {
+            $model->client()->detach([[
+                'client_id'   => getCurrentUser()->id,
+                'customer_id' => $model->id
+            ]]);
 
-        $model->client()->attach([[
-            'client_id'   => getCurrentUser()->id,
-            'customer_id' => $model->id
-        ]]);
-
+            $model->client()->attach([[
+                'client_id'   => getCurrentUser()->id,
+                'customer_id' => $model->id
+            ]]);
+        }
+        
         event(new \Nh\Events\InfoCustomer($model));
 
         return $this->getById($model->id);
