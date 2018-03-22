@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddColumnsToCampaignsTable extends Migration
+class AddSmsToCampaignsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,6 +14,7 @@ class AddColumnsToCampaignsTable extends Migration
     public function up()
     {
         Schema::table('campaigns', function (Blueprint $table) {
+            $table->dateTime('runtime')->nullable()->after('end_date');
             $table->string('sms_template')->nullable()->after('template');
             $table->integer('period')->nullable()->default(0)->after('status');
         });
@@ -29,6 +30,7 @@ class AddColumnsToCampaignsTable extends Migration
         Schema::table('campaigns', function (Blueprint $table) {
             $table->dropColumn('sms_template');
             $table->dropColumn('period');
+            $table->dropColumn('runtime');
         });
     }
 }
