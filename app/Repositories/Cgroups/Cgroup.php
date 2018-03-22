@@ -45,7 +45,7 @@ class Cgroup extends Entity
         });
 
         static::addGlobalScope('cgroups', function (Builder $builder) {
-            if (!getCurrentUser()->isAdmin()) {
+            if (getCurrentUser() && !getCurrentUser()->isAdmin()) {
                 $builder->where('client_id', getCurrentUser()->id);
             }
         });
