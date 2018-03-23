@@ -14,6 +14,7 @@ use Nh\Repositories\Campaigns\Campaign;
 use Nh\Repositories\Cgroups\CgroupRepository;
 use Nh\Repositories\Customers\CustomerRepository;
 use Nh\Repositories\Campaigns\CampaignRepository;
+use Nh\Repositories\CampaignSmsIncomings\CampaignSmsIncomingRepository;
 use Nh\Http\Transformers\CampaignTransformer;
 
 use Nh\Jobs\SendEmailCampaign;
@@ -29,6 +30,7 @@ class CampaignController extends ApiController
     protected $campaign;
     protected $cgroup;
     protected $customer;
+    protected $smsIncoming;
 
     protected $validationRules = [
         'template'    => 'required',
@@ -49,11 +51,17 @@ class CampaignController extends ApiController
         'target_type.numeric'       => 'Chọn đối tượng mục tiêu chưa đúng'
     ];
 
-    public function __construct(CampaignRepository $campaign, CgroupRepository $cgroup, CustomerRepository $customer, CampaignTransformer $transformer)
+    public function __construct(
+        CampaignRepository $campaign, 
+        CgroupRepository $cgroup, 
+        CustomerRepository $customer, 
+        CampaignSmsIncomingRepository $smsIncoming, 
+        CampaignTransformer $transformer)
     {
-        $this->campaign = $campaign;
-        $this->cgroup = $cgroup;
-        $this->customer = $customer;
+        $this->campaign     = $campaign;
+        $this->cgroup       = $cgroup;
+        $this->customer     = $customer;
+        $this->smsIncoming  = $smsIncoming;
         $this->setTransformer($transformer);
         $this->checkPermission('campaign');
     }
@@ -338,6 +346,17 @@ class CampaignController extends ApiController
             return $this->infoResponse($smsReport);
         }
         return $this->notFoundResponse();
+    }
+
+    public function smsIncoming(Request $request)
+    {
+        $params = $request->all();
+        $pageSize = $request->get('limit', 25);
+        $sort = explode(':', $request->get('sort', 'id:1'));
+
+        $datas = $this->smsIncoming->getByQuery($params, $pageSize, $sort);
+
+        return $this->infoResponse($datas);
     }
 
     /**

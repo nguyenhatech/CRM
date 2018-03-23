@@ -48,3 +48,6 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::post('/test-webhooks', function (\Illuminate\Http\Request $request) {
     \Log::info($request->all());
 });
+
+// Nhận SMS phản hồi qua SpeedSMS
+Route::post('/sms-incoming-webhooks', 'SmsWebhookController@incomingSMS');
