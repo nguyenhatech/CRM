@@ -14,19 +14,21 @@ class ImportCsvCustomer implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $tries = 3;
+    public $tries = 1;
 
     protected $filePath;
     protected $data;
+    protected $userId;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($path, $data)
+    public function __construct($path, $data, $userId)
     {
         $this->filePath   = $path;
         $this->data       = $data;
+        $this->userId     = $userId;
     }
 
     /**
@@ -48,7 +50,8 @@ class ImportCsvCustomer implements ShouldQueue
                 'name'              => $request['group_name'],
                 'description'       => $request['group_description'],
                 'method_input_type' => 2,
-                'customers'         => []
+                'customers'         => [],
+                'client_id'         => $this->userId
             ];
             $group = $groupRepo->store($params);
         }
@@ -57,7 +60,7 @@ class ImportCsvCustomer implements ShouldQueue
         Excel::load('storage/app/' . $this->filePath, function ($reader) use ($request, $group) {
             $results = $reader->get();
             foreach ($results as $key => $row) {
-                $params = [];
+                $params = ['client_id' => $this->userId];
                 $params['name']     = array_get($row, formatToTextSimple($request['name']), '');
                 $params['phone']    = array_get($row, formatToTextSimple($request['phone']), '');
                 $params['address']  = array_get($row, formatToTextSimple($request['address']), '');

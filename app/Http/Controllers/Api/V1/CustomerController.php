@@ -158,7 +158,7 @@ class CustomerController extends ApiController
         $params = array_except($request->all(), ['file']);
 
         try {
-            $job = new ImportCsvCustomer($excelPath, $params);
+            $job = new ImportCsvCustomer($excelPath, $params, getCurrentUser()->id);
             dispatch($job)->onQueue(env('APP_NAME'));
         } catch (\Exception $e) {
             throw $e;

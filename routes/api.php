@@ -60,6 +60,7 @@ Route::group([
     Route::put('users/{id}/active', 'UserController@active');
 
     Route::get('campaigns/preview-customer', 'CampaignController@previewCustomers');
+    Route::get('campaigns/sms-coming', 'CampaignController@smsIncoming');
     Route::resource('campaigns', 'CampaignController');
     Route::get('campaigns/send-email/{id}', 'CampaignController@sendEmail');
     Route::post('campaigns/send-sms/{id}', 'CampaignController@sendSMS');
