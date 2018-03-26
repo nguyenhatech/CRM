@@ -198,7 +198,7 @@ class CampaignController extends ApiController
 
     /**
      * Đặt lệnh gửi email
-     * @param  integer  $id   
+     * @param  integer  $id
      * @param  integer  $time Số giây
      * @return [type]        [description]
      */
@@ -217,7 +217,7 @@ class CampaignController extends ApiController
             if (count($customers->toArray()) == 0) {
                 return $this->errorResponse(['errors' => ['customers' => ['Tập khách hàng rỗng!']]]);
             }
-            
+
             try {
                 $customerChunks = $customers->chunk(1000);
                 foreach ($customerChunks as $chunk) {
@@ -235,15 +235,15 @@ class CampaignController extends ApiController
 
     /**
      * Đặt lệnh gửi SMS
-     * @param  integer  $id   
+     * @param  integer  $id
      * @return [type]        [description]
      */
     public function sendSMS(Request $request, $id)
     {
         try {
             $this->validate(
-                $request, 
-                ['content'          => 'required'], 
+                $request,
+                ['content'          => 'required'],
                 ['content.required' => 'Nội dung tin nhắn không được để trống']
             );
             $campaign = $this->campaign->getById($id);
