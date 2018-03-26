@@ -81,8 +81,17 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
         return $size < 0 ? $model->get() : $model->paginate($size);
     }
 
+    public function groupCustomer($groupId, $size = 10)
+    {
+        $model = $this->model->whereHas('groups', function ($model) use ($groupId) {
+            $model = $model->where('id', $groupId);
+        });
+
+        return $size < 0 ? $model->get() : $model->paginate($size);
+    }
+
     public function storeOrUpdate($data) {
-        $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar', 'city_id']);
+        $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar', 'city_id', 'client_id']);
         $email = array_get($data, 'email', null);
         $phone = array_get($data, 'phone', null);
         // dd($this->checkExist($email, $phone));
@@ -93,16 +102,21 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
             $model = $this->model->create($data);
         }
 
+        // Check for run job
+        if (getCurrentUser()) {
+            $data['client_id'] = getCurrentUser()->id;
+        }
+
         $model->client()->detach([[
-            'client_id'   => getCurrentUser()->id,
+            'client_id'   => $data['client_id'],
             'customer_id' => $model->id
         ]]);
 
         $model->client()->attach([[
-            'client_id'   => getCurrentUser()->id,
+            'client_id'   => $data['client_id'],
             'customer_id' => $model->id
         ]]);
-
+        
         event(new \Nh\Events\InfoCustomer($model));
 
         return $this->getById($model->id);

@@ -24,6 +24,9 @@ Route::group([
     Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
     Route::resource('customers', 'CustomerController');
 
+    Route::get('cgroups/{id}/customers', 'CgroupController@getCustomerList');
+    Route::delete('cgroups/{id}/remove-customer/{customerId}', 'CgroupController@removeCustomer');
+    Route::post('cgroups/{id}/add-customer/{customerId}', 'CgroupController@addCustomer');
     Route::resource('cgroups', 'CgroupController');
     Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
 
@@ -57,6 +60,7 @@ Route::group([
     Route::put('users/{id}/active', 'UserController@active');
 
     Route::get('campaigns/preview-customer', 'CampaignController@previewCustomers');
+    Route::get('campaigns/sms-coming', 'CampaignController@smsIncoming');
     Route::resource('campaigns', 'CampaignController');
     Route::get('campaigns/send-email/{id}', 'CampaignController@sendEmail');
     Route::post('campaigns/send-sms/{id}', 'CampaignController@sendSMS');

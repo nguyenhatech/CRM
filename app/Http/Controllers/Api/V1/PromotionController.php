@@ -54,7 +54,6 @@ class PromotionController extends ApiController
         'amount.numeric'            => 'Số tiền hoặc phần trăm giảm giá phải là kiểu số',
         'amount.min'                => 'Số tiền hoặc phần trăm giảm giá tối thiểu là 0',
 
-        'amount_max.required'       => 'Vui lòng nhập số tiền tối đa được giảm',
         'amount_max.numeric'        => 'Số tiền tối đa được giảm phải là kiểu số',
         'amount_max.min'            => 'Số tiền tối đa được giảm tối thiểu là 0',
 
@@ -194,7 +193,7 @@ class PromotionController extends ApiController
                 'type'              => 'required|numeric',
                 'target_type'       => 'required|numeric',
                 'amount'            => 'required|numeric|min:0',
-                'amount_max'        => 'required|numeric|min:0',
+                'amount_max'        => 'nullable|numeric|min:0',
                 'quantity'          => 'nullable|numeric|min:0',
                 'quantity_per_user' => 'nullable|numeric|min:0',
                 'date_start'        => 'required|date_format:Y-m-d H:i:s',

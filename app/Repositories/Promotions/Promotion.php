@@ -53,21 +53,21 @@ class Promotion extends Entity
         self::PERCENT => '%'
     ];
 
-    const NORMAL_TICKET = 1;
-    const VIP_TICKET    = 2;
-    const SUPER_VIP     = 3;
+    const NORMAL_TICKET    = 1;
+    const VIP_TICKET       = 2;
+    const SUPER_VIP_TICKET = 3;
     const LIST_TARGET_TYPE = [
         0                   => 'Áp dụng cho tất cả các chuyến',
         self::NORMAL_TICKET => 'Thường',
         self::VIP_TICKET    => 'Vip',
-        self::SUPER_VIP     => 'Siêu vip'
+        self::SUPER_VIP_TICKET     => 'Siêu vip'
     ];
 
     const LIST_TARGET_TYPE_V2 = [
         0                   => 'Áp dụng cho tất cả các hạng xe',
         self::NORMAL_TICKET => 'Áp dụng cho khách đi xe hạng Thường',
         self::VIP_TICKET    => 'Áp dụng cho khách đi xe hạng Vip',
-        self::SUPER_VIP     => 'Áp dụng cho khách đi xe hạng Siêu Vip'
+        self::SUPER_VIP_TICKET     => 'Áp dụng cho khách đi xe hạng Siêu Vip'
     ];
 
     const ROUTE = 1; // Hình thức khách hàng đi theo tuyến

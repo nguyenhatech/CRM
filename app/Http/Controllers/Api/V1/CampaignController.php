@@ -14,6 +14,7 @@ use Nh\Repositories\Campaigns\Campaign;
 use Nh\Repositories\Cgroups\CgroupRepository;
 use Nh\Repositories\Customers\CustomerRepository;
 use Nh\Repositories\Campaigns\CampaignRepository;
+use Nh\Repositories\CampaignSmsIncomings\CampaignSmsIncomingRepository;
 use Nh\Http\Transformers\CampaignTransformer;
 
 use Nh\Jobs\SendEmailCampaign;
@@ -29,6 +30,7 @@ class CampaignController extends ApiController
     protected $campaign;
     protected $cgroup;
     protected $customer;
+    protected $smsIncoming;
 
     protected $validationRules = [
         'template'    => 'required',
@@ -49,11 +51,17 @@ class CampaignController extends ApiController
         'target_type.numeric'       => 'Chọn đối tượng mục tiêu chưa đúng'
     ];
 
-    public function __construct(CampaignRepository $campaign, CgroupRepository $cgroup, CustomerRepository $customer, CampaignTransformer $transformer)
+    public function __construct(
+        CampaignRepository $campaign, 
+        CgroupRepository $cgroup, 
+        CustomerRepository $customer, 
+        CampaignSmsIncomingRepository $smsIncoming, 
+        CampaignTransformer $transformer)
     {
-        $this->campaign = $campaign;
-        $this->cgroup = $cgroup;
-        $this->customer = $customer;
+        $this->campaign     = $campaign;
+        $this->cgroup       = $cgroup;
+        $this->customer     = $customer;
+        $this->smsIncoming  = $smsIncoming;
         $this->setTransformer($transformer);
         $this->checkPermission('campaign');
     }
@@ -99,6 +107,7 @@ class CampaignController extends ApiController
             if (array_key_exists('filters', $params) && $params['target_type'] == Campaign::FILTER_TARGET) {
                 $cgroupParams = ['name' => 'Chiến dịch ' . $params['name']];
                 $cgroupParams['filters'] = $params['filters'];
+                $cgroupParams['method_input_type'] = 1;
                 $cgroup = $this->cgroup->store($cgroupParams);
                 $params['cgroup_id'] = $cgroup->id;
             }
@@ -186,7 +195,7 @@ class CampaignController extends ApiController
         if ($campaign) {
             $customers = [];
             if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
-                $customers = $this->cgroup->getCustomers($campaign->cgroup_id, 5);
+                $customers = $this->customer->groupCustomer($campaign->cgroup->id);
             } else {
                 $customers = $campaign->customers;
             }
@@ -210,7 +219,7 @@ class CampaignController extends ApiController
             $customers = [];
 
             if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
-                $customers = $this->cgroup->getCustomers($campaign->cgroup_id);
+                $customers = $campaign->cgroup->customers;
             } else {
                 $customers = $campaign->customers;
             }
@@ -252,7 +261,7 @@ class CampaignController extends ApiController
                 $customers = [];
                 // Lấy danh sách khách hàng theo loại mục tiêu
                 if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
-                    $customers = $this->cgroup->getCustomers($campaign->cgroup_id);
+                    $customers = $campaign->cgroup->customers;
                 } else {
                     $customers = $campaign->customers;
                 }
@@ -339,6 +348,17 @@ class CampaignController extends ApiController
         return $this->notFoundResponse();
     }
 
+    public function smsIncoming(Request $request)
+    {
+        $params = $request->all();
+        $pageSize = $request->get('limit', 25);
+        $sort = explode(':', $request->get('sort', 'id:1'));
+
+        $datas = $this->smsIncoming->getByQuery($params, $pageSize, $sort);
+
+        return $this->infoResponse($datas);
+    }
+
     /**
      * Lấy danh sách khách hàng phù hợp với thuộc tính
      * @param  Request $request [description]
@@ -370,6 +390,27 @@ class CampaignController extends ApiController
             }
         }
         return $this->infoResponse($this->customer->getByGroup($params, 10));
+    }
+
+    public function destroy($id)
+    {
+        $data = $this->getResource()->getById($id);
+        if (!$data) {
+            return $this->notFoundResponse();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $data->cgroup()->delete();
+            $this->getResource()->delete($id);
+
+            DB::commit();
+            return $this->deleteResponse();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
     }
 
 }
