@@ -59,6 +59,24 @@ class HelperController extends ApiController
                     'targets' => $targets,
                 ];
                 break;
+            case 'call-type-lists':
+                $list = [];
+                foreach (\Nh\Repositories\PhoneCallHistories\PhoneCallHistory::CALL_TYPE_LIST as $key => $value) {
+                    array_push($list, ['value' => $key, 'text' => $value]);
+                }
+                $result = [
+                    'data' => $list,
+                ];
+                break;
+            case 'call-status-lists':
+                $list = [];
+                foreach (\Nh\Repositories\PhoneCallHistories\PhoneCallHistory::STATUS_CALL_LIST as $key => $value) {
+                    array_push($list, ['value' => $key, 'text' => $value]);
+                }
+                $result = [
+                    'data' => $list,
+                ];
+                break;
         }
 
         return response()->json($result, 200);

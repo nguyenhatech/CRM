@@ -51,3 +51,9 @@ Route::post('/test-webhooks', function (\Illuminate\Http\Request $request) {
 
 // Nhận SMS phản hồi qua SpeedSMS
 Route::post('/sms-incoming-webhooks', 'SmsWebhookController@incomingSMS');
+
+// 123CS webhook
+Route::get('/123cs-webhooks', function () {
+	return 'Im fine';
+});
+Route::post('/123cs-webhooks', 'PhoneCallWebhookController@index');

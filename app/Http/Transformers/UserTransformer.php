@@ -23,6 +23,7 @@ class UserTransformer extends TransformerAbstract
             'name'           => $user->name,
             'email'          => $user->email,
             'phone'          => $user->phone,
+            'internal_line'  => $user->line ? $user->line->line : null,
             'avatar'         => $user->avatar,
             'avatar_path'    => $user->getAvatar(),
             'is_active'      => $user->isActive(),

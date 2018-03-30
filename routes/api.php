@@ -67,6 +67,23 @@ Route::group([
     Route::get('campaigns/statistic-sms/{id}', 'CampaignController@statisticSMS');
     Route::get('campaigns/statistic-email/{id}', 'CampaignController@statisticEmail');
     Route::get('campaigns/list-customer/{id}', 'CampaignController@showCustomers');
+
+    Route::get('call-centers/get-token', 'CallCenterController@getToken123CS');
+    Route::get('call-centers/users', 'CallCenterController@getListUser');
+    Route::get('call-centers/users/{id}', 'CallCenterController@getUser');
+    Route::put('call-centers/users/{id}', 'CallCenterController@updateUser');
+    Route::delete('call-centers/users/{id}', 'CallCenterController@deleteUser');
+
+    Route::get('call-centers/customers', 'CallCenterController@getListCustomer');
+    Route::get('call-centers/customers/{id}', 'CallCenterController@getCustomer');
+    Route::post('call-centers/customers', 'CallCenterController@createCustomer');
+    Route::put('call-centers/customers/{id}', 'CallCenterController@updateCustomer');
+    Route::delete('call-centers/customers/{id}', 'CallCenterController@deleteCustomer');
+
+    Route::post('call-centers/click-to-call', 'CallCenterController@clickToCall');
+
+    Route::get('call-histories', 'CallHistoryController@index');
+    Route::resource('line-calls', 'LineCallController');
     // developer
     Route::get('/developer/client', [
         'as' => 'developer.client',

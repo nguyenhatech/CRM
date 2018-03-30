@@ -23,6 +23,8 @@ use Nh\Jobs\SendSMSCampaign;
 use Nh\Repositories\Helpers\SpeedSMSAPI;
 use Illuminate\Support\Carbon;
 
+use \Firebase\JWT\JWT;
+
 class CampaignController extends ApiController
 {
     use TransformerTrait, RestfulHandler;

@@ -110,4 +110,13 @@ class User extends Authenticatable
     public function customers() {
         return $this->belongsToMany('Nh\Repositories\Customers\Customer', 'client_customers', 'client_id', 'customer_id');
     }
+
+    /**
+     * Số nội bộ tổng đài của nhân viên
+     * @return [type] [description]
+     */
+    public function line()
+    {
+        return $this->hasOne('Nh\Repositories\LineCalls\LineCall', 'user_id');
+    }
 }
