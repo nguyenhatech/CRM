@@ -335,19 +335,17 @@ class CampaignController extends ApiController
             if (!count($campaign->sms)) {
                 return $this->infoResponse([]);
             }
-            $smsApi = new SpeedSMSAPI();
-            $smsReport = [];
-            foreach ($campaign->sms as $smsPack) {
-                $result = $smsApi->getSMSStatus($smsPack->sms_id);
-                if ($result['status'] == 'success') {
-                    $smsReport = array_merge($smsReport, $result['data']);
-                }
-            }
+            $smsReport = $this->campaign->statisticSms($campaign);
             return $this->infoResponse($smsReport);
         }
         return $this->notFoundResponse();
     }
 
+    /**
+     * Danh sách tin nhắn phản hồi của khách hàng
+     * @param  Request $request
+     * @return [type]           [description]
+     */
     public function smsIncoming(Request $request)
     {
         $params = $request->all();
@@ -403,6 +401,8 @@ class CampaignController extends ApiController
 
         try {
             $data->cgroup()->delete();
+            $data->customers()->detach();
+            $data->sms()->delete();
             $this->getResource()->delete($id);
 
             DB::commit();
