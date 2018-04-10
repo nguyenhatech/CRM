@@ -2,6 +2,7 @@
 
 namespace Nh\Repositories\Campaigns;
 use Nh\Repositories\BaseRepository;
+use Nh\Repositories\Helpers\SpeedSMSAPI;
 
 class DbCampaignRepository extends BaseRepository implements CampaignRepository
 {
@@ -105,6 +106,45 @@ class DbCampaignRepository extends BaseRepository implements CampaignRepository
         }
         $model->fill($data)->save();
         return $this->getById($id);
+    }
+
+    /**
+     * Thống kê kết quả gửi sms
+     * Cập nhật số lượng sms thành công và lỗi vào db
+     * @param  [type] $model [description]
+     * @return [type]        [description]
+     */
+    public function statisticSms($model)
+    {
+        $smsApi = new SpeedSMSAPI();
+        $smsReport = [];
+        foreach ($model->sms as $smsPack) {
+            $result = $smsApi->getSMSStatus($smsPack->sms_id);
+            if ($result['status'] == 'success') {
+                $smsReport = array_merge($smsReport, $result['data']);
+                // Lưu lại thống kê số lượng sms
+                if (($smsPack->success + $smsPack->fail) != $smsPack->total) {
+                    $success = 0;
+                    $fail = 0;
+                    foreach ($result['data'] as $value) {
+                        switch ($value['status']) {
+                            case 1:
+                                $success++;
+                                break;
+                            case 2:
+                                $fail++;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    $smsPack->success = $success;
+                    $smsPack->fail    = $fail;
+                    $smsPack->save();
+                }
+            }
+        }
+        return $smsReport;
     }
 
 }

@@ -344,4 +344,14 @@ class PromotionController extends ApiController
         return $this->notFoundResponse();
     }
 
+    /**
+     * Lấy mã khuyến mãi Free
+     * @return [type] [description]
+     */
+    public function getFree()
+    {
+        $data = $this->getResource()->getPromotionFree();
+        return $this->successResponse($data);
+    }
+
 }
