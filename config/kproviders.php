@@ -21,4 +21,6 @@ return [
 	Nh\Providers\LineCallServiceProvider::class,
 	Nh\Providers\QuestionServiceProvider::class,
 	Nh\Providers\AnswerServiceProvider::class,
+	Nh\Providers\SurveyServiceProvider::class,
+	Nh\Providers\QuestionSurveyServiceProvider::class,
 ];
