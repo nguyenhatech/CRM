@@ -27,7 +27,7 @@ class Answer extends Entity
     ];
 
     const LIKE = 1;
-    const UNLIKE = 2;
+    const UNLIKE = 0;
     // Danh sách loại câu trả lời
     const LIST_TYPE_ANSWER = [
         self::LIKE => 'Điều khách thích về chuyến đi',

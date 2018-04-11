@@ -9,10 +9,11 @@ use Carbon\Carbon;
 class QuestionTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
-
+        'likes',
+        'unlikes'
     ];
 
-     public function transform(Question $question = null)
+    public function transform(Question $question = null)
     {
         if (is_null($question)) {
             return [];
@@ -27,5 +28,17 @@ class QuestionTransformer extends TransformerAbstract
         ];
 
         return $data;
+    }
+
+    public function includeLikes(Question $question = null)
+    {   
+        if (is_null($question)) return $this->null();
+        return $this->collection($question->answersLike, new AnswerTransformer);
+    }
+
+    public function includeUnlikes(Question $question = null)
+    {
+        if (is_null($question)) return $this->null();
+        return $this->collection($question->answersUnLike, new AnswerTransformer);
     }
 }

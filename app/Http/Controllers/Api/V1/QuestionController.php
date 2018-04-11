@@ -51,6 +51,13 @@ class QuestionController extends ApiController
         return $this->question;
     }
 
+    public function index(Request $request)
+    {
+        $pageSize = $request->get('limit', 1);
+        $sort = $request->get('sort', 'id:1');
+        return $this->successResponse($this->getResource()->getByPaginate($pageSize, explode(':', $sort)));
+    }
+
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -88,19 +95,19 @@ class QuestionController extends ApiController
         try {
             $this->validationRules = [
                 'content'               => 'nullable',
-                'status'                => 'nullable|numeric',
+                'status'                => 'nullable',
 
                 'likes'                 => 'nullable|array',
                 'likes.*.id'            => 'nullable|numeric|exists:answers,id',
                 'likes.*.question_id'   => 'nullable|numeric|exists:questions,id',
                 'likes.*.content'       => 'required|max:255',
-                'likes.*.status'        => 'required|numeric',
+                'likes.*.status'        => 'required',
 
                 'unlikes'               => 'nullable|array',
                 'unlikes.*.id'          => 'nullable|numeric|exists:answers,id',
                 'unlikes.*.question_id' => 'nullable|numeric|exists:questions,id',
                 'unlikes.*.content'     => 'required|max:255',
-                'unlikes.*.status'      => 'required|numeric'
+                'unlikes.*.status'      => 'required'
             ];
 
             $this->validationMessages = [

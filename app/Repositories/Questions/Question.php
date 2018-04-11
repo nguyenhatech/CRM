@@ -36,4 +36,13 @@ class Question extends Entity
         return $this->hasMany('Nh\Repositories\Answers\Answer');
     }
 
+    public function answersLike()
+    {
+        return $this->hasMany('Nh\Repositories\Answers\Answer')->where('type', 1);
+    }
+
+    public function answersUnLike()
+    {
+        return $this->hasMany('Nh\Repositories\Answers\Answer')->where('type', 0);
+    }
 }
