@@ -125,4 +125,6 @@ Route::group([
 
     Route::resource('surveys', 'SurveyController');
 
+    Route::resource('feedbacks', 'FeedbackController');
+
 });

@@ -53,7 +53,7 @@ class QuestionController extends ApiController
 
     public function index(Request $request)
     {
-        $pageSize = $request->get('limit', 1);
+        $pageSize = $request->get('limit', 25);
         $sort = $request->get('sort', 'id:1');
         return $this->successResponse($this->getResource()->getByPaginate($pageSize, explode(':', $sort)));
     }

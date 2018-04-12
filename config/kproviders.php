@@ -23,4 +23,6 @@ return [
 	Nh\Providers\AnswerServiceProvider::class,
 	Nh\Providers\SurveyServiceProvider::class,
 	Nh\Providers\QuestionSurveyServiceProvider::class,
+	Nh\Providers\FeedbackServiceProvider::class,
+	Nh\Providers\AnswerFeedbackServiceProvider::class,
 ];
