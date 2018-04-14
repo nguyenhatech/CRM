@@ -50,7 +50,7 @@ class Feedback extends Entity
 
     public function customer()
     {
-        return $this->belongsTo('Nh\Repositories\Answers\Answer')
+        return $this->belongsTo('Nh\Repositories\Answers\Answer');
     }
 
 }

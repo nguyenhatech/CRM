@@ -24,6 +24,7 @@ class QuestionTransformer extends TransformerAbstract
             'content'    => $question->content,
             'status'     => $question->status,
             'status_txt' => $question->getStatusText(),
+            'checked'    => false,
             'created_at' => $question->created_at ? $question->created_at->format('Y-m-d H:i:s') : null
         ];
 
