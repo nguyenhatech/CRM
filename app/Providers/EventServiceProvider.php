@@ -25,6 +25,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         \Nh\Events\InfoCustomer::class => [
             \Nh\Listeners\SendCustomerToMerchant::class
+        ],
+        \Nh\Events\InfoCallIn::class => [
+            \Nh\Listeners\CreateNewLead::class
         ]
     ];
 

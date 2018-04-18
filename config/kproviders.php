@@ -19,4 +19,8 @@ return [
 	Nh\Providers\CampaignSmsIncomingServiceProvider::class,
 	Nh\Providers\PhoneCallHistoryServiceProvider::class,
 	Nh\Providers\LineCallServiceProvider::class,
+	Nh\Providers\LeadServiceProvider::class,
+	Nh\Providers\TicketServiceProvider::class,
+	Nh\Providers\CommentServiceProvider::class,
+	Nh\Providers\TagServiceProvider::class,
 ];

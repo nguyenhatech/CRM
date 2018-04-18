@@ -77,6 +77,51 @@ class HelperController extends ApiController
                     'data' => $list,
                 ];
                 break;
+            case 'lead-source-lists':
+                $list = [];
+                foreach (\Nh\Repositories\Leads\Lead::SOURCE_LIST as $key => $value) {
+                    array_push($list, ['value' => $key, 'text' => $value]);
+                }
+                $result = [
+                    'data' => $list,
+                ];
+                break;
+            case 'lead-status-lists':
+                $list = [];
+                foreach (\Nh\Repositories\Leads\Lead::STATUS_LIST as $key => $value) {
+                    array_push($list, ['value' => $key, 'text' => $value]);
+                }
+                $result = [
+                    'data' => $list,
+                ];
+                break;
+            case 'tag-type-lists':
+                $list = [];
+                foreach (\Nh\Repositories\Tags\Tag::TYPE_LIST as $key => $value) {
+                    array_push($list, ['value' => $key, 'text' => $value]);
+                }
+                $result = [
+                    'data' => $list,
+                ];
+                break;
+            case 'ticket-prioty-lists':
+                $list = [];
+                foreach (\Nh\Repositories\Tickets\Ticket::PRIOTY_LIST as $key => $value) {
+                    array_push($list, ['value' => $key, 'text' => $value]);
+                }
+                $result = [
+                    'data' => $list,
+                ];
+                break;
+            case 'ticket-status-lists':
+                $list = [];
+                foreach (\Nh\Repositories\Tickets\Ticket::STATUS_LIST as $key => $value) {
+                    array_push($list, ['value' => $key, 'text' => $value]);
+                }
+                $result = [
+                    'data' => $list,
+                ];
+                break;
         }
 
         return response()->json($result, 200);
