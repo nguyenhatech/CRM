@@ -41,6 +41,11 @@ class Answer extends Entity
 
     public function getTypeAnswerText()
     {
-        return array_key_exists($this->type, self::LIST_TYPE_ANSWER) ? self::LIST_TYPE_ANSWER[$this->status] : 'Không xác định';
+        return array_key_exists($this->type, self::LIST_TYPE_ANSWER) ? self::LIST_TYPE_ANSWER[$this->type] : 'Không xác định';
+    }
+
+    public function question()
+    {
+        return $this->belongsTo('Nh\Repositories\Questions\Question');
     }
 }

@@ -9,7 +9,10 @@ use Carbon\Carbon;
 class FeedbackTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
-
+        'customer',
+        'user',
+        'survey',
+        'answers'
     ];
 
     public function transform(Feedback $feedback = null)
@@ -22,6 +25,7 @@ class FeedbackTransformer extends TransformerAbstract
             'id'          => $feedback->id,
             'customer_id' => $feedback->customer_id,
             'survey_id'   => $feedback->survey_id,
+            'user_id'     => $feedback->user_id,
             'type'        => $feedback->type,
             'type_txt'    => $feedback->getTypeText(),
             'title'       => $feedback->title,
@@ -34,15 +38,28 @@ class FeedbackTransformer extends TransformerAbstract
         return $data;
     }
 
-    public function includeLikes(Feedback $feedback = null)
+    public function includeCustomer(Feedback $feedback = null)
     {   
         if (is_null($feedback)) return $this->null();
-        return $this->collection($feedback->answersLike, new AnswerTransformer);
+        return $this->item($feedback->customer, new CustomerTransformer);
     }
 
-    public function includeUnlikes(Feedback $feedback = null)
+    public function includeUser(Feedback $feedback = null)
     {
         if (is_null($feedback)) return $this->null();
-        return $this->collection($feedback->answersUnLike, new AnswerTransformer);
+        return $this->item($feedback->user, new UserTransformer);
     }
+
+    public function includeSurvey(Feedback $feedback = null)
+    {   
+        if (is_null($feedback)) return $this->null();
+        return $this->item($feedback->survey, new SurveyTransformer);
+    }
+
+    public function includeAnswers(Feedback $feedback = null)
+    {   
+        if (is_null($feedback)) return $this->null();
+        return $this->collection($feedback->answers, new AnswerTransformer);
+    }
+
 }

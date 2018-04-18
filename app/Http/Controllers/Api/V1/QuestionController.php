@@ -55,7 +55,7 @@ class QuestionController extends ApiController
     {
         $pageSize = $request->get('limit', 25);
         $sort = $request->get('sort', 'id:1');
-        return $this->successResponse($this->getResource()->getByPaginate($pageSize, explode(':', $sort)));
+        return $this->successResponse($this->getResource()->getByQuery($request->all(), $pageSize, explode(':', $sort)));
     }
 
     public function store(Request $request)
@@ -133,6 +133,32 @@ class QuestionController extends ApiController
 
             $params = $request->only(['content', 'status', 'likes', 'unlikes']);
 
+            $model = $this->getResource()->update($id, $params);
+
+            DB::commit();
+            return $this->successResponse($model);
+        } catch (\Illuminate\Validation\ValidationException $validationException) {
+            DB::rollback();
+            return $this->errorResponse([
+                'errors' => $validationException->validator->errors(),
+                'exception' => $validationException->getMessage()
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    public function active(Request $request, $id)
+    {
+        $data = $this->getResource()->getById($id);
+        if (!$data) {
+            return $this->notFoundResponse();
+        }
+
+        DB::beginTransaction();
+        try {
+            $params['status'] = $data->status ? 0 : 1;
             $model = $this->getResource()->update($id, $params);
 
             DB::commit();

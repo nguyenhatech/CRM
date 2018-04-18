@@ -13,7 +13,7 @@ class Feedback extends Entity
      *
      * @var array
      */
-    public $fillable = ['customer_id','survey_id','type','title','note','status'];
+    public $fillable = ['customer_id','survey_id','user_id','type','title','note','status'];
 
     const ENABLE = 1;
     const DISABLE = 0;
@@ -27,10 +27,10 @@ class Feedback extends Entity
     const CUSTOMER = 1;
     const CSKH = 2;
 
-    // Danh sách trạng thái
+    // Danh sách loại feedback
     const LIST_TYPE_FEEDBACK = [
         self::CUSTOMER => 'Từ người dùng',
-        self::CSKH => 'Từ nhân viên chăm sóc khách hàng'
+        self::CSKH => 'Từ nhân viên CSKH'
     ];
 
     public function getStatusText()
@@ -50,7 +50,17 @@ class Feedback extends Entity
 
     public function customer()
     {
-        return $this->belongsTo('Nh\Repositories\Answers\Answer');
+        return $this->belongsTo('Nh\Repositories\Customers\Customer');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo('Nh\User');
+    }
+
+    public function survey()
+    {
+        return $this->belongsTo('Nh\Repositories\Surveys\Survey');
     }
 
 }

@@ -121,6 +121,8 @@ Route::group([
 
     Route::resource('cities', 'CityController')->only('index', 'show');
 
+    Route::post('questions/{id}/active', 'QuestionController@active');
+    
     Route::resource('questions', 'QuestionController');
 
     Route::resource('surveys', 'SurveyController');

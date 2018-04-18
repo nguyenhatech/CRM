@@ -19,14 +19,15 @@ class AnswerTransformer extends TransformerAbstract
         }
 
         $data = [
-            'id'          => $answer->id,
-            'question_id' => $answer->question_id,
-            'type'        => $answer->type,
-            'type_txt'    => $answer->getTypeAnswerText(),
-            'content'     => $answer->content,
-            'status'      => $answer->status,
-            'status_txt'  => $answer->getStatusText(),
-            'created_at'  => $answer->created_at ? $answer->created_at->format('Y-m-d H:i:s') : null
+            'id'               => $answer->id,
+            'question_id'      => $answer->question_id,
+            'question_content' => $answer->question ? $answer->question->content : '',
+            'type'             => $answer->type,
+            'type_txt'         => $answer->getTypeAnswerText(),
+            'content'          => $answer->content,
+            'status'           => $answer->status,
+            'status_txt'       => $answer->getStatusText(),
+            'created_at'       => $answer->created_at ? $answer->created_at->format('Y-m-d H:i:s') : null
         ];
 
         return $data;

@@ -19,7 +19,7 @@ class FeedbackController extends ApiController
     protected $feedback;
 
     protected $validationRules = [
-        'customer_id' => 'required|exists:customers,id',
+        'customer_id' => 'required|exists:customers,uuid',
         'survey_id'   => 'required|exists:surveys,id',
         'type'        => 'required|numeric',
         'title'       => 'required|max:255',
@@ -58,6 +58,27 @@ class FeedbackController extends ApiController
         $pageSize = $request->get('limit', 25);
         $sort = $request->get('sort', 'id:1');
         return $this->successResponse($this->getResource()->getByPaginate($pageSize, explode(':', $sort)));
+    }
+
+    public function show($id)
+    {
+        if ($data = $this->getResource()->getById($id)) {
+
+            $answerTransformer = \App::make('Nh\Http\Transformers\OptimusPrime');
+            $dataTransformer   = $answerTransformer->transform($data, new \Nh\Http\Transformers\FeedbackTransformer);
+
+            $dataReturn = $dataTransformer['data'];
+
+            $answers    = $data->answers;
+            $collection = collect($answerTransformer->transform($answers, new \Nh\Http\Transformers\AnswerTransformer)['data']);
+            $groupeds   = $collection->groupBy('question_content');
+            foreach ($groupeds as $key => $grouped) {
+                $kaka = $grouped->groupBy('type');
+                $dataReturn['listquestion'][$key] = $kaka;
+            }
+            return $this->successResponse(['data' => $dataReturn], false);
+        }
+        return $this->notFoundResponse();
     }
 
     public function store(Request $request)
