@@ -59,7 +59,10 @@ class CheckPromotionController extends ApiController
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $data = $this->getResource()->check($request->all());
-
+            \Log::info([
+                'Kết quả check Promotion ở con CRM',
+                $data
+            ]);
             if ($data->error) {
                 return $this->errorResponse($data);
             }

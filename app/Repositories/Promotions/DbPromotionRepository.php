@@ -214,4 +214,15 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         return $model->get();
     }
 
+    public function getPromotionFree()
+    {
+        $promotions = $this->model->where('target_type', 0)
+                            ->where('date_start', '<=',  Carbon::now())
+                            ->where('date_end', '>=',  Carbon::now())
+                            ->where('status', Promotion::ENABLE)
+                            ->where('quantity', 0)
+                            ->get();
+        return $promotions;
+    }
+
 }
