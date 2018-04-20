@@ -25,6 +25,7 @@ class PromotionTransformer extends TransformerAbstract
             'type'              => $promotion->type,
             'target_type'       => $promotion->target_type,
             'type_txt'          => $promotion->getTypeDiscountsText(),
+            'cgroup_id'         => $promotion->cgroup_id,
             'image'             => $promotion->image,
             'image_path'        => $promotion->getImage(),
             'title'             => $promotion->title,
