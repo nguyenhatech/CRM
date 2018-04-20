@@ -64,7 +64,7 @@ class SettingController extends ApiController
 
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
-
+            // dd($request->all());
             // $params = $request->all();
             // $params = $request->only([
             //    'special_day',
