@@ -132,4 +132,9 @@ class Promotion extends Entity
         $typeTaget = (int) $typeTaget;
         return array_key_exists($typeTaget, self::LIST_TARGET_TYPE_V2) ? self::LIST_TARGET_TYPE_V2[$typeTaget] : 'Không xác định';
     }
+
+    public function cgroup()
+    {
+        return $this->hasOne('Nh\Repositories\Cgroups\Cgroup', 'id', 'cgroup_id');
+    }
 }
