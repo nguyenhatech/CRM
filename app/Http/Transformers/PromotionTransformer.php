@@ -9,15 +9,13 @@ use Carbon\Carbon;
 class PromotionTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
-
+        'cgroup'
     ];
 
      public function transform(Promotion $promotion = null)
     {
         if (is_null($promotion)) {
-            return [
-                'cgroup'
-            ];
+            return [];
         }
 
         $data = [
