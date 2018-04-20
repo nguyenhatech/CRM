@@ -65,13 +65,14 @@ class SettingController extends ApiController
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
-            $params = $request->only([
-               'special_day',
-               'disable_promotion_special_day',
-               'disable_sms_special_day'
-            ]);
+            // $params = $request->all();
+            // $params = $request->only([
+            //    'special_day',
+            //    'disable_promotion_special_day',
+            //    'disable_sms_special_day'
+            // ]);
 
-            $model = $this->getResource()->update($id, $params);
+            $model = $this->getResource()->update($id, $request->all());
 
             DB::commit();
             return $this->successResponse($model);
