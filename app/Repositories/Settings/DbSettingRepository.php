@@ -54,9 +54,28 @@ class DbSettingRepository extends BaseRepository implements SettingRepository
         if (array_get($data, 'special_day', null)) {
             $data['special_day'] = json_encode($data['special_day']);
         }
-        
+
         $model = $this->model->create($data);
         return $this->getById($model->id);
+    }
+
+    /**
+     * Cập nhật thông tin 1 bản ghi theo ID
+     *
+     * @param  integer $id ID bản ghi
+     * @return bool
+     */
+    public function update($id, $data)
+    {
+        if (array_get($data, 'special_day', null)) {
+            $data['special_day'] = json_encode($data['special_day']);
+        }
+
+        $record = $this->getById($id);
+
+        $record->fill($data)->save();
+        
+        return $this->getById($id);
     }
 
 }
