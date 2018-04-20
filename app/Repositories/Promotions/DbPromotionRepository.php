@@ -122,11 +122,11 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             }
         }
 
-        // Check hạng xe hợp lệ thì cho qua  ?                   
+        // Check hạng xe hợp lệ thì cho qua  ?
         $target_valid = false;
         if ($promotion->target_type == $target_type || $promotion->target_type == 0) {
             $target_valid = true;
-        } 
+        }
 
         if (! is_null($promotion) && $target_valid) {
             // Nếu có nhóm khách hàng thì check xem user có nằm trong nhóm đó không ?
