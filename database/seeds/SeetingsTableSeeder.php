@@ -14,7 +14,7 @@ class SeetingsTableSeeder extends Seeder
     {
         \DB::table('settings')->insert([
             [
-                'special_day'                   => '30-04, 01-05, 02-09',
+                'special_day'                   => '',
                 'disable_promotion_special_day' => 1,
                 'disable_sms_special_day'       => 1,
                 'level_normal'                  => 0,
