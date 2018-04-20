@@ -17,4 +17,5 @@ return [
 	Nh\Providers\PaymentHistoryCodeServiceProvider::class,
 	Nh\Providers\CampaignSmsServiceProvider::class,
 	Nh\Providers\CampaignSmsIncomingServiceProvider::class,
+	Nh\Providers\SettingServiceProvider::class,
 ];
