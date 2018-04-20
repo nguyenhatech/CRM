@@ -33,7 +33,6 @@ class CampaignController extends ApiController
     protected $smsIncoming;
 
     protected $validationRules = [
-        'template'    => 'required',
         'name'        => 'required|max:191',
         'description' => 'nullable',
         'status'      => 'nullable|numeric',
@@ -42,7 +41,6 @@ class CampaignController extends ApiController
     ];
 
     protected $validationMessages = [
-        'template.required'         => 'Chưa nhập mẫu email',
         'customers.array'           => 'Danh sách khách hàng chưa đúng định dạng.',
         'name.required'             => 'Chưa nhập tên',
         'name.max'                  => 'Tên không được quá 191 kí tự',
@@ -365,7 +363,7 @@ class CampaignController extends ApiController
     public function previewCustomers(Request $request)
     {
         $params = [];
-        $filters = array_only($request->all(), ['age_min', 'age_max', 'created_at_min', 'created_at_max', 'level', 'city_id', 'job']);
+        $filters = array_only($request->all(), ['age_min', 'age_max', 'created_at_min', 'created_at_max', 'level', 'city_id', 'job', 'score_min', 'score_max']);
         foreach ($filters as $key => $filter) {
             if (!is_null($filter)) {
                 switch ($key) {
@@ -374,6 +372,12 @@ class CampaignController extends ApiController
                         break;
                     case 'age_max':
                         array_push($params, ['attribute' => 'dob', 'operation' => '>=', 'value' => Carbon::now()->subYears($filter)->toDateString()]);
+                        break;
+                    case 'score_min':
+                        array_push($params, ['attribute' => 'point', 'operation' => '>=', 'value' => intval($filter)]);
+                        break;
+                    case 'score_max':
+                        array_push($params, ['attribute' => 'point', 'operation' => '<=', 'value' => intval($filter)]);
                         break;
                     case 'created_at_min':
                         array_push($params, ['attribute' => 'created_at', 'operation' => '>=', 'value' => $filter . ' 00:00:00']);

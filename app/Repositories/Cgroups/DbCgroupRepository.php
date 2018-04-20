@@ -56,7 +56,7 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
     }
 
     public function store($params) {
-        $data = array_only($params, ['name', 'avatar', 'description', 'client_id']);
+        $data = array_only($params, ['name', 'avatar', 'description', 'client_id', 'filter']);
         if (getCurrentUser()) {
             $data['client_id'] = getCurrentUser()->id;
         }
@@ -65,7 +65,7 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
 
         // Lưu filter
         if (array_key_exists('filters', $params)) {
-            $filters = array_only($params['filters'], ['level', 'city_id', 'job', 'age_min', 'age_max', 'created_at_min', 'created_at_max']);
+            $filters = array_only($params['filters'], ['level', 'city_id', 'job', 'age_min', 'age_max', 'created_at_min', 'created_at_max', 'score_min', 'score_max']);
             foreach ($filters as $key => $filter) {
                 $attribute = [
                     'cgroup_id' => $model->id,
@@ -81,9 +81,14 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
         // Loại 1: lấy theo filter
         // Loại 2: Theo danh sách đã add
         if ($params['method_input_type'] == 1) {
-            $customerList = $this->getCustomers($model->id);
-            $customers  = array_pluck($customerList, 'id');
-            $this->syncCustomers($model, $customers);
+            // Nếu group là loại biến động thì không lưu danh sách
+            $filterGroup = array_get($params, 'filter', false);
+            if (!$filterGroup) {
+                $limitNumber = array_get($params['filters'], 'limit_number', -1);
+                $customerList = $this->getCustomers($model->id, $limitNumber);
+                $customers  = array_pluck($customerList, 'id');
+                $this->syncCustomers($model, $customers);
+            }
         } else {
             $customers = [];
             foreach ($params['customers'] as $key => $uuid) {
@@ -134,6 +139,12 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
                             break;
                         case 'age_max':
                             array_push($params, ['attribute' => 'dob', 'operation' => '>=', 'value' => Carbon::now()->subYears($filter->value)->toDateString()]);
+                            break;
+                        case 'score_min':
+                            array_push($params, ['attribute' => 'point', 'operation' => '>=', 'value' => $filter->value]);
+                            break;
+                        case 'score_max':
+                            array_push($params, ['attribute' => 'point', 'operation' => '<=', 'value' => $filter->value]);
                             break;
                         case 'created_at_min':
                             array_push($params, ['attribute' => 'created_at', 'operation' => '>=', 'value' => $filter->value . ' 00:00:00']);
