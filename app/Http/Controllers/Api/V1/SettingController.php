@@ -54,36 +54,6 @@ class SettingController extends ApiController
         return $this->successResponse($datas);
     }
 
-    public function store(Request $request)
-    {
-        DB::beginTransaction();
-
-        try {
-
-            $this->validate($request, $this->validationRules, $this->validationMessages);
-
-            $params = $request->only([
-                'special_day',
-                'disable_promotion_special_day',
-                'disable_sms_special_day'
-            ]);
-
-            $data = $this->getResource()->store($params);
-
-            DB::commit();
-            return $this->successResponse($data);
-        } catch (\Illuminate\Validation\ValidationException $validationException) {
-            DB::rollback();
-            return $this->errorResponse([
-                'errors' => $validationException->validator->errors(),
-                'exception' => $validationException->getMessage()
-            ]);
-        } catch (\Exception $e) {
-            DB::rollback();
-            throw $e;
-        }
-    }
-
     public function update(Request $request, $id)
     {
         if (!$data = $this->getResource()->getById($id)) {
@@ -93,44 +63,16 @@ class SettingController extends ApiController
         DB::beginTransaction();
 
         try {
-
-            $this->validationRules = [
-
-            ];
-
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
-            $params = $request->all();
+            // $params = $request->all();
+            // $params = $request->only([
+            //    'special_day',
+            //    'disable_promotion_special_day',
+            //    'disable_sms_special_day'
+            // ]);
 
-            $params = array_except($params, ['client_id', 'code']);
-
-            $model = $this->getResource()->update($id, $params);
-
-            DB::commit();
-            return $this->successResponse($model);
-        } catch (\Illuminate\Validation\ValidationException $validationException) {
-            DB::rollback();
-            return $this->errorResponse([
-                'errors' => $validationException->validator->errors(),
-                'exception' => $validationException->getMessage()
-            ]);
-        } catch (\Exception $e) {
-            DB::rollback();
-            throw $e;
-        }
-    }
-
-    public function active(Request $request, $id)
-    {
-        $data = $this->getResource()->getById($id);
-        if (!$data) {
-            return $this->notFoundResponse();
-        }
-
-        DB::beginTransaction();
-        try {
-            $params['status'] = $data->status ? 0 : 1;
-            $model = $this->getResource()->update($id, $params);
+            $model = $this->getResource()->update($id, $request->all());
 
             DB::commit();
             return $this->successResponse($model);

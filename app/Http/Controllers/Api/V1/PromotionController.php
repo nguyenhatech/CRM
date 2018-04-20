@@ -24,6 +24,7 @@ class PromotionController extends ApiController
         'code'              => 'required|max:50|unique:promotions,code',
         'type'              => 'required|numeric',
         'target_type'       => 'required|numeric',
+        'cgroup_id'         => 'nullable|exists:cgroups,uuid',
         'amount'            => 'required|numeric|min:0',
         'amount_segment'    => 'nullable|numeric|min:0',
         'amount_max'        => 'nullable|numeric|min:0',
@@ -49,6 +50,8 @@ class PromotionController extends ApiController
 
         'target_type.required'      => 'Vui lòng nhập kiểu giảm giá',
         'target_type.numeric'       => 'Kiểu giảm giá phải là kiểu số',
+
+        'cgroup_id.exists'          => 'Mã nhóm khách hàng không tồn tại trên hệ thống',
 
         'amount.required'           => 'Vui lòng nhập số lượng giảm giá',
         'amount.numeric'            => 'Số tiền hoặc phần trăm giảm giá phải là kiểu số',
@@ -163,7 +166,20 @@ class PromotionController extends ApiController
             // UPPERCASE mã code:
             $request['code'] = strtoupper($request['code']);
 
-            $data = $this->getResource()->store($request->all());
+            // Conver mã UUID của Cgroup về ID
+            $cgroud_id = array_get($params, 'cgroup_id', null);
+
+            if (!is_null($cgroud_id)) {
+                if (\Hashids::decode($cgroud_id)[0]) {
+                    $params['cgroup_id'] = \Hashids::decode($cgroud_id)[0];
+                } else {
+                    $params['cgroup_id'] = 0; 
+                }
+            } else {
+                $params['cgroup_id'] = 0; 
+            }
+
+            $data = $this->getResource()->store($params);
 
             DB::commit();
             return $this->successResponse($data);
@@ -192,6 +208,7 @@ class PromotionController extends ApiController
             $this->validationRules = [
                 'type'              => 'required|numeric',
                 'target_type'       => 'required|numeric',
+                'cgroup_id'         => 'nullable|exists:cgroups,uuid',
                 'amount'            => 'required|numeric|min:0',
                 'amount_max'        => 'nullable|numeric|min:0',
                 'quantity'          => 'nullable|numeric|min:0',
@@ -221,6 +238,20 @@ class PromotionController extends ApiController
             }
 
             $params = array_except($params, ['client_id', 'code']);
+
+
+            // Conver mã UUID của Cgroup về ID
+            $cgroud_id = array_get($params, 'cgroup_id', null);
+
+            if (!is_null($cgroud_id)) {
+                if (\Hashids::decode($cgroud_id)[0]) {
+                    $params['cgroup_id'] = \Hashids::decode($cgroud_id)[0];
+                } else {
+                    $params['cgroup_id'] = 0; 
+                }
+            } else {
+                $params['cgroup_id'] = 0; 
+            }
 
             $model = $this->getResource()->update($id, $params);
 
