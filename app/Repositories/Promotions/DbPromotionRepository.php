@@ -111,14 +111,14 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $setting     = $settingRepo->find(1);
 
         if (!is_null($setting) && $setting->special_day && $setting->disable_promotion_special_day) {
-
             $special_day = json_decode($setting->special_day, true);
+
             $dateCurrent = date('d-m', strtotime(now()));
             $in_array    = in_array($dateCurrent, $special_day);
 
             if ($in_array) {
                 $result->error = true;
-                $result->message = 'Thời gian khuyến mại không hợp lệ';
+                $result->message = 'Mã giảm giá không được áp dụng trong ngày đặc biệt';
                 return $result;
             }
         }
@@ -148,7 +148,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 $customers         = $promotion->cgroup ? $promotion->cgroup->customers : [];
                 $customers         = array_pluck($customers, 'id');
                 $customer_in_array = in_array($customer->id, $customers);
-                
+
                 if (!$customer_in_array ) {
                     $result->error = true;
                     $result->message = 'Khách hàng không nằm trong nhóm nhận được khuyến mại';
