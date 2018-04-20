@@ -82,6 +82,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $total_money = (int) array_get($params, 'ticket_money', 0);
         $type        = (int) array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
         $target_type = (int) array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
+        $customer    = null;
         $result      = new \stdClass();
 
         // Check có code đó tồn tại không ?
@@ -138,10 +139,16 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 $customer = $customerRepo->checkExist($email, $phone);
             }
 
-            if ($promotion->cgroup_id && !is_null($customer)) {
-                $customers = $promotion->cgroup ? $promotion->cgroup->customers : [];
-                $customers = array_pluck($customers, 'id');
-                $customer_in_array    = in_array($customer->id, $customers);
+            if ($promotion->cgroup_id) {
+                if (is_null($customer)) {
+                    $result->error = true;
+                    $result->message = 'Khách hàng không nằm trong nhóm nhận được khuyến mại';
+                    return $result;
+                }
+                $customers         = $promotion->cgroup ? $promotion->cgroup->customers : [];
+                $customers         = array_pluck($customers, 'id');
+                $customer_in_array = in_array($customer->id, $customers);
+                
                 if (!$customer_in_array ) {
                     $result->error = true;
                     $result->message = 'Khách hàng không nằm trong nhóm nhận được khuyến mại';
