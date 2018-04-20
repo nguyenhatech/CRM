@@ -33,7 +33,6 @@ class CampaignController extends ApiController
     protected $smsIncoming;
 
     protected $validationRules = [
-        'template'    => 'required',
         'name'        => 'required|max:191',
         'description' => 'nullable',
         'status'      => 'nullable|numeric',
@@ -42,7 +41,6 @@ class CampaignController extends ApiController
     ];
 
     protected $validationMessages = [
-        'template.required'         => 'Chưa nhập mẫu email',
         'customers.array'           => 'Danh sách khách hàng chưa đúng định dạng.',
         'name.required'             => 'Chưa nhập tên',
         'name.max'                  => 'Tên không được quá 191 kí tự',
@@ -207,7 +205,7 @@ class CampaignController extends ApiController
 
     /**
      * Đặt lệnh gửi email
-     * @param  integer  $id   
+     * @param  integer  $id
      * @param  integer  $time Số giây
      * @return [type]        [description]
      */
@@ -226,7 +224,7 @@ class CampaignController extends ApiController
             if (count($customers->toArray()) == 0) {
                 return $this->errorResponse(['errors' => ['customers' => ['Tập khách hàng rỗng!']]]);
             }
-            
+
             try {
                 $customerChunks = $customers->chunk(1000);
                 foreach ($customerChunks as $chunk) {
@@ -244,15 +242,15 @@ class CampaignController extends ApiController
 
     /**
      * Đặt lệnh gửi SMS
-     * @param  integer  $id   
+     * @param  integer  $id
      * @return [type]        [description]
      */
     public function sendSMS(Request $request, $id)
     {
         try {
             $this->validate(
-                $request, 
-                ['content'          => 'required'], 
+                $request,
+                ['content'          => 'required'],
                 ['content.required' => 'Nội dung tin nhắn không được để trống']
             );
             $campaign = $this->campaign->getById($id);
@@ -365,7 +363,7 @@ class CampaignController extends ApiController
     public function previewCustomers(Request $request)
     {
         $params = [];
-        $filters = array_only($request->all(), ['age_min', 'age_max', 'created_at_min', 'created_at_max', 'level', 'city_id', 'job']);
+        $filters = array_only($request->all(), ['age_min', 'age_max', 'created_at_min', 'created_at_max', 'level', 'city_id', 'job', 'score_min', 'score_max']);
         foreach ($filters as $key => $filter) {
             if (!is_null($filter)) {
                 switch ($key) {
@@ -374,6 +372,12 @@ class CampaignController extends ApiController
                         break;
                     case 'age_max':
                         array_push($params, ['attribute' => 'dob', 'operation' => '>=', 'value' => Carbon::now()->subYears($filter)->toDateString()]);
+                        break;
+                    case 'score_min':
+                        array_push($params, ['attribute' => 'point', 'operation' => '>=', 'value' => intval($filter)]);
+                        break;
+                    case 'score_max':
+                        array_push($params, ['attribute' => 'point', 'operation' => '<=', 'value' => intval($filter)]);
                         break;
                     case 'created_at_min':
                         array_push($params, ['attribute' => 'created_at', 'operation' => '>=', 'value' => $filter . ' 00:00:00']);

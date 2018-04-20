@@ -15,7 +15,8 @@ class Setting extends Entity
     public $fillable = [
         'special_day',
         'disable_promotion_special_day',
-        'disable_sms_special_day'
+        'disable_sms_special_day',
+        'level_normal', 'level_sliver', 'level_gold', 'level_diamond'
     ];
 
     const ENABLE_PROMOTION_SPECIAL_DAY  = 0;

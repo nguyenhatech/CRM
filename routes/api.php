@@ -42,7 +42,7 @@ Route::group([
 
     // Modul Setting
     Route::resource('settings', 'SettingController')->only([
-        'update'
+        'update', 'show', 'index'
     ]);
 
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);

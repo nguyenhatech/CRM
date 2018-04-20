@@ -15,7 +15,9 @@ class PromotionTransformer extends TransformerAbstract
      public function transform(Promotion $promotion = null)
     {
         if (is_null($promotion)) {
-            return [];
+            return [
+                'cgroup'
+            ];
         }
 
         $data = [
@@ -25,7 +27,7 @@ class PromotionTransformer extends TransformerAbstract
             'type'              => $promotion->type,
             'target_type'       => $promotion->target_type,
             'type_txt'          => $promotion->getTypeDiscountsText(),
-            'cgroup_id'         => $promotion->cgroup_id,
+            'cgroup_id'         => $promotion->cgroup ? $promotion->cgroup->uuid : '',
             'image'             => $promotion->image,
             'image_path'        => $promotion->getImage(),
             'title'             => $promotion->title,
@@ -44,5 +46,14 @@ class PromotionTransformer extends TransformerAbstract
         ];
 
         return $data;
+    }
+
+    public function includeCgroup(Promotion $promotion = null)
+    {
+        if (is_null($promotion)) {
+            return $this->null();
+        }
+
+        return $this->item($promotion->cgroup, new CgroupTransformer());
     }
 }

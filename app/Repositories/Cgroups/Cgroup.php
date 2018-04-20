@@ -15,7 +15,7 @@ class Cgroup extends Entity
      *
      * @var array
      */
-    public $fillable = ['uuid', 'client_id', 'avatar', 'name', 'description'];
+    public $fillable = ['uuid', 'client_id', 'avatar', 'name', 'description', 'filter'];
 
     /**
      * Full path of images.
