@@ -14,7 +14,7 @@ class Promotion extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type'];
+    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type', 'cgroup_id'];
 
     /**
      * Full path of images.
@@ -81,7 +81,7 @@ class Promotion extends Entity
 
     public function getImage()
     {
-        if (strrpos($this->image, 'http://') == 0 || strrpos($this->image, 'https://') == 0) {
+        if (strrpos($this->image, 'http://') === 0 || strrpos($this->image, 'https://') === 0) {
             return $this->image;
         }
         return $this->image == '' ? '' : get_asset($this->imgPath . '/' . $this->image);

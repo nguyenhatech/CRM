@@ -37,7 +37,13 @@ Route::group([
     Route::get('promotions/{id}/used-customers', 'PromotionController@getListCustomerUsed');
     Route::post('promotions/{id}/active', 'PromotionController@active');
     Route::post('promotions/upload-image', 'PromotionController@uploadImage');
+    Route::get('promotions/get-free', 'PromotionController@getFree');
     Route::resource('promotions', 'PromotionController');
+
+    // Modul Setting
+    Route::resource('settings', 'SettingController')->only([
+        'update'
+    ]);
 
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
