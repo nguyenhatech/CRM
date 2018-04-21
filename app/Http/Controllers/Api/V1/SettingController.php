@@ -22,7 +22,12 @@ class SettingController extends ApiController
     protected $validationRules = [
         'special_day'                   => 'nullable|array',
         'disable_promotion_special_day' => 'nullable|in:0,1',
-        'disable_sms_special_day'       => 'nullable|in:0,1'
+        'disable_sms_special_day'       => 'nullable|in:0,1',
+        'levels'                        => 'nullable|array',
+        'levels.normal'                 => 'nullable|numeric',
+        'levels.sliver'                 => 'nullable|numeric',
+        'levels.gold'                   => 'nullable|numeric',
+        'levels.diamond'                => 'nullable|numeric'
     ];
 
     protected $validationMessages = [
@@ -64,13 +69,13 @@ class SettingController extends ApiController
 
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
-            // dd($request->all());
-            // $params = $request->all();
-            // $params = $request->only([
-            //    'special_day',
-            //    'disable_promotion_special_day',
-            //    'disable_sms_special_day'
-            // ]);
+
+            $params = $request->only([
+               'special_day',
+               'disable_promotion_special_day',
+               'disable_sms_special_day',
+               'levels'
+            ]);
 
             $model = $this->getResource()->update($id, $request->all());
 

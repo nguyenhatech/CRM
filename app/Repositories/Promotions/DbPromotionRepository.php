@@ -129,6 +129,12 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $target_valid = true;
         }
 
+        if (!$target_valid) {
+            $result->error = true;
+            $result->message = 'Mã khuyến mại không áp dụng hạng xe ' . Promotion::LIST_TARGET_TYPE[$target_type];
+            return $result;
+        }
+
         if (! is_null($promotion) && $target_valid) {
             // Nếu có nhóm khách hàng thì check xem user có nằm trong nhóm đó không ?
             $email = array_get($params, 'email', null);
@@ -225,9 +231,6 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $result->target_type       = $promotion->getListTargetTypeText($promotion->target_type);
             $result->amount            = $amount;
 
-        } else {
-            $result->error = true;
-            $result->message = 'Mã khuyến mại không hợp lệ hoặc đã hết hạn hoặc không đúng hạng xe mà mã khuyến mãi áp dụng';
         }
 
         return $result;
