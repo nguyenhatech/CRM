@@ -70,6 +70,18 @@ class DbSettingRepository extends BaseRepository implements SettingRepository
         if (array_get($data, 'special_day', null)) {
             $data['special_day'] = json_encode($data['special_day']);
         }
+        if (isset($data['levels']['normal'])) {
+            $data['level_normal'] = $data['levels']['normal'];
+        }
+        if (isset($data['levels']['sliver'])) {
+            $data['level_sliver'] = $data['levels']['sliver'];
+        }
+        if (isset($data['levels']['gold'])) {
+            $data['level_gold'] = $data['levels']['gold'];
+        }
+        if (isset($data['levels']['diamond'])) {
+            $data['level_diamond'] = $data['levels']['diamond'];
+        }
 
         $record = $this->getById($id);
 
