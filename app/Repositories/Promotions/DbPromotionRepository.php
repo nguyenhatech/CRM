@@ -89,8 +89,8 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $promotion = $this->model->where('status', Promotion::ENABLE)
                                 ->where('code', strtoupper($code))->first();
         if (is_null($promotion)) {
-            $result->error = true;
-            $result->message = 'Mã khuyến mãi không hợp lệ';
+            $result->error   = true;
+            $result->message = 'Xin lỗi mã khuyến mại không hợp lệ';
             return $result;
         }
 
@@ -101,8 +101,8 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                  ->where('code', strtoupper($code))->first();
 
         if (is_null($promotion)) {
-            $result->error = true;
-            $result->message = 'Đã hết thời gian khuyến mãi';
+            $result->error   = true;
+            $result->message = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
             return $result;
         }
 
@@ -118,7 +118,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
             if ($in_array) {
                 $result->error = true;
-                $result->message = 'Mã giảm giá không được áp dụng trong ngày đặc biệt';
+                $result->message = 'Xin lỗi mã khuyến mại không áp dụng trong ngày đặc biệt';
                 return $result;
             }
         }
@@ -142,7 +142,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             if ($promotion->cgroup_id) {
                 if (is_null($customer)) {
                     $result->error = true;
-                    $result->message = 'Khách hàng không nằm trong nhóm nhận được khuyến mại';
+                    $result->message = 'Mã giảm giá không áp dụng cho đối tượng này';
                     return $result;
                 }
                 $customers         = $promotion->cgroup ? $promotion->cgroup->customers : [];
@@ -186,7 +186,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                                     ->get()->count();
 
                     if ($countUsed >= $promotion->quantity_per_user) {
-                        $result->error = true;
+                        $result->error   = true;
                         $result->message = 'Mã khuyến mãi này đã hết số lượt sử dụng';
                         return $result;
                     }
