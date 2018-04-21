@@ -131,7 +131,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
         if (!$target_valid) {
             $result->error = true;
-            $result->message = 'Mã khuyến mại không đúng hạng xe mà mã khuyến mãi áp dụng';
+            $result->message = 'Mã khuyến mại không áp dụng hạng xe ' . Promotion::LIST_TARGET_TYPE[$target_type];
             return $result;
         }
 
