@@ -40,21 +40,30 @@ class CronLevelOutOfDate extends Command
      */
     public function handle()
     {
-        $customers = $this->customer->whereRaw('DATEDIFF(NOW(), last_payment) >= 92g')->get();
-        foreach ($customers as $customer) {
-            $paymentHistory = $this->paymentHistory->create([
-                'customer_id'  => $customer->id,
-                'description'  => 'Tụt hạng sau 3 tháng không có giao dịch',
-                'total_amount' => 0,
-                'total_point'  => -($customer->getTotalPoint() - (list_level_point()[$customer->level] - 1000)),
-                'payment_at'   => \Carbon\Carbon::now(),
-                'status'       => PaymentHistory::PAY_SUCCESS,
-                'type'         => PaymentHistory::TYPE_DIRECT
-            ]);
+        // Logic cũ
+        
+        // $customers = $this->customer->whereRaw('DATEDIFF(NOW(), last_payment) >= 92g')->get();
+        // foreach ($customers as $customer) {
+        //     $paymentHistory = $this->paymentHistory->create([
+        //         'customer_id'  => $customer->id,
+        //         'description'  => 'Tụt hạng sau 3 tháng không có giao dịch',
+        //         'total_amount' => 0,
+        //         'total_point'  => -($customer->getTotalPoint() - (list_level_point()[$customer->level] - 1000)),
+        //         'payment_at'   => \Carbon\Carbon::now(),
+        //         'status'       => PaymentHistory::PAY_SUCCESS,
+        //         'type'         => PaymentHistory::TYPE_DIRECT
+        //     ]);
 
-            event(new \Nh\Events\PaymentSuccess($paymentHistory));
-            event(new \Nh\Events\UpdateLevelCustomer($paymentHistory->customer));
-            event(new \Nh\Events\DownLevelCustomer($paymentHistory->customer));
-        }
+        //     event(new \Nh\Events\PaymentSuccess($paymentHistory));
+        //     event(new \Nh\Events\UpdateLevelCustomer($paymentHistory->customer));
+        //     event(new \Nh\Events\DownLevelCustomer($paymentHistory->customer));
+        // }
+
+        // Hết phần logic cũ
+
+        // Logic mới
+
+        
+        // Hết phần logic mới
     }
 }
