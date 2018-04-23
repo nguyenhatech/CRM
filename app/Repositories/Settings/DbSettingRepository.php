@@ -67,9 +67,12 @@ class DbSettingRepository extends BaseRepository implements SettingRepository
      */
     public function update($id, $data)
     {
-        if (array_get($data, 'special_day', null)) {
+        if (array_get($data, 'special_day', [])) {
             $data['special_day'] = json_encode($data['special_day']);
+        } else {
+            $data['special_day'] = '';
         }
+
         if (isset($data['levels']['normal'])) {
             $data['level_normal'] = $data['levels']['normal'];
         }
