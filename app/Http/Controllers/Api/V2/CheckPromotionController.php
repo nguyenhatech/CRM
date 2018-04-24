@@ -54,10 +54,11 @@ class CheckPromotionController extends Controller
     {
         DB::beginTransaction();
 
-        \Log::info('ERP ' .getCurrentUser()->name . ' : ' . json_encode($request->all()));
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
+            \Log::info('CheckPromotionController/V2/Dòng 60: ERP ' . getCurrentUser()->name . ' : ' . json_encode($request->all()));
+            
             $data = $this->getResource()->check($request->all());
 
             if ($data->error) {
