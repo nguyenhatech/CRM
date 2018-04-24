@@ -137,5 +137,10 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
         return $this->getById($id);
     }
 
+    public function softDelete($booking_id)
+    {
+        dd($booking_id);
+    }
+
 
 }
