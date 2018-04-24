@@ -40,6 +40,11 @@ Route::group([
     Route::get('promotions/get-free', 'PromotionController@getFree');
     Route::resource('promotions', 'PromotionController');
 
+    // Modul Setting
+    Route::resource('settings', 'SettingController')->only([
+        'update', 'show', 'index'
+    ]);
+
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
     Route::resource('email-templates', 'EmailTemplateController');

@@ -96,7 +96,7 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
         $phone = array_get($data, 'phone', null);
         // dd($this->checkExist($email, $phone));
         if ($model = $this->checkExist($email, $phone)) {
-            $data = array_except($data, 'email');
+            $data = array_except($data, 'phone');
             $model->fill($data)->save();
         } else {
             $model = $this->model->create($data);

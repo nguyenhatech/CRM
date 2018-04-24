@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
  */
 function get_asset($path)
 {
-    // return asset($path, env('APP_ENV') == 'production');
+    return asset($path, env('APP_ENV') == 'production');
     return asset($path);
 }
 

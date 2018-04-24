@@ -21,6 +21,8 @@ class CgroupTransformer extends TransformerAbstract
 
         $data = [
             'id'              => $cgroup->uuid,
+            'filter'          => $cgroup->filter,
+            'limit_number'    => $cgroup->limit_number,
             'name'            => $cgroup->name,
             'client_id'       => $cgroup->client_id,
             'description'     => $cgroup->description,
