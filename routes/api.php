@@ -19,6 +19,9 @@ Route::group([
     'middleware' => 'auth:api',
 ], function () {
     Route::resource('clients', 'ClientController');
+    Route::post('customers/{id}/comments/', 'CustomerController@storeComment');
+    Route::get('customers/get-histories/{id}', 'CustomerController@loadHistories');
+    Route::post('customers/send-email/{id}', 'CustomerController@sendEmail');
     Route::get('customers/export-excel', 'CustomerController@exportExcel');
     Route::post('customers/import-excel', 'CustomerController@importExcel');
     Route::post('customers/upload-avatar', 'CustomerController@uploadAvatar');
@@ -84,7 +87,19 @@ Route::group([
     Route::post('call-centers/click-to-call', 'CallCenterController@clickToCall');
 
     Route::get('call-histories', 'CallHistoryController@index');
+
     Route::resource('line-calls', 'LineCallController');
+
+    Route::post('leads/{id}/comments/', 'LeadController@storeComment');
+    Route::get('leads/get-histories/{id}', 'LeadController@loadHistories');
+    Route::post('leads/send-email/{id}', 'LeadController@sendEmail');
+    Route::resource('leads', 'LeadController');
+
+    Route::resource('tags', 'TagController');
+
+    Route::put('tickets/change-prioty/{id}', 'TicketController@changePrioty');
+    Route::put('tickets/change-status/{id}', 'TicketController@changeStatus');
+    Route::resource('tickets', 'TicketController');
     // developer
     Route::get('/developer/client', [
         'as' => 'developer.client',

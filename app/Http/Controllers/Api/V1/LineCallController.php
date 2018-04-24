@@ -65,7 +65,7 @@ class LineCallController extends ApiController
         try {
             $this->validationRules = [
                 'line'           => 'unique:line_calls,line,' . $data->id . ',id',
-                'phone_account'  => $data->phone_account ? 'unique:line_calls,phone_account,' . $data->id . ',id' : 'unique:line_calls',
+                'phone_account'  => 'unique:line_calls,phone_account,' . $data->id . ',id',
                 'email_account'  => $data->email_account ? 'nullable|email|unique:line_calls,email_account' . $data->id . ',id' : 'unique:line_calls|nullable|email'
             ];
             $this->validate($request, $this->validationRules, $this->validationMessages);

@@ -105,4 +105,14 @@ class Customer extends Entity
     {
         return $this->belongsToMany('Nh\Repositories\Cgroups\Cgroup', 'customer_cgroups', 'customer_id', 'cgroup_id');
     }
+
+    public function tickets()
+    {
+        return $this->morphToMany('Nh\Repositories\Tickets\Ticket', 'ticketable');
+    }
+
+    public function comments()
+    {
+        return $this->morphMany('Nh\Repositories\Comments\Comment', 'commentable');
+    }
 }

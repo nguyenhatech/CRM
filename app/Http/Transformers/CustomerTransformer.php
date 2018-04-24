@@ -9,7 +9,7 @@ use Carbon\Carbon;
 class CustomerTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
-        // 'roles'
+        'comments'
     ];
 
      public function transform(Customer $customer = null)
@@ -46,18 +46,18 @@ class CustomerTransformer extends TransformerAbstract
             'total_point'     => $customer->getTotalPoint(),
             'created_at'      => $customer->created_at ? $customer->created_at->format('d-m-Y H:i:s') : null,
             'updated_at'      => $customer->updated_at ? $customer->updated_at->format('d-m-Y H:i:s') : null,
-            'last_payment'      => $customer->last_payment ? $customer->last_payment->format('d-m-Y H:i:s') : null
+            'last_payment'    => $customer->last_payment ? $customer->last_payment->format('d-m-Y H:i:s') : null
         ];
 
         return $data;
     }
 
-    // public function includeRoles(Customer $customer = null)
-    // {
-    //     if (is_null($customer)) {
-    //         return $this->null();
-    //     }
+    public function includeComments(Customer $customer = null)
+    {
+        if (is_null($customer)) {
+            return $this->null();
+        }
 
-    //     return $this->collection($customer->roles, new RoleTransformer());
-    // }
+        return $this->collection($customer->comments, new CommentTransformer());
+    }
 }

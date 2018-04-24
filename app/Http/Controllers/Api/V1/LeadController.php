@@ -6,22 +6,16 @@ use Illuminate\Http\Request;
 use Nh\Http\Controllers\Api\RestfulHandler;
 use Nh\Http\Controllers\Api\TransformerTrait;
 
-use Nh\Repositories\Customers\CustomerRepository;
+use Nh\Repositories\Leads\LeadRepository;
 use Nh\Repositories\Comments\CommentRepository;
 use Nh\Repositories\PhoneCallHistories\PhoneCallHistoryRepository;
-use Nh\Http\Transformers\CustomerTransformer;
-use Nh\Repositories\Cgroups\CgroupRepository;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Input;
-use Nh\Jobs\ImportCsvCustomer;
-use Excel;
+use Nh\Http\Transformers\LeadTransformer;
 
-class CustomerController extends ApiController
+class LeadController extends ApiController
 {
     use TransformerTrait, RestfulHandler;
 
-    protected $customer;
-    protected $cgroup;
+    protected $lead;
     protected $comment;
     protected $phoneCall;
 
@@ -29,13 +23,9 @@ class CustomerController extends ApiController
         'name'            => 'required|min:5|max:255',
         'email'           => 'nullable|required_without_all:phone|email|max:255',
         'phone'           => 'nullable|required_without_all:email|digits_between:8,12',
-        'home_phone'      => 'nullable|digits_between:8,12',
-        'company_phone'   => 'nullable|digits_between:8,12',
-        'website'         => 'nullable|url',
         'dob'             => 'nullable|date_format:Y-m-d',
-        'job'             => 'max:255',
-        'address'         => 'max:255',
-        'company_address' => 'max:255'
+        'gender'          => 'numeric',
+        'source'          => 'numeric'
     ];
 
     protected $validationMessages = [
@@ -47,33 +37,27 @@ class CustomerController extends ApiController
         'email.max'                  => 'Email cần nhỏ hơn :max kí tự',
         'phone.required_without_all' => 'Số điện thoại hoặc email không được để trống',
         'phone.digits_between'       => 'Số điện thoại cần nằm trong khoảng :min đến :max số',
-        'home_phone.digits_between'  => 'Số điện thoại bàn cần nằm trong khoảng :min đến :max số',
-        'home_phone.company_phone'   => 'Số điện thoại cơ quan cần nằm trong khoảng :min đến :max số',
-        'website.url'                => 'Website không đúng định dạng',
         'dob.date_format'            => 'Ngày sinh không đúng định dạng Y-m-d',
-        'job'                        => 'Nghề nghiệp cần nhỏ hơn :max kí tự',
-        'address'                    => 'Địa chỉ cần nhỏ hơn :max kí tự',
-        'company_address'            => 'Địa chỉ cơ quan cần nhỏ hơn :max kí tự',
+        'gender.numeric'             => 'Giới tính chưa đúng định dạng',
+        'source.numeric'             => 'Nguồn lead chưa đúng định dạng'
     ];
 
     public function __construct(
-        CustomerRepository $customer, 
-        CustomerTransformer $transformer, 
-        CgroupRepository $cgroup, 
+        LeadRepository $lead,
         CommentRepository $comment,
-        PhoneCallHistoryRepository $phoneCall)
+        PhoneCallHistoryRepository $phoneCall,
+        LeadTransformer $transformer)
     {
-        $this->customer  = $customer;
-        $this->cgroup    = $cgroup;
-        $this->comment   = $comment;
+        $this->lead    = $lead;
+        $this->comment = $comment;
         $this->phoneCall = $phoneCall;
         $this->setTransformer($transformer);
-        $this->checkPermission('customer');
+        $this->checkPermission('lead');
     }
 
     public function getResource()
     {
-        return $this->customer;
+        return $this->lead;
     }
 
     public function index(Request $request)
@@ -108,7 +92,7 @@ class CustomerController extends ApiController
         }
     }
 
-    public function update(Request $request, $id)
+    public function update($id, Request $request)
     {
         if (!$data = $this->getResource()->getById($id)) {
             return $this->notFoundResponse();
@@ -118,9 +102,8 @@ class CustomerController extends ApiController
 
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
-            $data = $request->all();
-            $data = array_except($data, ['email', 'level', 'last_payment']);
-            $model = $this->getResource()->update($id, $data);
+            $params = array_only($request->all(), ['name', 'dob', 'gender', 'address', 'city_id', 'ip', 'facebook', 'quality', 'status']);
+            $model = $this->getResource()->update($id, $params);
 
             \DB::commit();
             return $this->successResponse($model);
@@ -136,107 +119,12 @@ class CustomerController extends ApiController
         }
     }
 
-    public function uploadAvatar (Request $request) {
-        try {
-            $this->validate($request, [
-                'files.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120',
-                'file' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120'
-            ], [
-                'files.*.image'    => 'File upload không đúng định dạng',
-                'files.*.mimes'    => 'File upload phải là 1 trong các định dạng: :values',
-                'files.*.max'      => 'File upload không thể vượt quá :max KB',
-                'file.image'    => 'File upload không đúng định dạng',
-                'file.mimes'    => 'File upload phải là 1 trong các định dạng: :values',
-                'file.max'      => 'File upload không thể vượt quá :max KB',
-            ]);
-            if ($request->file('file')) {
-                $image = $request->file('file');
-            } else {
-                $image = $request->file('files')[0];
-            }
-            return $this->getResource()->upload($image);
-        } catch (\Illuminate\Validation\ValidationException $validationException) {
-            return $this->errorResponse([
-                'errors' => $validationException->validator->errors(),
-                'exception' => $validationException->getMessage()
-            ]);
-        }
-    }
-
-    public function importExcel(Request $request)
-    {
-        $excelPath = $request->file('file')->store('excel');
-        $params = array_except($request->all(), ['file']);
-
-        try {
-            $job = new ImportCsvCustomer($excelPath, $params, getCurrentUser()->id);
-            dispatch($job)->onQueue(env('APP_NAME'));
-        } catch (\Exception $e) {
-            throw $e;
-        }
-
-        $response = array_merge([
-            'code'   => 200,
-            'status' => 'success',
-        ]);
-        return response()->json($response, $response['code']);
-    }
-
-    public function exportExcel(Request $request)
-    {
-        $validationRules = ['fields' => 'required|array|min:1'];
-        $validationMessages = [
-            'fields.required' => 'Chưa có thông tin dữ liệu cần xuất',
-            'fields.array'    => 'Thông tin dữ liệu phải ở dạng mảng',
-            'fields.min'      => 'Cần có ít nhất một thông tin để xuất dữ liệu'
-        ];
-        try {
-            $this->validate($request, $validationRules, $validationMessages);
-            $params = $request->all();
-            $ableFields = ['uuid', 'name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'level'];
-            foreach ($params['fields'] as $key => $field) {
-                if (!in_array($field, $ableFields)) {
-                    $params['fields'] = array_except($params['fields'], [$key]);
-                }
-            }
-            $datas = $this->getResource()->exportExcel($params, -1);
-            $rowPointer = 2;
-
-            $pathToFile = Excel::create('Khach_hang_' . time(), function($excel) use ($rowPointer, $datas, $params) {
-                // Set the title
-                $excel->setTitle('Dữ liệu khách hàng ' . time());
-                $excel->setCreator('Havaz')
-                      ->setCompany('Havaz.vn');
-                $excel->setDescription('Customers by Havaz');
-
-                $excel->sheet('Sheet 1', function($sheet) use ($rowPointer, $datas, $params) {
-                    $sheet->freezeFirstRow();
-                    $sheet->setFontFamily('Roboto');
-                    $sheet->setHeight(1, 25);
-                    $sheet->row(1, $params['fields']);
-                    foreach ($datas as $key => $customer) {
-                        $sheet->row($rowPointer, array_values($customer->toArray()));
-                        $rowPointer++;
-                    }
-                });
-
-            })->store('xlsx', storage_path('/app/public/excels'), true);
-
-            $path = "excels/{$pathToFile['file']}";
-            return $this->infoResponse([
-                'full' => env('APP_URL') . "/storage/" . $path,
-                'path' => env('APP_URL') . "/storage/excels",
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $validationException) {
-            return $this->errorResponse([
-                'errors' => $validationException->validator->errors(),
-                'exception' => $validationException->getMessage()
-            ]);
-        } catch (\Exception $e) {
-            throw $e;
-        }
-    }
-
+    /**
+     * Thêm một ghi chú cho lead này
+     * @param  String   $id     
+     * @param  Request  $request
+     * @return Model    $comment
+     */
     public function storeComment($id, Request $request)
     {
         if (!$data = $this->getResource()->getById($id)) {
@@ -251,7 +139,7 @@ class CustomerController extends ApiController
             );
             $params = array_only($request->all(), ['content']);
             $params['commentable_id']   = $data->id;
-            $params['commentable_type'] = 'Nh\Repositories\Customers\Customer';
+            $params['commentable_type'] = 'Nh\Repositories\Leads\Lead';
             $model = $this->comment->store($params);
 
             \DB::commit();
@@ -327,30 +215,30 @@ class CustomerController extends ApiController
      */
     public function sendEmail($id, Request $request)
     {
-        if (!$customer = $this->getResource()->getById($id)) {
+        if (!$lead = $this->getResource()->getById($id)) {
             return $this->notFoundResponse();
         }
-        if (is_null($customer->email)) {
-            return $this->errorResponse(['errors' => ['email' => ['Khách hàng này không có email !']]]);
+        if (is_null($lead->email)) {
+            return $this->errorResponse(['errors' => ['email' => ['Liên hệ này không có email !']]]);
         }
 
         $content = array_get($request->all(), 'content', null);
         $subject = array_get($request->all(), 'subject', null);
         if (is_null($content)) {
-            return $this->errorResponse(['errors' => ['email' => ['Khách hàng này không có email!']]]);
+            return $this->errorResponse(['errors' => ['email' => ['Liên hệ này không có email!']]]);
         }
         if (is_null($subject)) {
             return $this->errorResponse(['errors' => ['subject' => ['Chủ đề không được để trống!']]]);
         }
 
         $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
-        $html = str_replace('***name***', $customer->name, $content);
-        $response = $mailer->revicer($customer->email)->subject($subject)->content($html)->sent();
+        $html = str_replace('***name***', $lead->name, $content);
+        $response = $mailer->revicer($lead->email)->subject($subject)->content($html)->sent();
         if (!is_null($response) && $response->success()) {
             $params = [
                 'content'           => '<p>Gửi email</p><small>' . $html . '</small>',
-                'commentable_id'    => $customer->id,
-                'commentable_type'  => 'Nh\Repositories\Customers\Customer'
+                'commentable_id'    => $lead->id,
+                'commentable_type'  => 'Nh\Repositories\Leads\Lead'
             ];
             $model = $this->comment->store($params);
             $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);

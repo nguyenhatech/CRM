@@ -27,6 +27,8 @@ class MailJetHelper {
 
     /**
      * Mẫu gửi email v3.1
+     * Tại thời điểm 02/2018 API v3.1 chưa có tính năng nhóm email theo campaign nên vẫn dùng v3
+     * Note by Kien NV
      * @return [type] response
      */
     public function sent()
@@ -34,10 +36,11 @@ class MailJetHelper {
         $body = [
             'Messages' => [
                 [
-                    'From' => $this->sender,
-                    'To' => $this->revicers,
-                    'Subject' => $this->subject,
-                    'HTMLPart' => $this->content
+                    'FromEmail'       => config('mail.from')['address'],
+                    'FromName'        => config('mail.from')['name'],
+                    'Subject'         => $this->subject,
+                    'Html-part'       => $this->contentHtml,
+                    'Recipients'      => $this->revicers
                 ]
             ]
         ];
@@ -127,6 +130,20 @@ class MailJetHelper {
           'CampaignId' => $campaignId
         ];
         $response = $this->mailer->get(Resources::$Message, ['filters' => $filters]);
+        return $response;
+    }
+
+    /**
+     * Danh sách mail đã gửi
+     * @param  String $email
+     * @return [type]        [description]
+     */
+    public function getEmailHistories($email)
+    {
+        $filters = [
+          'ContactID' => $email
+        ];
+        $response = $this->mailer->get(Resources::$Contactstatistics, ['filters' => $filters]);
         return $response;
     }
 

@@ -11,6 +11,21 @@ class DbPhoneCallHistoryRepository extends BaseRepository implements PhoneCallHi
     }
 
     /**
+     * Lấy thông tin 1 bản ghi xác định bởi ID
+     *
+     * @param  integer $id ID bản ghi
+     * @return Eloquent
+     */
+
+    public function getById($id)
+    {
+        if (!is_numeric($id)) {
+            $id = convert_uuid2id($id);
+        }
+        return $this->model->find($id);
+    }
+
+    /**
      * Lấy tất cả bản ghi có phân trang
      *
      * @param  integer $size Số bản ghi mặc định 25
@@ -24,6 +39,7 @@ class DbPhoneCallHistoryRepository extends BaseRepository implements PhoneCallHi
         $type       = array_get($params, 'type', '');
         $callType   = array_get($params, 'call_type', '');
         $status     = array_get($params, 'status', '');
+        $phone      = array_get($params, 'phone', '');
         $model      = $this->model;
 
         if (!empty($sorting) && array_key_exists(1, $sorting)) {
@@ -43,6 +59,12 @@ class DbPhoneCallHistoryRepository extends BaseRepository implements PhoneCallHi
         }
         if ($status != '') {
             $model = $model->where('status', $status);
+        }
+        if ($phone != '') {
+            $model = $model->where(function($q) use ($phone) {
+                return $q->where('from', $phone)
+                    ->orWhere('to', $phone);
+            });
         }
 
         if ($query != '') {
@@ -68,7 +90,10 @@ class DbPhoneCallHistoryRepository extends BaseRepository implements PhoneCallHi
         $params['start_time'] = $data['time']['$numberLong'];
         $params['call_type'] = PhoneCallHistory::CALL_IN;
 
-        return $this->model->create($params);
+        $call = $this->model->create($params);
+        event(new \Nh\Events\InfoCallIn($call));
+
+        return $call;
     }
 
     /**
