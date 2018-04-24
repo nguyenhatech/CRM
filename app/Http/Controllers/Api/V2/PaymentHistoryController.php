@@ -18,8 +18,7 @@ class PaymentHistoryController extends Controller
     protected $paymentHistory;
 
     protected $validationRules = [
-        'email'          => 'required_without_all:phone|email|max:255',
-        'phone'          => 'required_without_all:email|digits_between:8,12',
+        'phone'          => 'required|digits_between:8,12',
         'description'    => 'required|min:5',
         'total_amount'   => 'numeric',
         'total_point'    => 'numeric',
@@ -67,6 +66,34 @@ class PaymentHistoryController extends Controller
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $model = $this->getResource()->update($id, $request->all());
+
+            \DB::commit();
+            return $this->successResponse($model);
+        } catch (\Illuminate\Validation\ValidationException $validationException) {
+            \DB::rollback();
+            return $this->errorResponse([
+                'errors' => $validationException->validator->errors(),
+                'exception' => $validationException->getMessage()
+            ]);
+        } catch (\Exception $e) {
+            \DB::rollback();
+            throw $e;
+        }
+    }
+
+    /**
+     * Xóa mềm lịch sử thanh toán với những booking bị hủy để có thể lấy KM vào lần sau
+     * @return [type] [description]
+     */
+    public function softDelete(Request $request)
+    {
+        \DB::beginTransaction();
+
+        try {
+            $this->validationRules = [
+                'booking_id' => 'required|min:5'
+            ];
+            $this->validate($request, $this->validationRules, $this->validationMessages);
 
             \DB::commit();
             return $this->successResponse($model);
