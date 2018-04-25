@@ -245,6 +245,11 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         return $model->get();
     }
 
+    /**
+     * Danh sách khách hàng đã sử dụng mã
+     * @param  Int $id
+     * @return [type]
+     */
     public function usedCustomers($id)
     {
         $promotion = $this->getById($id);
@@ -255,6 +260,22 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         return $model->get();
     }
 
+    public function notUsedCustomers($id)
+    {
+        $promotion = $this->getById($id);
+        if ($cgroup = $promotion->cgroup) {
+            $customers = $this->usedCustomers($id);
+            $groupCustomers = $cgroup->customers;
+            return $groupCustomers->diff($customers);
+        }
+        return null;
+    }
+
+    /**
+     * Thống kê số lượt dùng theo thời gian
+     * @param  Int $id 
+     * @return [type]     [description]
+     */
     public function statisticByTime($id)
     {
         $promotion = $this->getById($id);

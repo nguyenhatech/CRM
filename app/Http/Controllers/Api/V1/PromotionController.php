@@ -351,6 +351,20 @@ class PromotionController extends ApiController
     }
 
     /**
+     * Lấy danh sách khách hàng chưa dùng mã
+     * @param  string $value [description]
+     * @return [type]        [description]
+     */
+    public function getListCustomerNotUse($id)
+    {
+        $customers = $this->promotion->notUsedCustomers($id);
+        if ($customers && !is_null($customers->first()->id)) {
+            return $this->infoResponse($customers);
+        }
+        return $this->notFoundResponse();
+    }
+
+    /**
      * Thống kê sử dụng mã khuyến mại theo thời gian
      * @param  string $value [description]
      * @return [type]        [description]

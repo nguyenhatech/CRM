@@ -35,6 +35,7 @@ Route::group([
     Route::get('promotions/{id}/statistic', 'PromotionController@statisticQuantityUsed');
     Route::get('promotions/{id}/statistic-by-time', 'PromotionController@statisticByTime');
     Route::get('promotions/{id}/used-customers', 'PromotionController@getListCustomerUsed');
+    Route::get('promotions/{id}/not-used-customers', 'PromotionController@getListCustomerNotUse');
     Route::post('promotions/{id}/active', 'PromotionController@active');
     Route::post('promotions/upload-image', 'PromotionController@uploadImage');
     Route::get('promotions/get-free', 'PromotionController@getFree');
