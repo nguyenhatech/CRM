@@ -3,6 +3,7 @@
 namespace Nh\Repositories\Promotions;
 use Nh\Repositories\BaseRepository;
 use Nh\Repositories\Promotions\Promotion;
+use Nh\Repositories\Customers\Customer;
 use Nh\Repositories\UploadTrait;
 use Carbon\Carbon;
 
@@ -10,9 +11,10 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 {
     use UploadTrait;
 
-    public function __construct(Promotion $promotion)
+    public function __construct(Promotion $promotion, Customer $customer)
     {
         $this->model = $promotion;
+        $this->customer = $customer;
     }
 
     /**
@@ -239,9 +241,9 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     public function usedStatistic($id)
     {
         $promotion = $this->getById($id);
-        $model = $this->model->leftJoin('payment_histories', 'promotions.code', '=', 'payment_histories.promotion_code')
-            ->select(\DB::raw('promotions.id, count(payment_histories.promotion_code) as total_used, count(DISTINCT payment_histories.customer_id) as total_customer'));
-        $model = $model->where('promotions.code', $promotion->code)->groupBy('promotions.id');
+        $model = $this->model->leftJoin('payment_history_codes', 'promotions.code', '=', 'payment_history_codes.promotion_code')->leftJoin('payment_histories', 'payment_history_codes.payment_history_id', '=', 'payment_histories.id')
+            ->select(\DB::raw('promotions.code, count(promotions.code) as total_used'));
+        $model = $model->where('promotions.code', $promotion->code)->groupBy('promotions.code');
         return $model->get();
     }
 
@@ -253,8 +255,9 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     public function usedCustomers($id)
     {
         $promotion = $this->getById($id);
-        $model = $this->model->leftJoin('payment_histories', 'promotions.code', '=', 'payment_histories.promotion_code')
-            ->leftJoin('customers', 'payment_histories.customer_id', '=', 'customers.id')
+        $model = $this->customer->leftJoin('payment_histories', 'customers.id', '=', 'payment_histories.customer_id')
+            ->leftJoin('payment_history_codes', 'payment_histories.id', '=', 'payment_history_codes.payment_history_id')
+            ->leftJoin('promotions', 'payment_history_codes.promotion_code', '=', 'promotions.code')
             ->select(\DB::raw('customers.id, customers.name, customers.phone, customers.email, count(customers.id) as total_used'));
         $model = $model->where('promotions.code', $promotion->code)->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email');
         return $model->get();
