@@ -3,6 +3,7 @@
 namespace Nh\Repositories\Promotions;
 use Nh\Repositories\BaseRepository;
 use Nh\Repositories\Promotions\Promotion;
+use Nh\Repositories\PaymentHistories\PaymentHistory;
 use Nh\Repositories\UploadTrait;
 use Carbon\Carbon;
 
@@ -169,7 +170,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                 $countUsed = $paymentHistoryCodeRepo->where('promotion_code', strtoupper($code))
                                                 ->whereHas('payment_history', function($q) use ($promotion) {
-                                                    $q->where('client_id', $promotion->client_id);
+                                                    $q->where('status', '<>', 2);
                                                 })->get()->count();
 
                 if ($countUsed >= $promotion->quantity) {
@@ -186,14 +187,14 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                     $countUsed = $paymentHistoryCodeRepo->where('promotion_code', strtoupper($code))
                                                     ->whereHas('payment_history', function($q) use ($promotion, $customer) {
-                                                        $q->where('client_id', $promotion->client_id)
+                                                        $q->where('status', '<>', 2)
                                                         ->where('customer_id', $customer->id);
                                                     })
                                                     ->get()->count();
 
                     if ($countUsed >= $promotion->quantity_per_user) {
                         $result->error   = true;
-                        $result->message = 'Xin lỗi mã giảm giá đã quá số lượt sử dụng';
+                        $result->message = 'Xin lỗi mã giảm giá đã quá số lượt sử dụng.';
                         return $result;
                     }
                 }
