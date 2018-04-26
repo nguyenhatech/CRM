@@ -30,6 +30,7 @@ Route::group([
     Route::resource('cgroups', 'CgroupController');
     Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
 
+    Route::post('update-payment-histories', 'PaymentHistoryController@updatePaymentHistory');
     Route::resource('payment-histories', 'PaymentHistoryController');
 
     Route::get('promotions/{id}/statistic', 'PromotionController@statisticQuantityUsed');
