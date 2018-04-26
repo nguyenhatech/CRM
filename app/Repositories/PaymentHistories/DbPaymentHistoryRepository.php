@@ -115,9 +115,26 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
      * @param  integer $id ID bản ghi
      * @return bool
      */
-    public function update($id, $data)
+    public function updatePaymentHistory($data)
     {
-        $record = $this->getById($id);
+        $result      = new \stdClass();
+
+        // $record = $this->getById($id);
+        // Tìm bản ghi trong DB
+        
+        $record = $this->model->where('booking_id', $data['booking_id'])->first();
+        
+        if (is_null($record)) {
+            $result->error   = true;
+            $result->message = 'Không tìm thấy lịch sử giao dịch nào ứng với booking_id: ' . $data['booking_id'];
+            return $result;
+        }
+
+        if ($record->status == 2) {
+            $result->error   = true;
+            $result->message = 'Không được phép cập nhật cho lịch sử giao dịch này';
+            return $result;
+        }
 
         if (isset($data['status']) && $data['status'] == PaymentHistory::PAY_SUCCESS) {
             $data['payment_at'] = \Carbon\Carbon::now()->format('Y-m-d');
@@ -134,13 +151,35 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
             event(new \Nh\Events\PaymentSuccess($record));
         }
 
-        return $this->getById($id);
+        return $this->getById($record->id);
     }
 
+    /**
+     * Xóa mềm lịch sử giao dịch
+     * @param  [type] $booking_id [description]
+     * @return [type]             [description]
+     */
     public function softDelete($booking_id)
     {
-        dd($booking_id);
-    }
+        $result          = new \stdClass();
+        // Tìm bản ghi lịch sử thanh toán có mã truyền vào
+        $paymentHistory = $this->model->where('description', 'like', "%{$booking_id}%")->first();
 
+        // Nếu ko có thì báo lỗi
+        if (is_null($paymentHistory)) {
+            $result->error   = true;
+            $result->message = 'Không tồn tại lịch sử giao dịch nào ứng với mã vừa nhập';
+            return $result;
+        }
+
+        // Nếu có thì xóa mềm nó đi
+        $paymentHistory->payment_history_codes()->delete();
+        $paymentHistory->delete();
+
+        $result->error   = false;
+        $result->message = 'Xóa lịch sử giao dịch của booking mã: ' . $booking_id . ' thành công.';
+        return $result;
+
+    }
 
 }
