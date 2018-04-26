@@ -23,12 +23,15 @@ class PaymentHistoryTransformer extends TransformerAbstract
             'client_id'    => $paymentHistory->client_id,
             'customer_id'  => $paymentHistory->customer_id,
             'uuid'         => $paymentHistory->uuid,
+            'booking_id'   => $paymentHistory->booking_id,
             'description'  => $paymentHistory->description,
             'total_amount' => $paymentHistory->total_amount,
             'total_point'  => $paymentHistory->total_point,
-            'payment_at'   => $paymentHistory->payment_at,
+            'payment_at'   => $paymentHistory->payment_at ? $paymentHistory->payment_at->format('d-m-Y H:i:s') : null,
             'status'       => $paymentHistory->status,
+            'status_txt'   => $paymentHistory->getStatusText(),
             'type'         => $paymentHistory->type,
+            'type_txt'     => $paymentHistory->getTypeText(),
             'created_at'   => $paymentHistory->created_at ? $paymentHistory->created_at->format('d-m-Y H:i:s') : null,
             'updated_at'   => $paymentHistory->updated_at ? $paymentHistory->updated_at->format('d-m-Y H:i:s') : null
         ];

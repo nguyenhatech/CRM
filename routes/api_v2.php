@@ -25,6 +25,7 @@ Route::group([
 
     // Modul payment-histories
     Route::post('payment-histories/soft-delete', 'PaymentHistoryController@softDelete');
+    Route::post('update-payment-histories', 'PaymentHistoryController@updatePaymentHistory');
     Route::resource('payment-histories', 'PaymentHistoryController');
 
     // Modul check-promotion
