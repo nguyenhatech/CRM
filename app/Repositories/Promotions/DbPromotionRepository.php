@@ -87,13 +87,15 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $target_type = (int) array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
         $customer    = null;
         $result      = new \stdClass();
+        $errors = new \stdClass();
+        $result->errors = $errors;
 
         // Check có code đó tồn tại không ?
         $promotion = $this->model->where('status', Promotion::ENABLE)
                                 ->where('code', strtoupper($code))->first();
         if (is_null($promotion)) {
             $result->error   = true;
-            $result->message = 'Xin lỗi mã khuyến mại không hợp lệ';
+            $result->errors->error = ['Xin lỗi mã khuyến mại không hợp lệ'];
             return $result;
         }
 
@@ -105,7 +107,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
         if (is_null($promotion)) {
             $result->error   = true;
-            $result->message = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
+            $result->errors->error = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
             return $result;
         }
 
@@ -121,7 +123,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
             if ($in_array) {
                 $result->error = true;
-                $result->message = 'Xin lỗi mã khuyến mại không áp dụng trong ngày đặc biệt';
+                $result->errors->error = 'Xin lỗi mã khuyến mại không áp dụng trong ngày đặc biệt';
                 return $result;
             }
         }
@@ -134,7 +136,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
         if (!$target_valid) {
             $result->error   = true;
-            $result->message = 'Mã khuyến mại không áp dụng hạng xe ' . Promotion::LIST_TARGET_TYPE[$target_type];
+            $result->errors->error = 'Mã khuyến mại không áp dụng hạng xe ' . Promotion::LIST_TARGET_TYPE[$target_type];
             return $result;
         }
 
@@ -152,7 +154,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             if ($promotion->cgroup_id) {
                 if (is_null($customer)) {
                     $result->error   = true;
-                    $result->message = 'Xin lỗi quý khách không được áp dụng mã khuyến mại';
+                    $result->errors->error = 'Xin lỗi quý khách không được áp dụng mã khuyến mại';
                     return $result;
                 }
                 $customers         = $promotion->cgroup ? $promotion->cgroup->customers : [];
@@ -161,7 +163,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                 if (!$customer_in_array ) {
                     $result->error = true;
-                    $result->message = 'Xin lỗi quý khách không được áp dụng mã khuyến mại';
+                    $result->errors->error = 'Xin lỗi quý khách không được áp dụng mã khuyến mại';
                     return $result;
                 }
             }
@@ -178,7 +180,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                 if ($countUsed >= $promotion->quantity) {
                     $result->error   = true;
-                    $result->message = 'Xin lỗi mã giảm giá đã quá lượt sử dụng';
+                    $result->errors->error = 'Xin lỗi mã giảm giá đã quá lượt sử dụng';
                     return $result;
                 }
             }
@@ -197,7 +199,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                     if ($countUsed >= $promotion->quantity_per_user) {
                         $result->error   = true;
-                        $result->message = 'Xin lỗi mã giảm giá đã quá số lượt sử dụng.';
+                        $result->errors->error = 'Xin lỗi mã giảm giá đã quá số lượt sử dụng.';
                         return $result;
                     }
                 }
