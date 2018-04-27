@@ -55,13 +55,14 @@ class Customer extends Entity
             $model->save();
         });
 
-        static::addGlobalScope('customers', function (Builder $builder) {
-            if (getCurrentUser() && !getCurrentUser()->isAdmin()) {
-                $builder->whereHas('client', function ($builder) {
-                    $builder->where('id', getCurrentUser()->id);
-                });
-            }
-        });
+        // Tạm bỏ đi vì HSHV không cần
+        // static::addGlobalScope('customers', function (Builder $builder) {
+        //     if (getCurrentUser() && !getCurrentUser()->isAdmin()) {
+        //         $builder->whereHas('client', function ($builder) {
+        //             $builder->where('id', getCurrentUser()->id);
+        //         });
+        //     }
+        // });
 
         parent::boot();
     }
