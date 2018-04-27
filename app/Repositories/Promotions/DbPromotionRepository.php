@@ -18,6 +18,15 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $this->customer = $customer;
     }
 
+    public function getById($id)
+    {
+        if (!is_numeric($id)) {
+            $id = strtolower($id);
+            $id = convert_uuid2id($id);
+        }
+        return $this->model->find($id);
+    }
+
     /**
      * Lấy tất cả bản ghi có phân trang
      *

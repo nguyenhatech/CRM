@@ -344,10 +344,10 @@ class PromotionController extends ApiController
     public function getListCustomerUsed($id)
     {
         $customers = $this->promotion->usedCustomers($id);
-        if ($customers && !is_null($customers->first()->id)) {
+        if (!empty($customers->all()) && !is_null($customers->first()->id)) {
             return $this->infoResponse($customers);
         }
-        return $this->notFoundResponse();
+        return $this->infoResponse([]);
     }
 
     /**
@@ -361,7 +361,7 @@ class PromotionController extends ApiController
         if ($customers && !is_null($customers->first()->id)) {
             return $this->infoResponse($customers);
         }
-        return $this->notFoundResponse();
+        return $this->infoResponse([]);
     }
 
     /**

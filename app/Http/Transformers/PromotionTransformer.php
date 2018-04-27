@@ -19,7 +19,7 @@ class PromotionTransformer extends TransformerAbstract
         }
 
         $data = [
-            'id'                => $promotion->id,
+            'id'                => $promotion->uuid,
             'client_id'         => $promotion->client_id,
             'code'              => $promotion->code,
             'type'              => $promotion->type,
