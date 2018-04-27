@@ -71,11 +71,23 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
      * @param  array $filters Mảng các điều kiện where
      * @return Illuminate\Pagination\Paginator
      */
-    public function getByGroup($filters, $size = -1)
+    public function getByGroup($filters, $size = -1, $sorting = [])
     {
         $model = $this->model;
         foreach ($filters as $key => $filter) {
             $model = $model->where($filter['attribute'], $filter['operation'], $filter['value']);
+        }
+        // Sort trường hợp lấy giới hạn
+        if (!empty($sorting)) {
+            if ($sorting[0] == 'score') {
+                $model = $model->join('payment_histories', 'payment_histories.customer_id', '=', 'customers.id');
+                $model = $model->where('payment_histories.status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_SUCCESS);
+                $model->select(\DB::raw('customers.uuid, customers.name, customers.phone, customers.email, customers.id, sum(payment_histories.total_point) as total_score'));
+                $model = $model->groupBy('customers.uuid', 'customers.name', 'customers.phone', 'customers.email', 'customers.id');
+                $model = $model->orderBy('total_score', $sorting[1] > 0 ? 'ASC' : 'DESC');
+            } else {
+                $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
+            }
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);
