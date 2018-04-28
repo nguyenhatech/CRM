@@ -17,6 +17,14 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $this->customer = $customer;
     }
 
+    public function getById($id)
+    {
+        if (!is_numeric($id)) {
+            $id = strtolower($id);
+            $id = convert_uuid2id($id);
+        }
+        return $this->model->find($id);
+    }
     /**
      * Lấy tất cả bản ghi có phân trang
      *
@@ -242,7 +250,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     {
         $promotion = $this->getById($id);
         $model = $this->model->leftJoin('payment_history_codes', 'promotions.code', '=', 'payment_history_codes.promotion_code')->leftJoin('payment_histories', 'payment_history_codes.payment_history_id', '=', 'payment_histories.id')
-            ->select(\DB::raw('promotions.code, count(promotions.code) as total_used'));
+            ->select(\DB::raw('promotions.code, count(payment_history_codes.promotion_code) as total_used'));
         $model = $model->where('promotions.code', $promotion->code)->groupBy('promotions.code');
         return $model->get();
     }
