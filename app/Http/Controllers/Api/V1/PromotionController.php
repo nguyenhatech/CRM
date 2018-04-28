@@ -330,10 +330,10 @@ class PromotionController extends ApiController
     public function statisticQuantityUsed($id)
     {
         $statistic = $this->promotion->usedStatistic($id);
-        if ($statistic) {
+        if (!empty($statistic->all())) {
             return $this->infoResponse($statistic->first());
         }
-        return $this->notFoundResponse();
+        return $this->infoResponse([]);
     }
 
     /**
