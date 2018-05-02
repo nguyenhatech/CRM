@@ -79,6 +79,16 @@ class Promotion extends Entity
         self::SEGMENT => 'Giảm giá cho khách hàng đi theo chặng'
     ];
 
+    protected static function boot()
+    {
+        static::created(function ($model) {
+            $model->uuid = \Hashids::encode($model->id);
+            $model->save();
+        });
+
+        parent::boot();
+    }
+
     public function getImage()
     {
         if (strrpos($this->image, 'http://') === 0 || strrpos($this->image, 'https://') === 0) {
