@@ -24,7 +24,8 @@ class CheckPromotionController extends Controller
         'type'         => 'required|in:1,2',
         'target_type'  => 'required|in:0,1,2,3',
         'email'        => 'nullable|max:50',
-        'phone'        => 'required|digits_between:8,12'
+        'phone'        => 'required|digits_between:8,12',
+        'time_going'   => 'required|integer'
     ];
 
     protected $validationMessages = [
@@ -37,7 +38,9 @@ class CheckPromotionController extends Controller
         'type.in'               => 'Hình thức khách đi chỉ có thể là theo tuyến hoặc chặng',
         'target_type.required'  => 'Hạng xe không thể để trống',
         'target_type.in'        => 'Hạng xe không hợp lệ',
-        'phone.required'        => 'Vui lòng nhập mã Phone'
+        'phone.required'        => 'Vui lòng nhập số điện thoại',
+        'time_going.required'   => 'Vui lòng nhập thời gian đi',
+        'time_going.integer'    => 'Vui lòng nhập định dạng số'
     ];
 
     public function __construct(PromotionRepository $promotion)
@@ -58,7 +61,7 @@ class CheckPromotionController extends Controller
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             \Log::info('CheckPromotionController/V2/Dòng 60: ERP ' . getCurrentUser()->name . ' : ' . json_encode($request->all()));
-            
+
             $data = $this->getResource()->check($request->all());
 
             if ($data->error) {

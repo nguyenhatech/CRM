@@ -90,35 +90,44 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      */
     public function check($params)
     {
+        $timeNow     = strtotime(Carbon::now()->format('Y-m-d H:i:s'));
         $code        = array_get($params, 'code', '');
         $total_money = (int) array_get($params, 'ticket_money', 0);
         $type        = (int) array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
         $target_type = (int) array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
+        $timeGoing   = array_get($params, 'time_going', $timeNow);
         $customer    = null;
         $result      = new \stdClass();
-        // $errors = new \stdClass();
-        // $result->errors = $errors;
+        dd(strtotime('2018-05-06 23:59:00'));
 
         // Check có code đó tồn tại không ?
         $promotion = $this->model->where('status', Promotion::ENABLE)
                                 ->where('code', strtoupper($code))->first();
-        if (is_null($promotion)) {
+        if (! is_null($promotion)) {
+            $dateStart  = strtotime($promotion->date_start);
+            $dateEnd    = strtotime($promotion->date_end);
+            if($dateEnd <= $timeGoing || ($dateStart <= $timeNow && $dateEnd >= $timeNow)) {
+                $result->error   = true;
+                $result->message = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
+                return $result;
+            }
+        } else {
             $result->error   = true;
             $result->message = 'Xin lỗi mã khuyến mại không hợp lệ';
             return $result;
         }
 
         // Check mã code có hợp lệ về thời gian hay ko ?
-        $promotion = $this->model->where('status', Promotion::ENABLE)
-                                 ->where('date_start', '<=',  Carbon::now())
-                                 ->where('date_end', '>=',  Carbon::now())
-                                 ->where('code', strtoupper($code))->first();
+        // $promotion = $this->model->where('status', Promotion::ENABLE)
+        //                          ->where('date_start', '<=',  Carbon::now())
+        //                          ->where('date_end', '>=',  Carbon::now())
+        //                          ->where('code', strtoupper($code))->first();
 
-        if (is_null($promotion)) {
-            $result->error   = true;
-            $result->message = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
-            return $result;
-        }
+        // if (is_null($promotion)) {
+        //     $result->error   = true;
+        //     $result->message = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
+        //     return $result;
+        // }
 
         // Check xem ngày sử dụng KM có nằm trong những ngày không được phép KM trong bảng Setting hay không ?
         $settingRepo = \App::make('Nh\Repositories\Settings\Setting');
