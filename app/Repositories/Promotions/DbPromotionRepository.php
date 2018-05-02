@@ -90,7 +90,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      */
     public function check($params)
     {
-        $timeNow     = strtotime(Carbon::now()->format('Y-m-d H:i:s'));
+        $timeNow     = strtotime(Carbon::now()->format('Y-m-d H:i'));
         $code        = array_get($params, 'code', '');
         $total_money = (int) array_get($params, 'ticket_money', 0);
         $type        = (int) array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
@@ -98,15 +98,19 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $timeGoing   = array_get($params, 'time_going', $timeNow);
         $customer    = null;
         $result      = new \stdClass();
-        dd(strtotime('2018-05-06 23:59:00'));
+        $flagTime = false;
 
         // Check có code đó tồn tại không ?
         $promotion = $this->model->where('status', Promotion::ENABLE)
                                 ->where('code', strtoupper($code))->first();
+
         if (! is_null($promotion)) {
             $dateStart  = strtotime($promotion->date_start);
             $dateEnd    = strtotime($promotion->date_end);
-            if($dateEnd <= $timeGoing || ($dateStart <= $timeNow && $dateEnd >= $timeNow)) {
+            if($dateStart <= $timeGoing && $dateEnd >= $timeGoing) {
+                $flagTime = true;
+            }
+            if(! $flagTime) {
                 $result->error   = true;
                 $result->message = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
                 return $result;
@@ -140,8 +144,8 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $in_array    = in_array($dateCurrent, $special_day);
 
             if ($in_array) {
-                $result->error = true;
-                $result->message = 'Xin lỗi mã khuyến mại không áp dụng trong ngày đặc biệt';
+                $result->error      = true;
+                $result->message    = 'Xin lỗi mã khuyến mại không áp dụng trong ngày lễ - tết';
                 return $result;
             }
         }

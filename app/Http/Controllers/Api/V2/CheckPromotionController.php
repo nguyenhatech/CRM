@@ -29,8 +29,8 @@ class CheckPromotionController extends Controller
     ];
 
     protected $validationMessages = [
-        'code.required'         => 'Vui lòng nhập mã Code cần kiểm tra',
-        'code.max'              => 'Mã code có chiều dài tối đa chỉ 50 kí tự',
+        'code.required'         => 'Vui lòng nhập mã khuyến mại',
+        'code.max'              => 'Mã code tối đa chỉ 50 kí tự',
         'ticket_money.required' => 'Vui lòng nhập tổng số tiền đơn hàng',
         'ticket_money.numeric'  => 'Số tiền đơn hàng phải là kiểu số',
         'ticket_money.min'      => 'Số tiền đơn hàng tối thiểu là 1000 đồng',
