@@ -26,7 +26,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         }
         return $this->model->find($id);
     }
-    
+
     /**
      * Lấy tất cả bản ghi có phân trang
      *
@@ -137,7 +137,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             }
         }
 
-        // Check hạng xe hợp lệ thì cho qua  ?
+        // Check hạng xe hợp lệ thì cho qua?
         $target_valid = false;
         if ($promotion->target_type == $target_type || $promotion->target_type == 0) {
             $target_valid = true;
@@ -289,7 +289,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
     /**
      * Thống kê số lượt dùng theo thời gian
-     * @param  Int $id 
+     * @param  Int $id
      * @return [type]     [description]
      */
     public function statisticByTime($id)
