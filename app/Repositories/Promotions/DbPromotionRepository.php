@@ -218,13 +218,13 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             // Kiểm tra nếu giảm theo % thì tính số tiền dựa theo booking
             // Nếu trường amount_max = 0 thì lấy luôn số tiền vừa tính được
             // Nếu không thì lấy theo trường amount_max
-
+            // Nếu amount_segment = 0 và type là theo chặng thị thông báo không áp dụng cho chặng
             // Nếu khách chạy thoe tuyến thì lấy trường amount , theo chặng thì amount_segment
             $ratio = $type === Promotion::ROUTE ? $promotion->amount : $promotion->amount_segment;
 
             if($promotion->amount_segment == 0 && $type == Promotion::SEGMENT) {
                 $result->error   = true;
-                $result->message = 'Xin lỗi mã giảm giá không áp dụng theo chặng.';
+                $result->message = 'Mã giảm giá chỉ áp dụng cho toàn tuyến.';
                 return $result;
             }
 
