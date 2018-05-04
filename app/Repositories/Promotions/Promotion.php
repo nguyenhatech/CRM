@@ -14,7 +14,7 @@ class Promotion extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type', 'cgroup_id'];
+    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type', 'cgroup_id', 'limit_time_type'];
 
     /**
      * Full path of images.
@@ -79,6 +79,10 @@ class Promotion extends Entity
         self::ROUTE   => 'Giảm giá cho khách hàng đi cả tuyến',
         self::SEGMENT => 'Giảm giá cho khách hàng đi theo chặng'
     ];
+
+    // Giới hạn thời gian theo giờ đặt hoặc theo giờ đi
+    const BOOK_TIME_LIMIT = 1;
+    const TICKET_TIME_LIMIT = 2;
 
     protected static function boot()
     {
