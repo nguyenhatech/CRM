@@ -121,18 +121,6 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             return $result;
         }
 
-        // Check mã code có hợp lệ về thời gian hay ko ?
-        // $promotion = $this->model->where('status', Promotion::ENABLE)
-        //                          ->where('date_start', '<=',  Carbon::now())
-        //                          ->where('date_end', '>=',  Carbon::now())
-        //                          ->where('code', strtoupper($code))->first();
-
-        // if (is_null($promotion)) {
-        //     $result->error   = true;
-        //     $result->message = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
-        //     return $result;
-        // }
-
         // Check xem ngày sử dụng KM có nằm trong những ngày không được phép KM trong bảng Setting hay không ?
         $settingRepo = \App::make('Nh\Repositories\Settings\Setting');
         $setting     = $settingRepo->find(1);
@@ -233,6 +221,12 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
             // Nếu khách chạy thoe tuyến thì lấy trường amount , theo chặng thì amount_segment
             $ratio = $type === Promotion::ROUTE ? $promotion->amount : $promotion->amount_segment;
+
+            if($promotion->amount_segment == 0 && $type == Promotion::SEGMENT) {
+                $result->error   = true;
+                $result->message = 'Xin lỗi mã giảm giá không áp dụng theo chặng.';
+                return $result;
+            }
 
             // Nếu là giảm theo %
             if ($promotion->type == Promotion::PERCENT) {
