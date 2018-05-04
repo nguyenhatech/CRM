@@ -26,7 +26,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         }
         return $this->model->find($id);
     }
-    
+
     /**
      * Lấy tất cả bản ghi có phân trang
      *
@@ -90,33 +90,34 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      */
     public function check($params)
     {
+        $timeNow     = strtotime(Carbon::now()->format('Y-m-d H:i'));
         $code        = array_get($params, 'code', '');
         $total_money = (int) array_get($params, 'ticket_money', 0);
         $type        = (int) array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
         $target_type = (int) array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
+        $timeGoing   = array_get($params, 'time_going', $timeNow);
         $customer    = null;
         $result      = new \stdClass();
-        $errors = new \stdClass();
-        $result->errors = $errors;
+        $flagTime = false;
 
         // Check có code đó tồn tại không ?
         $promotion = $this->model->where('status', Promotion::ENABLE)
                                 ->where('code', strtoupper($code))->first();
-        if (is_null($promotion)) {
-            $result->error   = true;
-            $result->errors->error = ['Xin lỗi mã khuyến mại không hợp lệ'];
-            return $result;
-        }
 
-        // Check mã code có hợp lệ về thời gian hay ko ?
-        $promotion = $this->model->where('status', Promotion::ENABLE)
-                                 ->where('date_start', '<=',  Carbon::now())
-                                 ->where('date_end', '>=',  Carbon::now())
-                                 ->where('code', strtoupper($code))->first();
-
-        if (is_null($promotion)) {
+        if (! is_null($promotion)) {
+            $dateStart  = strtotime($promotion->date_start);
+            $dateEnd    = strtotime($promotion->date_end);
+            if($dateStart <= $timeGoing && $dateEnd >= $timeGoing) {
+                $flagTime = true;
+            }
+            if(! $flagTime) {
+                $result->error   = true;
+                $result->message = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
+                return $result;
+            }
+        } else {
             $result->error   = true;
-            $result->errors->error = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
+            $result->message = 'Xin lỗi mã khuyến mại không hợp lệ';
             return $result;
         }
 
@@ -131,13 +132,13 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $in_array    = in_array($dateCurrent, $special_day);
 
             if ($in_array) {
-                $result->error = true;
-                $result->errors->error = 'Xin lỗi mã khuyến mại không áp dụng trong ngày đặc biệt';
+                $result->error      = true;
+                $result->message    = 'Xin lỗi mã khuyến mại không áp dụng trong ngày lễ - tết';
                 return $result;
             }
         }
 
-        // Check hạng xe hợp lệ thì cho qua  ?
+        // Check hạng xe hợp lệ thì cho qua?
         $target_valid = false;
         if ($promotion->target_type == $target_type || $promotion->target_type == 0) {
             $target_valid = true;
@@ -145,7 +146,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
         if (!$target_valid) {
             $result->error   = true;
-            $result->errors->error = 'Mã khuyến mại không áp dụng hạng xe ' . Promotion::LIST_TARGET_TYPE[$target_type];
+            $result->message = 'Mã khuyến mại không áp dụng hạng xe ' . Promotion::LIST_TARGET_TYPE[$target_type];
             return $result;
         }
 
@@ -163,7 +164,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             if ($promotion->cgroup_id) {
                 if (is_null($customer)) {
                     $result->error   = true;
-                    $result->errors->error = 'Xin lỗi quý khách không được áp dụng mã khuyến mại';
+                    $result->message = 'Xin lỗi quý khách không được áp dụng mã khuyến mại';
                     return $result;
                 }
                 $customers         = $promotion->cgroup ? $promotion->cgroup->customers : [];
@@ -172,7 +173,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                 if (!$customer_in_array ) {
                     $result->error = true;
-                    $result->errors->error = 'Xin lỗi quý khách không được áp dụng mã khuyến mại';
+                    $result->message = 'Xin lỗi quý khách không được áp dụng mã khuyến mại';
                     return $result;
                 }
             }
@@ -189,7 +190,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                 if ($countUsed >= $promotion->quantity) {
                     $result->error   = true;
-                    $result->errors->error = 'Xin lỗi mã giảm giá đã quá lượt sử dụng';
+                    $result->message = 'Xin lỗi mã giảm giá đã quá lượt sử dụng';
                     return $result;
                 }
             }
@@ -208,7 +209,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                     if ($countUsed >= $promotion->quantity_per_user) {
                         $result->error   = true;
-                        $result->errors->error = 'Xin lỗi mã giảm giá đã quá số lượt sử dụng.';
+                        $result->message = 'Xin lỗi mã giảm giá đã quá số lượt sử dụng.';
                         return $result;
                     }
                 }
@@ -220,6 +221,12 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
             // Nếu khách chạy thoe tuyến thì lấy trường amount , theo chặng thì amount_segment
             $ratio = $type === Promotion::ROUTE ? $promotion->amount : $promotion->amount_segment;
+
+            if($promotion->amount_segment == 0 && $type == Promotion::SEGMENT) {
+                $result->error   = true;
+                $result->message = 'Xin lỗi mã giảm giá không áp dụng theo chặng.';
+                return $result;
+            }
 
             // Nếu là giảm theo %
             if ($promotion->type == Promotion::PERCENT) {
@@ -289,7 +296,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
     /**
      * Thống kê số lượt dùng theo thời gian
-     * @param  Int $id 
+     * @param  Int $id
      * @return [type]     [description]
      */
     public function statisticByTime($id)
