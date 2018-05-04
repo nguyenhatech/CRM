@@ -147,7 +147,7 @@ class CampaignController extends ApiController
 
             $params = $request->all();
 
-            $params = array_only($params, ['name', 'description', 'status', 'cgroup_id', 'template', 'sms_template', 'target_type', 'period', 'customers', 'filters', 'sms_id', 'email_id']);
+            $params = array_only($params, ['name', 'description', 'status', 'cgroup_id', 'template', 'sms_template', 'target_type', 'period', 'customers', 'filters', 'sms_id', 'email_id', 'runtime']);
             if (array_key_exists('cgroup_id', $params)) {
                 $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
             }
