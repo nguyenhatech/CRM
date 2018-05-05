@@ -101,4 +101,12 @@ class Campaign extends Entity
         return $this->hasMany('Nh\Repositories\CampaignSms\CampaignSms', 'campaign_id', 'id');
     }
 
+    /**
+     * Email đã gửi
+     */
+    public function sent_emails()
+    {
+        return $this->hasMany('Nh\Repositories\CampaignEmails\CampaignEmail', 'campaign_id', 'id');
+    }
+
 }

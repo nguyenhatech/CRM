@@ -112,11 +112,11 @@ class CampaignController extends ApiController
 
             $data = $this->getResource()->store($params);
             // Nếu setup thời gian chạy thì tạo job send email
-            if (array_key_exists('runtime', $params) && !is_null($params['runtime'])) {
-                $time = Carbon::parse($params['runtime']);
-                $time = $time->timestamp - time();
-                $this->sendEmail($data->id, $time);
-            }
+            // if (array_key_exists('runtime', $params) && !is_null($params['runtime'])) {
+            //     $time = Carbon::parse($params['runtime']);
+            //     $time = $time->timestamp - time();
+            //     $this->sendEmail($data->id, $time);
+            // }
 
             DB::commit();
             return $this->successResponse($data);
@@ -212,6 +212,14 @@ class CampaignController extends ApiController
     public function sendEmail($id, $time = 1)
     {
         $campaign = $this->campaign->getById($id);
+        if (!$campaign->sent_emails->where('runtime', '2018-05-04 07:30:00')->all()) {
+            dd('xxx');
+        } else {
+            dd('yyy');
+        }
+        dd($campaign->sent_emails->where('runtime', '2018-05-04 08:30:00')->all());
+        // dd(substr($campaign->runtime, 0, 10) == date('Y-m-d'));
+        // dd(date('Y-m-d'));
 
         if ($campaign) {
             $customers = [];

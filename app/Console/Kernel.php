@@ -26,6 +26,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('cron:level')
         //          ->daily();
+        $schedule->command('cron:campaign')->everyFiveMinutes();
     }
 
     /**
