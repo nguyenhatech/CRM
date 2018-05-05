@@ -81,8 +81,8 @@ class Promotion extends Entity
     ];
 
     // Giới hạn thời gian theo giờ đặt hoặc theo giờ đi
-    const BOOK_TIME_LIMIT = 1;
-    const TICKET_TIME_LIMIT = 2;
+    const TIME_BOOKING   = 1;
+    const TIME_GOING   = 2;
 
     protected static function boot()
     {
