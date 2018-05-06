@@ -38,23 +38,26 @@ class SendEmailCampaign implements ShouldQueue
     {
         $campaignEmailRepo = \App::make('Nh\Repositories\CampaignEmails\CampaignEmailRepository');
         $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
-        $response = null;
-        foreach ($this->customers as $key => $customer) {
-            if ($customer->email) {
-                $html = str_replace('***name***', $customer->name, $this->campaign->template);
-                $response = $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->campaign($this->campaign->name . '_' . $this->campaign->uuid)->sendAsCampaign();
+        $sentEmail = $this->campaign->sent_emails;
+        if (!$sentEmail->all()) {
+            $response = null;
+            foreach ($this->customers as $key => $customer) {
+                if ($customer->email) {
+                    $html = str_replace('***name***', $customer->name, $this->campaign->template);
+                    $response = $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->campaign($this->campaign->name . '_' . $this->campaign->uuid)->sendAsCampaign();
+                }
             }
-        }
-        if (!is_null($response) && $response->success()) {
-            $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);
-            $this->campaign->email_id = $response->getData()['Sent'][0]['MessageID'];
-            $this->campaign->save();
+            if (!is_null($response) && $response->success()) {
+                $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);
+                $this->campaign->email_id = $response->getData()['Sent'][0]['MessageID'];
+                $this->campaign->save();
 
-            $campaignEmailRepo->store([
-                'campaign_id' => $this->campaign->id,
-                'runtime'     => $this->campaign->runtime,
-                'email_content' => $this->campaign->template
-            ]);
+                $campaignEmailRepo->store([
+                    'campaign_id' => $this->campaign->id,
+                    'runtime'     => $this->campaign->runtime,
+                    'email_content' => $this->campaign->template
+                ]);
+            }
         }
     }
 }

@@ -50,10 +50,10 @@ class CampaignController extends ApiController
     ];
 
     public function __construct(
-        CampaignRepository $campaign, 
-        CgroupRepository $cgroup, 
-        CustomerRepository $customer, 
-        CampaignSmsIncomingRepository $smsIncoming, 
+        CampaignRepository $campaign,
+        CgroupRepository $cgroup,
+        CustomerRepository $customer,
+        CampaignSmsIncomingRepository $smsIncoming,
         CampaignTransformer $transformer)
     {
         $this->campaign     = $campaign;
@@ -112,11 +112,14 @@ class CampaignController extends ApiController
 
             $data = $this->getResource()->store($params);
             // Nếu setup thời gian chạy thì tạo job send email
-            // if (array_key_exists('runtime', $params) && !is_null($params['runtime'])) {
-            //     $time = Carbon::parse($params['runtime']);
-            //     $time = $time->timestamp - time();
-            //     $this->sendEmail($data->id, $time);
-            // }
+            if (array_key_exists('runtime', $params) && !is_null($params['runtime'])) {
+                $time = Carbon::parse($params['runtime']);
+                $time = $time->timestamp - time();
+                if ($time < 0) {
+                    $time = 1;
+                }
+                $this->sendEmail($data->id, $time);
+            }
 
             DB::commit();
             return $this->successResponse($data);
@@ -166,6 +169,19 @@ class CampaignController extends ApiController
             }
 
             $model = $this->getResource()->update($id, $params);
+
+            // Nếu upate runtime
+            if (array_key_exists('runtime', $params)
+                 && !is_null($params['runtime'])
+                 && $data->runtime != $params['runtime']) {
+                $time = Carbon::parse($params['runtime']);
+                $time = $time->timestamp - time();
+                if ($time < 0) {
+                    $time = 1;
+                }
+                $this->sendEmail($data->id, $time);
+            }
+
 
             DB::commit();
             return $this->successResponse($model);
