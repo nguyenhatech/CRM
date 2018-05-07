@@ -212,16 +212,6 @@ class CampaignController extends ApiController
     public function sendEmail($id, $time = 1)
     {
         $campaign = $this->campaign->getById($id);
-        // dd($campaign);
-        // if (!$campaign->sent_emails->where('runtime', '2018-05-04 07:30:00')->all()) {
-        //     dd('xxx');
-        // } else {
-        //     dd('yyy');
-        // }
-        // dd($campaign->sent_emails->where('runtime', '2018-05-04 08:30:00')->all());
-        // dd(substr($campaign->runtime, 0, 10) == date('Y-m-d'));
-        // dd(date('Y-m-d'));
-
         if ($campaign) {
             $customers = [];
 
