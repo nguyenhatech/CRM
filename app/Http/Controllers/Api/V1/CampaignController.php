@@ -182,9 +182,7 @@ class CampaignController extends ApiController
             $model = $this->getResource()->update($id, $params);
 
             // Nếu upate runtime
-            if (array_key_exists('runtime', $params)
-                 && !is_null($params['runtime'])
-                 && $data->runtime != $params['runtime']) {
+            if (array_key_exists('runtime', $params) && !is_null($params['runtime']) && $data->runtime != $params['runtime']) {
                 $time = Carbon::parse($params['runtime']);
                 $time = $time->timestamp - time();
                 if ($time < 0) {
@@ -207,7 +205,7 @@ class CampaignController extends ApiController
 
                 $this->sendEmail($data->id, $time);
             }
-
+            
             DB::commit();
             return $this->successResponse($model);
         } catch (\Illuminate\Validation\ValidationException $validationException) {
@@ -253,7 +251,6 @@ class CampaignController extends ApiController
     public function sendEmail($id, $time = 1)
     {
         $campaign = $this->campaign->getById($id);
-
         if ($campaign) {
             $customers = [];
 
