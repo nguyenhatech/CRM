@@ -37,9 +37,13 @@ class SendEmailCampaign implements ShouldQueue
     public function handle()
     {
         $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
+        \Log::info('Bắt đầu chạy job gửi email');
+        \Log::info($this->campaign->runtime);
         if ($this->campaign->runtime) {
+            \Log::info('Gửi tự động');
             $sentEmails = $this->campaign->sent_emails->where('runtime', $this->campaign->runtime);
             if ($sentEmails->all() && $sentEmails->first()->runtime == $this->campaign->runtime) {
+                \Log::info('Bắt đầu gửi');
                 $response = null;
                 foreach ($this->customers as $key => $customer) {
                     if ($customer->email) {
@@ -54,6 +58,7 @@ class SendEmailCampaign implements ShouldQueue
                 }
             }
         } else {
+            \Log::info('Gửi bằng tay');
             $response = null;
             foreach ($this->customers as $key => $customer) {
                 if ($customer->email) {

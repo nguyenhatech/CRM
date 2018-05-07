@@ -191,7 +191,7 @@ class CampaignController extends ApiController
 
                 // Tạo mới thông tin gửi mail, nếu đã có thì cập nhật thời gian chạy
                 $campaignEmails = $data->sent_emails->where('runtime', $data->runtime);
-                if ($campaignEmails) {
+                if ($campaignEmails->first()) {
                     $this->campaignEmail->update($campaignEmails->first()->id, [
                         'runtime'       => $params['runtime']
                     ]);
