@@ -36,10 +36,24 @@ class SendEmailCampaign implements ShouldQueue
      */
     public function handle()
     {
-        $campaignEmailRepo = \App::make('Nh\Repositories\CampaignEmails\CampaignEmailRepository');
         $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
-        $sentEmail = $this->campaign->sent_emails;
-        if (!$sentEmail->all()) {
+        if ($this->campaign->runtime) {
+            $sentEmails = $this->campaign->sent_emails->where('runtime', $this->campaign->runtime);
+            if ($sentEmails->all() && $sentEmails->first()->runtime == $this->campaign->runtime) {
+                $response = null;
+                foreach ($this->customers as $key => $customer) {
+                    if ($customer->email) {
+                        $html = str_replace('***name***', $customer->name, $this->campaign->template);
+                        $response = $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->campaign($this->campaign->name . '_' . $this->campaign->uuid)->sendAsCampaign();
+                    }
+                }
+                if (!is_null($response) && $response->success()) {
+                    $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);
+                    $this->campaign->email_id = $response->getData()['Sent'][0]['MessageID'];
+                    $this->campaign->save();
+                }
+            }
+        } else {
             $response = null;
             foreach ($this->customers as $key => $customer) {
                 if ($customer->email) {
@@ -51,12 +65,6 @@ class SendEmailCampaign implements ShouldQueue
                 $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);
                 $this->campaign->email_id = $response->getData()['Sent'][0]['MessageID'];
                 $this->campaign->save();
-
-                $campaignEmailRepo->store([
-                    'campaign_id' => $this->campaign->id,
-                    'runtime'     => $this->campaign->runtime,
-                    'email_content' => $this->campaign->template
-                ]);
             }
         }
     }
