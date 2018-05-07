@@ -102,7 +102,7 @@ class Campaign extends Entity
     }
 
     /**
-     * Email đã gửi
+     * Email tự động đã gửi
      */
     public function sent_emails()
     {
