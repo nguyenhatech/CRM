@@ -205,7 +205,7 @@ class CampaignController extends ApiController
 
                 $this->sendEmail($data->id, $time);
             }
-            
+
             DB::commit();
             return $this->successResponse($model);
         } catch (\Illuminate\Validation\ValidationException $validationException) {
