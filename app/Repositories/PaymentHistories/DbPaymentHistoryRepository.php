@@ -118,12 +118,9 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
     public function updatePaymentHistory($data)
     {
         $result      = new \stdClass();
-
-        // $record = $this->getById($id);
         // Tìm bản ghi trong DB
-        
         $record = $this->model->where('booking_id', $data['booking_id'])->first();
-        
+
         if (is_null($record)) {
             $result->error   = true;
             $result->message = 'Không tìm thấy lịch sử giao dịch nào ứng với booking_id: ' . $data['booking_id'];
