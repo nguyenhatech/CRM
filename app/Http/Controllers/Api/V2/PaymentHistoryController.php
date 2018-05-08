@@ -106,7 +106,7 @@ class PaymentHistoryController extends Controller
 
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
-            $params = $request->only(['booking_id', 'status', 'total_amount', 'description']);
+            $params = $request->only(['booking_id', 'status', 'total_amount', 'description', 'type', 'details']);
 
             $model = $this->getResource()->updatePaymentHistory($params);
 
