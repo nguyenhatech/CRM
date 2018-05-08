@@ -4,9 +4,11 @@ namespace Nh\Repositories\Campaigns;
 
 use Nh\Repositories\Entity;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Campaign extends Entity
 {
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
