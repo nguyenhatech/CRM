@@ -88,13 +88,15 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
         $model = $this->model->create($data);
 
         //Lưu mảng mã khuyến mãi ứng với lịch sử giao dịch trên
-        $arr_promotion_codes = array_pluck($data['details'], 'promotion_code');
-        foreach ($arr_promotion_codes as $key => $code) {
-            if (! empty($code)) {
-                $result = $this->paymentHistoryCode->create([
-                    'payment_history_id' => $model->id,
-                    'promotion_code' => $code
-                ]);
+        if(isset($data['details'])) {
+            $arr_promotion_codes = array_pluck($data['details'], 'promotion_code');
+            foreach ($arr_promotion_codes as $key => $code) {
+                if (! empty($code)) {
+                    $result = $this->paymentHistoryCode->create([
+                        'payment_history_id' => $model->id,
+                        'promotion_code'     => $code
+                    ]);
+                }
             }
         }
         /**
@@ -129,15 +131,16 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
         }
 
         //Lưu mảng mã khuyến mãi ứng với lịch sử giao dịch trên
-        $arr_promotion_codes = array_pluck($data['details'], 'promotion_code');
-        foreach ($arr_promotion_codes as $key => $code) {
-            if (! empty($code)) {
-                $result = $this->paymentHistoryCode->where('payment_history_id', '=', $record->id)->update([
-                    'promotion_code'     => $code
-                ]);
+        if(isset($data['details'])) {
+            $arr_promotion_codes = array_pluck($data['details'], 'promotion_code');
+            foreach ($arr_promotion_codes as $key => $code) {
+                if (! empty($code)) {
+                    $result = $this->paymentHistoryCode->where('payment_history_id', '=', $record->id)->update([
+                        'promotion_code'     => $code
+                    ]);
+                }
             }
         }
-
         // if ($record->status == 2) {
         //     $result->error   = true;
         //     $result->message = 'Không được phép cập nhật cho lịch sử giao dịch này';
