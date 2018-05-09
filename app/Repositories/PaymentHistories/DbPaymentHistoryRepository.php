@@ -134,13 +134,11 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
         if(isset($data['details'])) {
             foreach ($data['details'] as $key => $value) {
                 if (isset($value['deleted_at'])) {
-                    $paymentHistoryCodeRepo = \App::make('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode');
-
-                    $paymentHistoryCode = $paymentHistoryCodeRepo->where('promotion_code', $value['promotion_code'])
+                    $paymentHistoryCode = $this->paymentHistoryCode->where('promotion_code', $value['promotion_code'])
                                                             ->where('payment_history_id', $record->id)
                                                             ->first();
                     if (! is_null($paymentHistoryCode)) {
-                        $paymentHistoryCode->delete();          
+                        $paymentHistoryCode->delete();
                     }
                 }
             }
