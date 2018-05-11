@@ -79,7 +79,6 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
      */
     public function store($data)
     {
-
         $dataCustomer           = array_only($data, ['name', 'email', 'phone']);
         $customer               = $this->customer->storeOrUpdate($dataCustomer);
         $data['customer_id']    = $customer->id;
@@ -119,7 +118,6 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
      */
     public function updatePaymentHistory($data)
     {
-        // dd($data);
         $result      = new \stdClass();
         // Tìm bản ghi trong DB
         $record = $this->model->where('booking_id', $data['booking_id'])->first();
