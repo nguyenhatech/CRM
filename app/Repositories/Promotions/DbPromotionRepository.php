@@ -261,13 +261,21 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     public function usedStatistic($id)
     {
         $promotion = $this->getById($id);
-        $model = $this->model
-            ->leftJoin('payment_history_codes', 'promotions.code', '=', 'payment_history_codes.promotion_code')
-            ->leftJoin('payment_histories', 'payment_history_codes.payment_history_id', '=', 'payment_histories.id')
-            ->select(\DB::raw('promotions.code, count(payment_history_codes.promotion_code) as total_used'))
-            ->where('payment_histories.status', '!=', 2);
-        $model = $model->where('promotions.code', $promotion->code)->groupBy('promotions.code');
-        return $model->get();
+        $model = $this->model->leftJoin('payment_history_codes', 'code', '=', 'promotion_code')
+                            ->select(\DB::raw('code, count(promotion_code) as total_used'))
+                            ->whereNull('payment_history_codes.deleted_at')
+                            ->where('code', $promotion->code)
+                            ->groupBy('code')
+                            ->get();
+        return $model;
+        //dd($promotion);
+        // $model = $this->model
+        //     ->leftJoin('payment_history_codes', 'promotions.code', '=', 'payment_history_codes.promotion_code')
+        //     ->leftJoin('payment_histories', 'payment_history_codes.payment_history_id', '=', 'payment_histories.id')
+        //     ->select(\DB::raw('promotions.code, count(payment_history_codes.promotion_code) as total_used'))
+        //     ->where('payment_histories.status', '!=', 2);
+        // $model = $model->where('promotions.code', $promotion->code)->groupBy('promotions.code');
+        // return $model->get();
     }
 
     /**
@@ -279,19 +287,31 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     {
         $promotion = $this->getById($id);
         $model = $this->customer->leftJoin('payment_histories', 'customers.id', '=', 'payment_histories.customer_id')
-            ->leftJoin('payment_history_codes', 'payment_histories.id', '=', 'payment_history_codes.payment_history_id')
-            ->leftJoin('promotions', 'payment_history_codes.promotion_code', '=', 'promotions.code')
-            ->select(\DB::raw('customers.id, customers.name, customers.phone, customers.email, count(customers.id) as total_used'))->where('payment_histories.status', '!=', 2);
-        $model = $model->where('promotions.code', $promotion->code)->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email');
-        return $model->get();
+                                ->leftJoin('payment_history_codes', 'payment_histories.id', '=', 'payment_history_codes.payment_history_id')
+                                ->leftJoin('promotions', 'payment_history_codes.promotion_code', '=', 'promotions.code');
+        $select = "customers.id, customers.name, customers.phone, customers.email,
+                    COUNT(payment_history_id) AS total_used,
+                    SUM(!ISNULL(payment_history_codes.deleted_at)) as total_cancel";
+
+       $model = $model->selectRaw($select)->where('promotions.code', $promotion->code)->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email')->get();
+
+       return $model;
+
+
+        // $model = $this->customer->leftJoin('payment_histories', 'customers.id', '=', 'payment_histories.customer_id')
+        //     ->leftJoin('payment_history_codes', 'payment_histories.id', '=', 'payment_history_codes.payment_history_id')
+        //     ->leftJoin('promotions', 'payment_history_codes.promotion_code', '=', 'promotions.code')
+        //     ->select(\DB::raw('customers.id, customers.name, customers.phone, customers.email, count(customers.id) as total_used'))->where('payment_histories.status', '!=', 2);
+        // $model = $model->where('promotions.code', $promotion->code)->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email');
+        // return $model->get();
     }
 
     public function notUsedCustomers($id)
     {
         $promotion = $this->getById($id);
-        if ($cgroup = $promotion->cgroup) {
-            $customers = $this->usedCustomers($id);
-            $groupCustomers = $cgroup->customers;
+        if (isset($promotion->cgroup)) {
+            $customers      = $this->usedCustomers($id);
+            $groupCustomers = $promotion->cgroup->customers;
             return $groupCustomers->diff($customers);
         }
         return null;
@@ -306,9 +326,12 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     {
         $promotion = $this->getById($id);
 
-        $model = $this->model->leftJoin('payment_history_codes', 'promotions.code', '=', 'payment_history_codes.promotion_code');
-        $model = $model->leftJoin('payment_histories', 'payment_history_codes.payment_history_id', '=', 'payment_histories.id')->select(\DB::raw('DATE(payment_histories.created_at) as date, COUNT(payment_history_codes.id) as total'))->where('payment_histories.status', '!=', 2);
-        $model = $model->where('promotions.code', $promotion->code)->groupBy(\DB::raw('DATE(payment_histories.created_at)'));
+        $model = $this->model->leftJoin('payment_history_codes', 'promotions.code', '=', 'payment_history_codes.promotion_code')
+                            ->leftJoin('payment_histories', 'payment_history_codes.payment_history_id', '=', 'payment_histories.id')
+                            ->select(\DB::raw('DATE(payment_histories.created_at) as date, COUNT(payment_history_codes.id) as total'))
+                            ->where('payment_history_codes.deleted_at', '=', null)
+                            ->where('promotions.code', $promotion->code)
+                            ->groupBy(\DB::raw('DATE(payment_histories.created_at)'));
 
         return $model->get();
     }
@@ -323,5 +346,4 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                             ->get();
         return $promotions;
     }
-
 }
