@@ -345,7 +345,7 @@ class PromotionController extends ApiController
     public function getListCustomerUsed($id)
     {
         $customers = $this->promotion->usedCustomers($id);
-        if (!empty($customers->all()) && !is_null($customers->first()->id)) {
+        if (!is_null($customers) && !empty($customers->all()) && !is_null($customers->first()->id)) {
             return $this->infoResponse($customers);
         }
         return $this->infoResponse([]);
@@ -410,6 +410,8 @@ class PromotionController extends ApiController
         $uuid = $request->get('uuid');
         try {
             $promotions = $this->getResource()->usedCustomers($uuid);
+
+            if(!$promotions) return [];
 
             $pathToFile = Excel::create('khach_hang_su_dung_ma_khuyen_mai ' . time(), function ($excel) use ($promotions) {
                 $excel->sheet('sheet1', function ($sheet) use ($promotions) {

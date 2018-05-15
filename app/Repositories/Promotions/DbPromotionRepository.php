@@ -278,16 +278,17 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     public function usedCustomers($id)
     {
         $promotion = $this->getById($id);
-        $model = $this->customer->leftJoin('payment_histories', 'customers.id', '=', 'payment_histories.customer_id')
+        if($promotion) {
+            $model = $this->customer->leftJoin('payment_histories', 'customers.id', '=', 'payment_histories.customer_id')
                                 ->leftJoin('payment_history_codes', 'payment_histories.id', '=', 'payment_history_codes.payment_history_id')
                                 ->leftJoin('promotions', 'payment_history_codes.promotion_code', '=', 'promotions.code');
-        $select = "customers.id, customers.name, customers.phone, customers.email,
+            $select = "customers.id, customers.name, customers.phone, customers.email,
                     COUNT(payment_history_id) AS total_used,
                     SUM(!ISNULL(payment_history_codes.deleted_at)) as total_cancel";
 
-       $model = $model->selectRaw($select)->where('promotions.code', $promotion->code)->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email')->get();
-
-       return $model;
+            return $model->selectRaw($select)->where('promotions.code', $promotion->code)->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email')->get();
+        }
+        return null;
     }
 
     /**
@@ -315,14 +316,13 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     {
         $promotion = $this->getById($id);
 
-        $model = $this->model->leftJoin('payment_history_codes', 'promotions.code', '=', 'payment_history_codes.promotion_code')
+        return $this->model->leftJoin('payment_history_codes', 'promotions.code', '=', 'payment_history_codes.promotion_code')
                             ->leftJoin('payment_histories', 'payment_history_codes.payment_history_id', '=', 'payment_histories.id')
                             ->select(\DB::raw('DATE(payment_histories.created_at) as date, COUNT(payment_history_codes.id) as total'))
                             ->where('payment_history_codes.deleted_at', '=', null)
                             ->where('promotions.code', $promotion->code)
-                            ->groupBy(\DB::raw('DATE(payment_histories.created_at)'));
-
-        return $model->get();
+                            ->groupBy(\DB::raw('DATE(payment_histories.created_at)'))
+                            ->get();
     }
 
     public function getPromotionFree()
