@@ -131,7 +131,7 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
         //Lưu mảng mã khuyến mãi ứng với lịch sử giao dịch trên
         if(isset($data['details'])) {
             foreach ($data['details'] as $key => $value) {
-                if (isset($value['deleted_at'])) {
+                if (isset($value['delete_at'])) {
                     $paymentHistoryCode = $this->paymentHistoryCode->where('promotion_code', $value['promotion_code'])
                                                             ->where('payment_history_id', $record->id)
                                                             ->first();

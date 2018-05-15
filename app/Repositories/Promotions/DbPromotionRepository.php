@@ -268,14 +268,6 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                             ->groupBy('code')
                             ->get();
         return $model;
-        //dd($promotion);
-        // $model = $this->model
-        //     ->leftJoin('payment_history_codes', 'promotions.code', '=', 'payment_history_codes.promotion_code')
-        //     ->leftJoin('payment_histories', 'payment_history_codes.payment_history_id', '=', 'payment_histories.id')
-        //     ->select(\DB::raw('promotions.code, count(payment_history_codes.promotion_code) as total_used'))
-        //     ->where('payment_histories.status', '!=', 2);
-        // $model = $model->where('promotions.code', $promotion->code)->groupBy('promotions.code');
-        // return $model->get();
     }
 
     /**
@@ -296,16 +288,13 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
        $model = $model->selectRaw($select)->where('promotions.code', $promotion->code)->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email')->get();
 
        return $model;
-
-
-        // $model = $this->customer->leftJoin('payment_histories', 'customers.id', '=', 'payment_histories.customer_id')
-        //     ->leftJoin('payment_history_codes', 'payment_histories.id', '=', 'payment_history_codes.payment_history_id')
-        //     ->leftJoin('promotions', 'payment_history_codes.promotion_code', '=', 'promotions.code')
-        //     ->select(\DB::raw('customers.id, customers.name, customers.phone, customers.email, count(customers.id) as total_used'))->where('payment_histories.status', '!=', 2);
-        // $model = $model->where('promotions.code', $promotion->code)->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email');
-        // return $model->get();
     }
 
+    /**
+     * Khách hàng chưa sử dụng mã
+     * @param  [type] $id UUID mã giảm giá
+     * @return [type]     [description]
+     */
     public function notUsedCustomers($id)
     {
         $promotion = $this->getById($id);
