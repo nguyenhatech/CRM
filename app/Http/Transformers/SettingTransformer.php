@@ -30,6 +30,7 @@ class SettingTransformer extends TransformerAbstract
                 'gold'    => $setting->level_gold,
                 'diamond' => $setting->level_diamond,
             ],
+            'amount_per_score'                  => $setting->amount_per_score,
             'created_at'                        => $setting->created_at ? $setting->created_at->format('Y-m-d H:i:s') : null
         ];
 

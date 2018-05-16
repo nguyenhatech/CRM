@@ -19,7 +19,8 @@ class Setting extends Entity
         'level_normal', 
         'level_sliver', 
         'level_gold', 
-        'level_diamond'
+        'level_diamond',
+        'amount_per_score'
     ];
 
     const ENABLE_PROMOTION_SPECIAL_DAY  = 0;
