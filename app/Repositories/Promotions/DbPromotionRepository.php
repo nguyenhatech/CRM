@@ -298,7 +298,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 $model = $model->where('payment_histories.created_at', '<=', $endDate);
             }
 
-            return $model->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email', 'payment_histories.created_at')->get();
+            return $model->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email')->get();
         }
         return null;
     }
