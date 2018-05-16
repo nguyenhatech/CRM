@@ -275,18 +275,30 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      * @param  Int $id
      * @return [type]
      */
-    public function usedCustomers($id)
+    public function usedCustomers($id, $params = [])
     {
-        $promotion = $this->getById($id);
+        $startDate  = array_get($params, 'start_date', null);
+        $endDate    = array_get($params, 'end_date', null);
+        $promotion  = $this->getById($id);
         if($promotion) {
             $model = $this->customer->leftJoin('payment_histories', 'customers.id', '=', 'payment_histories.customer_id')
                                 ->leftJoin('payment_history_codes', 'payment_histories.id', '=', 'payment_history_codes.payment_history_id')
                                 ->leftJoin('promotions', 'payment_history_codes.promotion_code', '=', 'promotions.code');
-            $select = "customers.id, customers.name, customers.phone, customers.email,
+            $select = "customers.id, customers.name, customers.phone, customers.email, payment_histories.created_at,
                     COUNT(payment_history_id) AS total_used,
                     SUM(!ISNULL(payment_history_codes.deleted_at)) as total_cancel";
 
-            return $model->selectRaw($select)->where('promotions.code', $promotion->code)->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email')->get();
+            $model = $model->selectRaw($select)->where('promotions.code', $promotion->code);
+
+            // Theo thời gian
+            if ($startDate) {
+                $model = $model->where('payment_histories.created_at', '>=', $startDate);
+            }
+            if ($endDate) {
+                $model = $model->where('payment_histories.created_at', '<=', $endDate);
+            }
+
+            return $model->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email', 'payment_histories.created_at')->get();
         }
         return null;
     }

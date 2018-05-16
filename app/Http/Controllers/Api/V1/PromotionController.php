@@ -342,9 +342,9 @@ class PromotionController extends ApiController
      * @param  string $value [description]
      * @return [type]        [description]
      */
-    public function getListCustomerUsed($id)
+    public function getListCustomerUsed($id, Request $request)
     {
-        $customers = $this->promotion->usedCustomers($id);
+        $customers = $this->promotion->usedCustomers($id, $request->all());
         if (!is_null($customers) && !empty($customers->all()) && !is_null($customers->first()->id)) {
             return $this->infoResponse($customers);
         }
@@ -409,7 +409,7 @@ class PromotionController extends ApiController
     {
         $uuid = $request->get('uuid');
         try {
-            $promotions = $this->getResource()->usedCustomers($uuid);
+            $promotions = $this->getResource()->usedCustomers($uuid, $request->all());
 
             if(!$promotions) return [];
 
@@ -424,6 +424,7 @@ class PromotionController extends ApiController
                             'Họ tên',
                             'Điện thoại',
                             'Email',
+                            'Ngày tạo',
                             'Số lượt dùng',
                             'Số lượt hủy'
                         ]
@@ -438,6 +439,7 @@ class PromotionController extends ApiController
                                 $promotion->name,
                                 $promotion->phone,
                                 $promotion->email,
+                                $promotion->created_at,
                                 $promotion->total_used,
                                 $promotion->total_cancel
                             ]
