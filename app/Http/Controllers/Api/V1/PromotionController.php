@@ -424,7 +424,6 @@ class PromotionController extends ApiController
                             'Họ tên',
                             'Điện thoại',
                             'Email',
-                            'Ngày tạo',
                             'Số lượt dùng',
                             'Số lượt hủy'
                         ]
@@ -439,7 +438,6 @@ class PromotionController extends ApiController
                                 $promotion->name,
                                 $promotion->phone,
                                 $promotion->email,
-                                $promotion->created_at,
                                 $promotion->total_used,
                                 $promotion->total_cancel
                             ]

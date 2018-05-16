@@ -284,7 +284,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $model = $this->customer->leftJoin('payment_histories', 'customers.id', '=', 'payment_histories.customer_id')
                                 ->leftJoin('payment_history_codes', 'payment_histories.id', '=', 'payment_history_codes.payment_history_id')
                                 ->leftJoin('promotions', 'payment_history_codes.promotion_code', '=', 'promotions.code');
-            $select = "customers.id, customers.name, customers.phone, customers.email, payment_histories.created_at,
+            $select = "customers.id, customers.name, customers.phone, customers.email,
                     COUNT(payment_history_id) AS total_used,
                     SUM(!ISNULL(payment_history_codes.deleted_at)) as total_cancel";
 
