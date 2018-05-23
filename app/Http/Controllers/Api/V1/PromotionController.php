@@ -330,10 +330,10 @@ class PromotionController extends ApiController
     public function statisticQuantityUsed($id)
     {
         $statistic = $this->promotion->usedStatistic($id);
-        if ($statistic) {
+        if (!empty($statistic->all())) {
             return $this->infoResponse($statistic->first());
         }
-        return $this->notFoundResponse();
+        return $this->infoResponse([]);
     }
 
     /**
@@ -344,10 +344,24 @@ class PromotionController extends ApiController
     public function getListCustomerUsed($id)
     {
         $customers = $this->promotion->usedCustomers($id);
+        if (!empty($customers->all()) && !is_null($customers->first()->id)) {
+            return $this->infoResponse($customers);
+        }
+        return $this->infoResponse([]);
+    }
+
+    /**
+     * Lấy danh sách khách hàng chưa dùng mã
+     * @param  string $value [description]
+     * @return [type]        [description]
+     */
+    public function getListCustomerNotUse($id)
+    {
+        $customers = $this->promotion->notUsedCustomers($id);
         if ($customers && !is_null($customers->first()->id)) {
             return $this->infoResponse($customers);
         }
-        return $this->notFoundResponse();
+        return $this->infoResponse([]);
     }
 
     /**
