@@ -225,5 +225,4 @@ class CustomerController extends ApiController
             throw $e;
         }
     }
-
 }

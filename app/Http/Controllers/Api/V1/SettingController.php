@@ -74,7 +74,8 @@ class SettingController extends ApiController
                'special_day',
                'disable_promotion_special_day',
                'disable_sms_special_day',
-               'levels'
+               'levels',
+               'amount_per_score'
             ]);
 
             $model = $this->getResource()->update($id, $request->all());

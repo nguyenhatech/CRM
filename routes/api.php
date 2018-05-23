@@ -40,6 +40,7 @@ Route::group([
     Route::post('promotions/{id}/active', 'PromotionController@active');
     Route::post('promotions/upload-image', 'PromotionController@uploadImage');
     Route::get('promotions/get-free', 'PromotionController@getFree');
+    Route::get('promotions/export-excel', 'PromotionController@exportExcel');
     Route::resource('promotions', 'PromotionController');
 
     // Modul Setting

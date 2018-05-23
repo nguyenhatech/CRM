@@ -19,6 +19,8 @@ class PaymentHistoryCode extends Entity
 
     public $table = 'payment_history_codes';
 
+    protected $dates = ['deleted_at'];
+
     public function payment_history()
     {
         return $this->belongsTo('Nh\Repositories\PaymentHistories\PaymentHistory', 'payment_history_id', 'id');

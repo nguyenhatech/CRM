@@ -3,6 +3,7 @@
 namespace Nh\Repositories\Promotions;
 use Nh\Repositories\BaseRepository;
 use Nh\Repositories\Promotions\Promotion;
+use Nh\Repositories\PaymentHistories\PaymentHistory;
 use Nh\Repositories\Customers\Customer;
 use Nh\Repositories\UploadTrait;
 use Carbon\Carbon;
@@ -25,6 +26,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         }
         return $this->model->find($id);
     }
+
     /**
      * Lấy tất cả bản ghi có phân trang
      *
@@ -88,31 +90,34 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      */
     public function check($params)
     {
+        $timeNow     = strtotime(Carbon::now()->format('Y-m-d H:i'));
         $code        = array_get($params, 'code', '');
         $total_money = (int) array_get($params, 'ticket_money', 0);
         $type        = (int) array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
         $target_type = (int) array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
+        $timeGoing   = array_get($params, 'time_going', $timeNow);
         $customer    = null;
         $result      = new \stdClass();
+        $flagTime = false;
 
         // Check có code đó tồn tại không ?
         $promotion = $this->model->where('status', Promotion::ENABLE)
                                 ->where('code', strtoupper($code))->first();
-        if (is_null($promotion)) {
+
+        if (! is_null($promotion)) {
+            $dateStart  = strtotime($promotion->date_start);
+            $dateEnd    = strtotime($promotion->date_end);
+            if($dateStart <= $timeGoing && $dateEnd >= $timeGoing) {
+                $flagTime = true;
+            }
+            if(! $flagTime && $promotion->limit_time_type == Promotion::TIME_GOING) {
+                $result->error   = true;
+                $result->message = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
+                return $result;
+            }
+        } else {
             $result->error   = true;
             $result->message = 'Xin lỗi mã khuyến mại không hợp lệ';
-            return $result;
-        }
-
-        // Check mã code có hợp lệ về thời gian hay ko ?
-        $promotion = $this->model->where('status', Promotion::ENABLE)
-                                 ->where('date_start', '<=',  Carbon::now())
-                                 ->where('date_end', '>=',  Carbon::now())
-                                 ->where('code', strtoupper($code))->first();
-
-        if (is_null($promotion)) {
-            $result->error   = true;
-            $result->message = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
             return $result;
         }
 
@@ -127,13 +132,13 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $in_array    = in_array($dateCurrent, $special_day);
 
             if ($in_array) {
-                $result->error = true;
-                $result->message = 'Xin lỗi mã khuyến mại không áp dụng trong ngày đặc biệt';
+                $result->error      = true;
+                $result->message    = 'Xin lỗi mã khuyến mại không áp dụng trong ngày lễ - tết';
                 return $result;
             }
         }
 
-        // Check hạng xe hợp lệ thì cho qua  ?
+        // Check hạng xe hợp lệ thì cho qua?
         $target_valid = false;
         if ($promotion->target_type == $target_type || $promotion->target_type == 0) {
             $target_valid = true;
@@ -152,6 +157,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
             if (!is_null($email) || !is_null($phone)) {
                 $customerRepo = \App::make('Nh\Repositories\Customers\CustomerRepository');
+                $email = null;
                 $customer = $customerRepo->checkExist($email, $phone);
             }
 
@@ -179,7 +185,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                 $countUsed = $paymentHistoryCodeRepo->where('promotion_code', strtoupper($code))
                                                 ->whereHas('payment_history', function($q) use ($promotion) {
-                                                    $q->where('client_id', $promotion->client_id);
+                                                    $q->where('status', '<>', 2);
                                                 })->get()->count();
 
                 if ($countUsed >= $promotion->quantity) {
@@ -196,14 +202,14 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                     $countUsed = $paymentHistoryCodeRepo->where('promotion_code', strtoupper($code))
                                                     ->whereHas('payment_history', function($q) use ($promotion, $customer) {
-                                                        $q->where('client_id', $promotion->client_id)
+                                                        $q->where('status', '<>', 2)
                                                         ->where('customer_id', $customer->id);
                                                     })
                                                     ->get()->count();
 
                     if ($countUsed >= $promotion->quantity_per_user) {
                         $result->error   = true;
-                        $result->message = 'Xin lỗi mã giảm giá đã quá số lượt sử dụng';
+                        $result->message = 'Xin lỗi mã giảm giá đã quá số lượt sử dụng.';
                         return $result;
                     }
                 }
@@ -212,9 +218,15 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             // Kiểm tra nếu giảm theo % thì tính số tiền dựa theo booking
             // Nếu trường amount_max = 0 thì lấy luôn số tiền vừa tính được
             // Nếu không thì lấy theo trường amount_max
-
+            // Nếu amount_segment = 0 và type là theo chặng thị thông báo không áp dụng cho chặng
             // Nếu khách chạy thoe tuyến thì lấy trường amount , theo chặng thì amount_segment
             $ratio = $type === Promotion::ROUTE ? $promotion->amount : $promotion->amount_segment;
+
+            if($promotion->amount_segment == 0 && $type == Promotion::SEGMENT) {
+                $result->error   = true;
+                $result->message = 'Mã giảm giá chỉ áp dụng cho toàn tuyến.';
+                return $result;
+            }
 
             // Nếu là giảm theo %
             if ($promotion->type == Promotion::PERCENT) {
@@ -249,10 +261,13 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     public function usedStatistic($id)
     {
         $promotion = $this->getById($id);
-        $model = $this->model->leftJoin('payment_history_codes', 'promotions.code', '=', 'payment_history_codes.promotion_code')->leftJoin('payment_histories', 'payment_history_codes.payment_history_id', '=', 'payment_histories.id')
-            ->select(\DB::raw('promotions.code, count(payment_history_codes.promotion_code) as total_used'));
-        $model = $model->where('promotions.code', $promotion->code)->groupBy('promotions.code');
-        return $model->get();
+        $model = $this->model->leftJoin('payment_history_codes', 'code', '=', 'promotion_code')
+                            ->select(\DB::raw('code, count(promotion_code) as total_used'))
+                            ->whereNull('payment_history_codes.deleted_at')
+                            ->where('code', $promotion->code)
+                            ->groupBy('code')
+                            ->get();
+        return $model;
     }
 
     /**
@@ -260,23 +275,47 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      * @param  Int $id
      * @return [type]
      */
-    public function usedCustomers($id)
+    public function usedCustomers($id, $params = [])
     {
-        $promotion = $this->getById($id);
-        $model = $this->customer->leftJoin('payment_histories', 'customers.id', '=', 'payment_histories.customer_id')
-            ->leftJoin('payment_history_codes', 'payment_histories.id', '=', 'payment_history_codes.payment_history_id')
-            ->leftJoin('promotions', 'payment_history_codes.promotion_code', '=', 'promotions.code')
-            ->select(\DB::raw('customers.id, customers.name, customers.phone, customers.email, count(customers.id) as total_used'));
-        $model = $model->where('promotions.code', $promotion->code)->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email');
-        return $model->get();
+        $startDate  = array_get($params, 'start_date', null);
+        $endDate    = array_get($params, 'end_date', null);
+        $startDate  = $startDate . ' 00:00:00';
+        $endDate    = $endDate . ' 23:59:59';
+        $promotion  = $this->getById($id);
+        if($promotion) {
+            $model = $this->customer->leftJoin('payment_histories', 'customers.id', '=', 'payment_histories.customer_id')
+                                ->leftJoin('payment_history_codes', 'payment_histories.id', '=', 'payment_history_codes.payment_history_id')
+                                ->leftJoin('promotions', 'payment_history_codes.promotion_code', '=', 'promotions.code');
+            $select = "customers.id, customers.name, customers.phone, customers.email,
+                    COUNT(payment_history_id) AS total_used,
+                    SUM(!ISNULL(payment_history_codes.deleted_at)) as total_cancel";
+
+            $model = $model->selectRaw($select)->where('promotions.code', $promotion->code);
+
+            // Theo thời gian
+            if ($startDate) {
+                $model = $model->where('payment_histories.created_at', '>=', $startDate);
+            }
+            if ($endDate) {
+                $model = $model->where('payment_histories.created_at', '<=', $endDate);
+            }
+
+            return $model->groupBy('customers.id', 'customers.name', 'customers.phone', 'customers.email')->get();
+        }
+        return null;
     }
 
+    /**
+     * Khách hàng chưa sử dụng mã
+     * @param  [type] $id UUID mã giảm giá
+     * @return [type]     [description]
+     */
     public function notUsedCustomers($id)
     {
         $promotion = $this->getById($id);
-        if ($cgroup = $promotion->cgroup) {
-            $customers = $this->usedCustomers($id);
-            $groupCustomers = $cgroup->customers;
+        if (isset($promotion->cgroup)) {
+            $customers      = $this->usedCustomers($id);
+            $groupCustomers = $promotion->cgroup->customers;
             return $groupCustomers->diff($customers);
         }
         return null;
@@ -284,18 +323,20 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
     /**
      * Thống kê số lượt dùng theo thời gian
-     * @param  Int $id 
+     * @param  Int $id
      * @return [type]     [description]
      */
     public function statisticByTime($id)
     {
         $promotion = $this->getById($id);
 
-        $model = $this->model->leftJoin('payment_history_codes', 'promotions.code', '=', 'payment_history_codes.promotion_code');
-        $model = $model->leftJoin('payment_histories', 'payment_history_codes.payment_history_id', '=', 'payment_histories.id')->select(\DB::raw('DATE(payment_histories.created_at) as date, COUNT(payment_history_codes.id) as total'));
-        $model = $model->where('promotions.code', $promotion->code)->groupBy(\DB::raw('DATE(payment_histories.created_at)'));
-
-        return $model->get();
+        return $this->model->leftJoin('payment_history_codes', 'promotions.code', '=', 'payment_history_codes.promotion_code')
+                            ->leftJoin('payment_histories', 'payment_history_codes.payment_history_id', '=', 'payment_histories.id')
+                            ->select(\DB::raw('DATE(payment_histories.created_at) as date, COUNT(payment_history_codes.id) as total'))
+                            ->where('payment_history_codes.deleted_at', '=', null)
+                            ->where('promotions.code', $promotion->code)
+                            ->groupBy(\DB::raw('DATE(payment_histories.created_at)'))
+                            ->get();
     }
 
     public function getPromotionFree()
@@ -308,5 +349,4 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                             ->get();
         return $promotions;
     }
-
 }

@@ -14,7 +14,7 @@ class DbCampaignRepository extends BaseRepository implements CampaignRepository
     public function getById($id)
     {
         if (!is_numeric($id)) {
-            $id = strtolower($id);
+            // $id = strtolower($id);
             $id = convert_uuid2id($id);
         }
         return $this->model->find($id);

@@ -56,7 +56,8 @@ class PaymentHistory extends Entity
                 $model->payment_at = \Carbon\Carbon::now();
             }
             if ($model->total_amount < 0) {
-                $model->total_point = floor(abs($model->total_amount) / 1000);
+                $setting = \Nh\Repositories\Settings\Setting::find(1);
+                $model->total_point = floor(abs($model->total_amount) / $setting->amount_per_score);
             }
             $model->save();
         });

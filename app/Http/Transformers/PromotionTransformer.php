@@ -38,6 +38,7 @@ class PromotionTransformer extends TransformerAbstract
             'quantity_per_user' => $promotion->quantity_per_user,
             'date_start'        => $promotion->date_start,
             'date_end'          => $promotion->date_end,
+            'limit_time_type'   => $promotion->limit_time_type,
             'status'            => $promotion->status,
             'status_txt'        => $promotion->getStatusText(),
             'created_at'        => $promotion->created_at ? $promotion->created_at->format('Y-m-d H:i:s') : null,

@@ -85,7 +85,8 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
             $filterGroup = array_get($params, 'filter', false);
             if (!$filterGroup) {
                 $limitNumber = array_get($params['filters'], 'limit_number', -1);
-                $customerList = $this->getCustomers($model->id, $limitNumber);
+                $sorting = array_get($params['filters'], 'limit_sort', []);
+                $customerList = $this->getCustomers($model->id, $limitNumber, $sorting);
                 $customers  = array_pluck($customerList, 'id');
                 $this->syncCustomers($model, $customers);
             }
@@ -126,7 +127,7 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
      * @param  integer $size [description]
      * @return [type]        [description]
      */
-    public function getCustomers($id, $size = -1)
+    public function getCustomers($id, $size = -1, $sorting = [])
     {
         $cgroup = $this->getById($id);
         if ($cgroup) {
@@ -159,7 +160,7 @@ class DbCgroupRepository extends BaseRepository implements CgroupRepository
                 }
             }
             $customer = \App::make('Nh\Repositories\Customers\CustomerRepository');
-            return $customer->getByGroup($params, $size);
+            return $customer->getByGroup($params, $size, $sorting);
         }
         return [];
     }
