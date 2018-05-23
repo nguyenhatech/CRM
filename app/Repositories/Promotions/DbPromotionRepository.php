@@ -279,6 +279,8 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     {
         $startDate  = array_get($params, 'start_date', null);
         $endDate    = array_get($params, 'end_date', null);
+        $startDate  = $startDate . ' 00:00:00';
+        $endDate    = $endDate . ' 23:59:59';
         $promotion  = $this->getById($id);
         if($promotion) {
             $model = $this->customer->leftJoin('payment_histories', 'customers.id', '=', 'payment_histories.customer_id')
