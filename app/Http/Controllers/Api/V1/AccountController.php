@@ -30,7 +30,6 @@ class AccountController extends ApiController
     {
         $this->account = $user;
         $this->setTransformer($transformer);
-        $this->checkPermission('user');
     }
 
     public function getResource()
@@ -146,6 +145,29 @@ class AccountController extends ApiController
                 'exception' => $validationException->getMessage()
             ]);
         }
+    }
+
+    /**
+     * Lấy mã các nhóm quyền mà user đang được cấp
+     * @return [type] [description]
+     */
+    public function getPermissions()
+    {
+        $permissions = collect([]);
+        if (getCurrentUser()) {
+            if (getCurrentUser()->isSuperAdmin()) {
+                $permissions = \Nh\Repositories\Permissions\Permission::all();
+            } else {
+               foreach (getCurrentUser()->roles as $role) {
+                   $permissions = $permissions->union($role->permissions);
+               }
+            }
+        }
+        $permissions = $permissions->groupBy(function ($per) {
+            $name = array_get(explode(".", $per['name']), 0, '');
+            return $name;
+        })->keys()->toArray();
+        return $this->infoResponse($permissions);
     }
 
 }
