@@ -4,9 +4,11 @@ namespace Nh\Repositories\Campaigns;
 
 use Nh\Repositories\Entity;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Campaign extends Entity
 {
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -99,6 +101,14 @@ class Campaign extends Entity
     public function sms()
     {
         return $this->hasMany('Nh\Repositories\CampaignSms\CampaignSms', 'campaign_id', 'id');
+    }
+
+    /**
+     * Email tự động đã gửi
+     */
+    public function sent_emails()
+    {
+        return $this->hasMany('Nh\Repositories\CampaignEmails\CampaignEmail', 'campaign_id', 'id');
     }
 
 }

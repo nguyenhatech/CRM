@@ -14,6 +14,8 @@ use Nh\Repositories\Campaigns\Campaign;
 use Nh\Repositories\Cgroups\CgroupRepository;
 use Nh\Repositories\Customers\CustomerRepository;
 use Nh\Repositories\Campaigns\CampaignRepository;
+use Nh\Repositories\CampaignEmails\CampaignEmailRepository;
+use Nh\Repositories\CampaignSmsIncomings\CampaignSmsIncomingRepository;
 use Nh\Http\Transformers\CampaignTransformer;
 
 use Nh\Jobs\SendEmailCampaign;
@@ -29,9 +31,10 @@ class CampaignController extends ApiController
     protected $campaign;
     protected $cgroup;
     protected $customer;
+    protected $smsIncoming;
+    protected $campaignEmail;
 
     protected $validationRules = [
-        'template'    => 'required',
         'name'        => 'required|max:191',
         'description' => 'nullable',
         'status'      => 'nullable|numeric',
@@ -40,7 +43,6 @@ class CampaignController extends ApiController
     ];
 
     protected $validationMessages = [
-        'template.required'         => 'Chưa nhập mẫu email',
         'customers.array'           => 'Danh sách khách hàng chưa đúng định dạng.',
         'name.required'             => 'Chưa nhập tên',
         'name.max'                  => 'Tên không được quá 191 kí tự',
@@ -49,11 +51,19 @@ class CampaignController extends ApiController
         'target_type.numeric'       => 'Chọn đối tượng mục tiêu chưa đúng'
     ];
 
-    public function __construct(CampaignRepository $campaign, CgroupRepository $cgroup, CustomerRepository $customer, CampaignTransformer $transformer)
+    public function __construct(
+        CampaignRepository $campaign,
+        CgroupRepository $cgroup,
+        CustomerRepository $customer,
+        CampaignSmsIncomingRepository $smsIncoming,
+        CampaignEmailRepository $campaignEmail,
+        CampaignTransformer $transformer)
     {
-        $this->campaign = $campaign;
-        $this->cgroup = $cgroup;
-        $this->customer = $customer;
+        $this->campaign     = $campaign;
+        $this->cgroup       = $cgroup;
+        $this->customer     = $customer;
+        $this->smsIncoming  = $smsIncoming;
+        $this->campaignEmail = $campaignEmail;
         $this->setTransformer($transformer);
         $this->checkPermission('campaign');
     }
@@ -109,7 +119,17 @@ class CampaignController extends ApiController
             if (array_key_exists('runtime', $params) && !is_null($params['runtime'])) {
                 $time = Carbon::parse($params['runtime']);
                 $time = $time->timestamp - time();
+                if ($time < 0) {
+                    $time = 1;
+                }
                 $this->sendEmail($data->id, $time);
+
+                // Tạo mới thông tin gửi mail
+                $this->campaignEmail->store([
+                    'campaign_id'   => $data->id,
+                    'runtime'       => $params['runtime'],
+                    'email_content' => $params['template']
+                ]);
             }
 
             DB::commit();
@@ -141,7 +161,7 @@ class CampaignController extends ApiController
 
             $params = $request->all();
 
-            $params = array_only($params, ['name', 'description', 'status', 'cgroup_id', 'template', 'sms_template', 'target_type', 'period', 'customers', 'filters', 'sms_id', 'email_id']);
+            $params = array_only($params, ['name', 'description', 'status', 'cgroup_id', 'template', 'sms_template', 'target_type', 'period', 'customers', 'filters', 'sms_id', 'email_id', 'runtime']);
             if (array_key_exists('cgroup_id', $params)) {
                 $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
             }
@@ -160,6 +180,31 @@ class CampaignController extends ApiController
             }
 
             $model = $this->getResource()->update($id, $params);
+
+            // Nếu upate runtime
+            if (array_key_exists('runtime', $params) && !is_null($params['runtime']) && $data->runtime != $params['runtime']) {
+                $time = Carbon::parse($params['runtime']);
+                $time = $time->timestamp - time();
+                if ($time < 0) {
+                    $time = 1;
+                }
+
+                // Tạo mới thông tin gửi mail, nếu đã có thì cập nhật thời gian chạy
+                $campaignEmails = $data->sent_emails->where('runtime', $data->runtime);
+                if ($campaignEmails->first()) {
+                    $this->campaignEmail->update($campaignEmails->first()->id, [
+                        'runtime'       => $params['runtime']
+                    ]);
+                } else {
+                    $this->campaignEmail->store([
+                        'campaign_id'   => $data->id,
+                        'runtime'       => $params['runtime'],
+                        'email_content' => $data->content
+                    ]);
+                }
+
+                $this->sendEmail($data->id, $time);
+            }
 
             DB::commit();
             return $this->successResponse($model);
@@ -199,14 +244,13 @@ class CampaignController extends ApiController
 
     /**
      * Đặt lệnh gửi email
-     * @param  integer  $id   
+     * @param  integer  $id
      * @param  integer  $time Số giây
      * @return [type]        [description]
      */
     public function sendEmail($id, $time = 1)
     {
         $campaign = $this->campaign->getById($id);
-
         if ($campaign) {
             $customers = [];
 
@@ -218,12 +262,18 @@ class CampaignController extends ApiController
             if (count($customers->toArray()) == 0) {
                 return $this->errorResponse(['errors' => ['customers' => ['Tập khách hàng rỗng!']]]);
             }
-            
+
             try {
                 $customerChunks = $customers->chunk(1000);
                 foreach ($customerChunks as $chunk) {
                     $job = new SendEmailCampaign($campaign, $chunk);
                     dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
+                }
+
+                if ($time === 1) {
+                    $campaign->sent_emails()->delete();
+                    $campaign->runtime = null;
+                    $campaign->save();
                 }
             } catch (\Exception $e) {
                 throw $e;
@@ -236,15 +286,15 @@ class CampaignController extends ApiController
 
     /**
      * Đặt lệnh gửi SMS
-     * @param  integer  $id   
+     * @param  integer  $id
      * @return [type]        [description]
      */
     public function sendSMS(Request $request, $id)
     {
         try {
             $this->validate(
-                $request, 
-                ['content'          => 'required'], 
+                $request,
+                ['content'          => 'required'],
                 ['content.required' => 'Nội dung tin nhắn không được để trống']
             );
             $campaign = $this->campaign->getById($id);
@@ -327,17 +377,26 @@ class CampaignController extends ApiController
             if (!count($campaign->sms)) {
                 return $this->infoResponse([]);
             }
-            $smsApi = new SpeedSMSAPI();
-            $smsReport = [];
-            foreach ($campaign->sms as $smsPack) {
-                $result = $smsApi->getSMSStatus($smsPack->sms_id);
-                if ($result['status'] == 'success') {
-                    $smsReport = array_merge($smsReport, $result['data']);
-                }
-            }
+            $smsReport = $this->campaign->statisticSms($campaign);
             return $this->infoResponse($smsReport);
         }
         return $this->notFoundResponse();
+    }
+
+    /**
+     * Danh sách tin nhắn phản hồi của khách hàng
+     * @param  Request $request
+     * @return [type]           [description]
+     */
+    public function smsIncoming(Request $request)
+    {
+        $params = $request->all();
+        $pageSize = $request->get('limit', 25);
+        $sort = explode(':', $request->get('sort', 'id:1'));
+
+        $datas = $this->smsIncoming->getByQuery($params, $pageSize, $sort);
+
+        return $this->infoResponse($datas);
     }
 
     /**
@@ -348,7 +407,7 @@ class CampaignController extends ApiController
     public function previewCustomers(Request $request)
     {
         $params = [];
-        $filters = array_only($request->all(), ['age_min', 'age_max', 'created_at_min', 'created_at_max', 'level', 'city_id', 'job']);
+        $filters = array_only($request->all(), ['age_min', 'age_max', 'created_at_min', 'created_at_max', 'level', 'city_id', 'job', 'score_min', 'score_max']);
         foreach ($filters as $key => $filter) {
             if (!is_null($filter)) {
                 switch ($key) {
@@ -357,6 +416,12 @@ class CampaignController extends ApiController
                         break;
                     case 'age_max':
                         array_push($params, ['attribute' => 'dob', 'operation' => '>=', 'value' => Carbon::now()->subYears($filter)->toDateString()]);
+                        break;
+                    case 'score_min':
+                        array_push($params, ['attribute' => 'point', 'operation' => '>=', 'value' => intval($filter)]);
+                        break;
+                    case 'score_max':
+                        array_push($params, ['attribute' => 'point', 'operation' => '<=', 'value' => intval($filter)]);
                         break;
                     case 'created_at_min':
                         array_push($params, ['attribute' => 'created_at', 'operation' => '>=', 'value' => $filter . ' 00:00:00']);
@@ -384,6 +449,8 @@ class CampaignController extends ApiController
 
         try {
             $data->cgroup()->delete();
+            $data->customers()->detach();
+            $data->sms()->delete();
             $this->getResource()->delete($id);
 
             DB::commit();

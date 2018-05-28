@@ -186,6 +186,7 @@ class CgroupController extends ApiController
 
         DB::beginTransaction();
         try {
+            $group->customers()->detach($customer->id);
             $group->customers()->attach($customer->id);
             DB::commit();
             return $this->infoResponse($customer);
@@ -199,6 +200,9 @@ class CgroupController extends ApiController
     {
         $group = $this->getResource()->getById($id);
         if ($group) {
+            if ($group->filter) {
+                return $this->infoResponse($this->cgroup->getCustomers($group->id, 10));
+            }
             return $this->infoResponse($this->customer->groupCustomer($group->id));
         }
         return $this->notFoundResponse();

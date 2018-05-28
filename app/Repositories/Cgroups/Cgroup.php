@@ -15,7 +15,7 @@ class Cgroup extends Entity
      *
      * @var array
      */
-    public $fillable = ['uuid', 'client_id', 'avatar', 'name', 'description'];
+    public $fillable = ['uuid', 'client_id', 'avatar', 'name', 'description', 'filter'];
 
     /**
      * Full path of images.
@@ -44,18 +44,19 @@ class Cgroup extends Entity
             $model->save();
         });
 
-        static::addGlobalScope('cgroups', function (Builder $builder) {
-            if (!getCurrentUser()->isAdmin()) {
-                $builder->where('client_id', getCurrentUser()->id);
-            }
-        });
+        // Con Hà Sơn Hải Vân là không có theo kiểu nhiều merchant
+        // static::addGlobalScope('cgroups', function (Builder $builder) {
+        //     if (getCurrentUser() && !getCurrentUser()->isAdmin()) {
+        //         $builder->where('client_id', getCurrentUser()->id);
+        //     }
+        // });
 
         parent::boot();
     }
 
     public function getAvatar()
     {
-        return $this->avatar == '' ? asset('avatar_default.png') : get_asset($this->imgPath . '/' . $this->avatar);
+        return $this->avatar == '' ? get_asset('avatar_default.png') : get_asset($this->imgPath . '/' . $this->avatar);
     }
 
     public function customers()

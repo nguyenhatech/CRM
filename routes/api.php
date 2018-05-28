@@ -30,14 +30,23 @@ Route::group([
     Route::resource('cgroups', 'CgroupController');
     Route::post('cgroups/upload-avatar', 'CgroupController@uploadAvatar');
 
+    Route::post('update-payment-histories', 'PaymentHistoryController@updatePaymentHistory');
     Route::resource('payment-histories', 'PaymentHistoryController');
 
     Route::get('promotions/{id}/statistic', 'PromotionController@statisticQuantityUsed');
     Route::get('promotions/{id}/statistic-by-time', 'PromotionController@statisticByTime');
     Route::get('promotions/{id}/used-customers', 'PromotionController@getListCustomerUsed');
+    Route::get('promotions/{id}/not-used-customers', 'PromotionController@getListCustomerNotUse');
     Route::post('promotions/{id}/active', 'PromotionController@active');
     Route::post('promotions/upload-image', 'PromotionController@uploadImage');
+    Route::get('promotions/get-free', 'PromotionController@getFree');
+    Route::get('promotions/export-excel', 'PromotionController@exportExcel');
     Route::resource('promotions', 'PromotionController');
+
+    // Modul Setting
+    Route::resource('settings', 'SettingController')->only([
+        'update', 'show', 'index'
+    ]);
 
     Route::get('helpers/{name}/{option?}', ['as' => 'helper.index', 'uses' => 'HelperController@index']);
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
@@ -48,6 +57,7 @@ Route::group([
     Route::post('account/change-password', 'AccountController@changePassword');
     Route::post('account/update-profile', 'AccountController@updateProfile');
     Route::post('account/upload-avatar', 'AccountController@uploadAvatar');
+    Route::get('account/permissions', 'AccountController@getPermissions');
 
     Route::resource('roles', 'RoleController');
 
@@ -60,6 +70,7 @@ Route::group([
     Route::put('users/{id}/active', 'UserController@active');
 
     Route::get('campaigns/preview-customer', 'CampaignController@previewCustomers');
+    Route::get('campaigns/sms-coming', 'CampaignController@smsIncoming');
     Route::resource('campaigns', 'CampaignController');
     Route::get('campaigns/send-email/{id}', 'CampaignController@sendEmail');
     Route::post('campaigns/send-sms/{id}', 'CampaignController@sendSMS');

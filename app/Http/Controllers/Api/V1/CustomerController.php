@@ -108,7 +108,7 @@ class CustomerController extends ApiController
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
             $data = $request->all();
-            $data = array_except($data, ['email', 'level', 'last_payment']);
+            $data = array_except($data, ['phone', 'level', 'last_payment']);
             $model = $this->getResource()->update($id, $data);
 
             \DB::commit();
@@ -158,7 +158,7 @@ class CustomerController extends ApiController
         $params = array_except($request->all(), ['file']);
 
         try {
-            $job = new ImportCsvCustomer($excelPath, $params);
+            $job = new ImportCsvCustomer($excelPath, $params, getCurrentUser()->id);
             dispatch($job)->onQueue(env('APP_NAME'));
         } catch (\Exception $e) {
             throw $e;
@@ -225,5 +225,4 @@ class CustomerController extends ApiController
             throw $e;
         }
     }
-
 }

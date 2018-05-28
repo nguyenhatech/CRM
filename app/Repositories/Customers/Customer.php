@@ -38,12 +38,14 @@ class Customer extends Entity
     public $imgHeight = 200;
 
     const JOBS = [
-        'Khách du lịch',
-        'Nhân viên văn phòng',
-        'Sinh viên',
-        'Kinh doanh',
-        'Lao động tự do',
-        'Khác'
+        1 => 'Học sinh/sinh viên',
+        2 => 'Hành chính',
+        3 => 'Công nghệ thông tin',
+        4 => 'Kinh doanh/ Marketing /Dịch vụ khách hàng',
+        5 => 'Kế toán/ Tài chính',
+        6 => 'Sản xuất công nghiệp/nông nghiệp',
+        7 => 'Cơ khí/ Điện tử/ Vận tải',
+        8 => 'Ngành nghề khác'
     ];
 
     protected static function boot()
@@ -53,20 +55,21 @@ class Customer extends Entity
             $model->save();
         });
 
-        static::addGlobalScope('customers', function (Builder $builder) {
-            if (getCurrentUser() && !getCurrentUser()->isAdmin()) {
-                $builder->whereHas('client', function ($builder) {
-                    $builder->where('id', getCurrentUser()->id);
-                });
-            }
-        });
+        // Tạm bỏ đi vì HSHV không cần
+        // static::addGlobalScope('customers', function (Builder $builder) {
+        //     if (getCurrentUser() && !getCurrentUser()->isAdmin()) {
+        //         $builder->whereHas('client', function ($builder) {
+        //             $builder->where('id', getCurrentUser()->id);
+        //         });
+        //     }
+        // });
 
         parent::boot();
     }
 
     public function getAvatar()
     {
-        return $this->avatar == '' ? asset('avatar_default.png') : get_asset($this->imgPath . '/' . $this->avatar);
+        return $this->avatar == '' ? get_asset('avatar_default.png') : get_asset($this->imgPath . '/' . $this->avatar);
     }
 
     public function getTotalAmount() {

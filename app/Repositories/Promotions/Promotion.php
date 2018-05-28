@@ -14,7 +14,7 @@ class Promotion extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type'];
+    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type', 'cgroup_id', 'limit_time_type'];
 
     /**
      * Full path of images.
@@ -46,28 +46,29 @@ class Promotion extends Entity
         self::DISABLE => 'Chưa kích hoạt'
     ];
 
-    const CASH = 0;
-    const PERCENT = 1;
+    const CASH      = 0;
+    const PERCENT   = 1;
     const LIST_TYPE_PROMOTIONS = [
         self::CASH    => 'đ',
         self::PERCENT => '%'
     ];
 
+    const ALL_TYPE         = 0;
     const NORMAL_TICKET    = 1;
     const VIP_TICKET       = 2;
     const SUPER_VIP_TICKET = 3;
     const LIST_TARGET_TYPE = [
-        0                   => 'Áp dụng cho tất cả các chuyến',
-        self::NORMAL_TICKET => 'Thường',
-        self::VIP_TICKET    => 'Vip',
-        self::SUPER_VIP_TICKET     => 'Siêu vip'
+        self::ALL_TYPE              => 'Tất cả',
+        self::NORMAL_TICKET         => 'Phổ thông',
+        self::VIP_TICKET            => 'Vip',
+        self::SUPER_VIP_TICKET      => 'Royal'
     ];
 
     const LIST_TARGET_TYPE_V2 = [
-        0                   => 'Áp dụng cho tất cả các hạng xe',
-        self::NORMAL_TICKET => 'Áp dụng cho khách đi xe hạng Thường',
-        self::VIP_TICKET    => 'Áp dụng cho khách đi xe hạng Vip',
-        self::SUPER_VIP_TICKET     => 'Áp dụng cho khách đi xe hạng Siêu Vip'
+        self::ALL_TYPE              => 'Áp dụng cho tất cả các hạng xe',
+        self::NORMAL_TICKET         => 'Áp dụng cho khách đi xe hạng Phổ thông',
+        self::VIP_TICKET            => 'Áp dụng cho khách đi xe hạng Vip',
+        self::SUPER_VIP_TICKET      => 'Áp dụng cho khách đi xe hạng Royal'
     ];
 
     const ROUTE = 1; // Hình thức khách hàng đi theo tuyến
@@ -79,9 +80,23 @@ class Promotion extends Entity
         self::SEGMENT => 'Giảm giá cho khách hàng đi theo chặng'
     ];
 
+    // Giới hạn thời gian theo giờ đặt hoặc theo giờ đi
+    const TIME_BOOKING   = 1;
+    const TIME_GOING   = 2;
+
+    protected static function boot()
+    {
+        static::created(function ($model) {
+            $model->uuid = \Hashids::encode($model->id);
+            $model->save();
+        });
+
+        parent::boot();
+    }
+
     public function getImage()
     {
-        if (strrpos($this->image, 'http://') == 0 || strrpos($this->image, 'https://') == 0) {
+        if (strrpos($this->image, 'http://') === 0 || strrpos($this->image, 'https://') === 0) {
             return $this->image;
         }
         return $this->image == '' ? '' : get_asset($this->imgPath . '/' . $this->image);
@@ -131,5 +146,10 @@ class Promotion extends Entity
     {
         $typeTaget = (int) $typeTaget;
         return array_key_exists($typeTaget, self::LIST_TARGET_TYPE_V2) ? self::LIST_TARGET_TYPE_V2[$typeTaget] : 'Không xác định';
+    }
+
+    public function cgroup()
+    {
+        return $this->belongsTo('Nh\Repositories\Cgroups\Cgroup');
     }
 }

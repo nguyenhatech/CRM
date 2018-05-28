@@ -71,11 +71,23 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
      * @param  array $filters Mảng các điều kiện where
      * @return Illuminate\Pagination\Paginator
      */
-    public function getByGroup($filters, $size = -1)
+    public function getByGroup($filters, $size = -1, $sorting = [])
     {
         $model = $this->model;
         foreach ($filters as $key => $filter) {
             $model = $model->where($filter['attribute'], $filter['operation'], $filter['value']);
+        }
+        // Sort trường hợp lấy giới hạn
+        if (!empty($sorting)) {
+            if ($sorting[0] == 'score') {
+                $model = $model->join('payment_histories', 'payment_histories.customer_id', '=', 'customers.id');
+                $model = $model->where('payment_histories.status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_SUCCESS);
+                $model->select(\DB::raw('customers.uuid, customers.name, customers.phone, customers.email, customers.id, sum(payment_histories.total_point) as total_score'));
+                $model = $model->groupBy('customers.uuid', 'customers.name', 'customers.phone', 'customers.email', 'customers.id');
+                $model = $model->orderBy('total_score', $sorting[1] > 0 ? 'ASC' : 'DESC');
+            } else {
+                $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
+            }
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);
@@ -91,27 +103,32 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
     }
 
     public function storeOrUpdate($data) {
-        $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar', 'city_id']);
+        $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar', 'city_id', 'client_id', 'tags', 'identification_number']);
         $email = array_get($data, 'email', null);
         $phone = array_get($data, 'phone', null);
         // dd($this->checkExist($email, $phone));
         if ($model = $this->checkExist($email, $phone)) {
-            $data = array_except($data, 'email');
+            $data = array_except($data, 'phone');
             $model->fill($data)->save();
         } else {
             $model = $this->model->create($data);
         }
 
+        // Check for run job
+        if (getCurrentUser()) {
+            $data['client_id'] = getCurrentUser()->id;
+        }
+
         $model->client()->detach([[
-            'client_id'   => getCurrentUser()->id,
+            'client_id'   => $data['client_id'],
             'customer_id' => $model->id
         ]]);
 
         $model->client()->attach([[
-            'client_id'   => getCurrentUser()->id,
+            'client_id'   => $data['client_id'],
             'customer_id' => $model->id
         ]]);
-
+        
         event(new \Nh\Events\InfoCustomer($model));
 
         return $this->getById($model->id);

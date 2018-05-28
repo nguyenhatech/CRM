@@ -9,7 +9,7 @@ use Carbon\Carbon;
 class PromotionTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
-
+        'cgroup'
     ];
 
      public function transform(Promotion $promotion = null)
@@ -19,12 +19,13 @@ class PromotionTransformer extends TransformerAbstract
         }
 
         $data = [
-            'id'                => $promotion->id,
+            'id'                => $promotion->uuid,
             'client_id'         => $promotion->client_id,
             'code'              => $promotion->code,
             'type'              => $promotion->type,
             'target_type'       => $promotion->target_type,
             'type_txt'          => $promotion->getTypeDiscountsText(),
+            'cgroup_id'         => $promotion->cgroup ? $promotion->cgroup->uuid : '',
             'image'             => $promotion->image,
             'image_path'        => $promotion->getImage(),
             'title'             => $promotion->title,
@@ -37,11 +38,21 @@ class PromotionTransformer extends TransformerAbstract
             'quantity_per_user' => $promotion->quantity_per_user,
             'date_start'        => $promotion->date_start,
             'date_end'          => $promotion->date_end,
+            'limit_time_type'   => $promotion->limit_time_type,
             'status'            => $promotion->status,
             'status_txt'        => $promotion->getStatusText(),
             'created_at'        => $promotion->created_at ? $promotion->created_at->format('Y-m-d H:i:s') : null,
         ];
 
         return $data;
+    }
+
+    public function includeCgroup(Promotion $promotion = null)
+    {
+        if (is_null($promotion)) {
+            return $this->null();
+        }
+
+        return $this->item($promotion->cgroup, new CgroupTransformer());
     }
 }
