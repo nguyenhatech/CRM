@@ -20,7 +20,7 @@ class PaymentHistoryController extends Controller
 
     protected $validationRules = [
         'name'           => 'required',
-        'phone'          => 'required|digits_between:8,12',
+        'phone'          => 'required|digits_between:10,12',
         'description'    => 'required|min:5',
         'total_amount'   => 'required|numeric',
         'type'           => 'required|in:0,1',

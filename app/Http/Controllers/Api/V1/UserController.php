@@ -18,7 +18,7 @@ class UserController extends ApiController
     protected $validationRules = [
         'name'     => 'required|min:5|max:255',
         'email'    => 'required|email|unique:users,email',
-        'phone'    => 'required|digits_between:8,12|unique:users,phone',
+        'phone'    => 'required|digits_between:10,12|unique:users,phone',
         'password' => 'required|min:6',
         'status'   => 'boolean',
         'roles'    => 'array',

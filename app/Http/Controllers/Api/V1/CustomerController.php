@@ -24,7 +24,7 @@ class CustomerController extends ApiController
     protected $validationRules = [
         'name'            => 'required|min:5|max:255',
         'email'           => 'nullable|required_without_all:phone|email|max:255',
-        'phone'           => 'nullable|required_without_all:email|digits_between:8,12',
+        'phone'           => 'nullable|required_without_all:email|digits_between:10,12',
         'home_phone'      => 'nullable|digits_between:8,12',
         'company_phone'   => 'nullable|digits_between:8,12',
         'website'         => 'nullable|url',

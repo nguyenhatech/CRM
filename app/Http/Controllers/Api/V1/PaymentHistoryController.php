@@ -18,7 +18,7 @@ class PaymentHistoryController extends ApiController
 
     protected $validationRules = [
         'email'          => 'required_without_all:phone|email|max:255',
-        'phone'          => 'required_without_all:email|digits_between:8,12',
+        'phone'          => 'required_without_all:email|digits_between:10,12',
         'description'    => 'required|min:5',
         'total_amount'   => 'required|numeric',
         'type'           => 'required|in:0,1',
@@ -28,25 +28,25 @@ class PaymentHistoryController extends ApiController
 
     protected $validationMessages = [
         'name.required'              => 'Tên khách hàng không được để trống',
-        
+
         'email.required_without_all' => 'Email hoặc số điện thoại không được để trống',
         'email.email'                => 'Email không đúng định dạng',
         'email.max'                  => 'Email cần nhỏ hơn :max kí tự',
-        
+
         'phone.required_without_all' => 'Số điện thoại hoặc email không được để trống',
         'phone.digits_between'       => 'Số điện thoại cần nằm trong khoảng :min đến :max số',
-        
+
         'description.required'       => 'Nội dung lịch sử thanh toán không được để trống',
-        
+
         'total_amount.required'      => 'Tổng tiền thanh toán không được để trống',
         'total_amount.numeric'       => 'Tổng tiền thanh toán phải là kiểu số',
-        
+
         'type.required'              => 'Kiểu thanh toán không được để trống',
         'type.in'                    => 'Kiểu thanh toán chỉ nhận giá trị 0,1',
-        
+
         'status.required'            => 'Trạng thái thanh toán không được để trống',
         'status.in'                  => 'Trạng thái thanh toán chỉ nhận giá trị 0,1,2',
-        
+
         'booking_id.required'        => 'Mã booking_id không được để trống'
     ];
 
@@ -108,7 +108,7 @@ class PaymentHistoryController extends ApiController
                 'status'     => 'required|in:0,1,2'
             ];
 
-            $this->validate($request, $this->validationRules, $this->validationMessages);            
+            $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $params = $request->only(['booking_id', 'status']);
 
