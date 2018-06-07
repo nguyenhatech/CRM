@@ -30,4 +30,7 @@ Route::group([
 
     // Modul check-promotion
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
+
+    // Customers
+    Route::resource('customers', 'CustomerController');
 });
