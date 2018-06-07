@@ -78,7 +78,7 @@ class PaymentHistoryController extends ApiController
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
-            $params = $request->only(['name', 'phone', 'description', 'total_amount', 'type', 'booking_id', 'details']);
+            $params = $request->only(['name', 'phone', 'description', 'total_amount', 'type', 'booking_id', 'details', 'email']);
 
             $data = $this->getResource()->store($params);
 

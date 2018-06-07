@@ -57,6 +57,7 @@ Route::group([
     Route::post('account/change-password', 'AccountController@changePassword');
     Route::post('account/update-profile', 'AccountController@updateProfile');
     Route::post('account/upload-avatar', 'AccountController@uploadAvatar');
+    Route::get('account/permissions', 'AccountController@getPermissions');
 
     Route::resource('roles', 'RoleController');
 

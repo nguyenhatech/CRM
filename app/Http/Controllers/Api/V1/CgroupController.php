@@ -186,6 +186,7 @@ class CgroupController extends ApiController
 
         DB::beginTransaction();
         try {
+            $group->customers()->detach($customer->id);
             $group->customers()->attach($customer->id);
             DB::commit();
             return $this->infoResponse($customer);

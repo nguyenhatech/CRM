@@ -44,6 +44,7 @@ class CustomerTransformer extends TransformerAbstract
             'avatar_path'     => $customer->getAvatar(),
             'total_amount'    => abs($customer->getTotalAmount()),
             'total_point'     => $customer->getTotalPoint(),
+            'total_payment'   => $customer->payments->count(),
             'created_at'      => $customer->created_at ? $customer->created_at->format('d-m-Y H:i:s') : null,
             'updated_at'      => $customer->updated_at ? $customer->updated_at->format('d-m-Y H:i:s') : null,
             'last_payment'      => $customer->last_payment ? $customer->last_payment->format('d-m-Y H:i:s') : null
