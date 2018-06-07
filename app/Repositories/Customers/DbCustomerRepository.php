@@ -104,9 +104,9 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
 
     public function storeOrUpdate($data) {
         $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar', 'city_id', 'client_id']);
-        $email = array_get($data, 'email', null);
-        $phone = array_get($data, 'phone', null);
-        // dd($this->checkExist($email, $phone));
+        $email          = array_get($data, 'email', null);
+        $phone          = array_get($data, 'phone', null);
+        $data['name']   = array_get($data, 'name', $phone);
         if ($model = $this->checkExist($email, $phone)) {
             $data = array_except($data, 'phone');
             $model->fill($data)->save();
@@ -128,7 +128,7 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
             'client_id'   => $data['client_id'],
             'customer_id' => $model->id
         ]]);
-        
+
         event(new \Nh\Events\InfoCustomer($model));
 
         return $this->getById($model->id);
@@ -205,5 +205,4 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
 
         return $size < 0 ? $model->get() : $model->paginate($size);
     }
-
 }

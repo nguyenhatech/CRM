@@ -22,7 +22,7 @@ class CustomerController extends ApiController
     protected $cgroups;
 
     protected $validationRules = [
-        'name'            => 'required|min:5|max:255',
+        'name'            => 'nullable|min:3|max:255',
         'email'           => 'nullable|required_without_all:phone|email|max:255',
         'phone'           => 'nullable|required_without_all:email|digits_between:8,12',
         'home_phone'      => 'nullable|digits_between:8,12',
@@ -35,7 +35,7 @@ class CustomerController extends ApiController
     ];
 
     protected $validationMessages = [
-        'name.required'              => 'Tên không được để trống',
+        // 'name.required'              => 'Tên không được để trống',
         'name.min'                   => 'Tên cần lớn hơn :min kí tự',
         'name.max'                   => 'Tên cần nhỏ hơn :max kí tự',
         'email.required_without_all' => 'Email hoặc số điện thoại không được để trống',
