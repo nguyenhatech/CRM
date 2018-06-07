@@ -38,6 +38,8 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
         $query      = array_get($params, 'q', '');
         $group_id   = array_get($params, 'group_id', '');
         $level      = array_get($params, 'level', '');
+        $startDate  = array_get($params, 'start_date', null);
+        $endDate    = array_get($params, 'end_date', null);
         $model      = $this->model;
 
         if (!empty($sorting) && array_key_exists(1, $sorting)) {
@@ -60,6 +62,13 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
                     ->orWhere('email', 'like', "%{$query}%")
                     ->orWhere('phone', 'like', "%{$query}%");
             });
+        }
+
+        if ($startDate) {
+            $model = $model->where('created_at', '>=', $startDate);
+        }
+        if ($endDate) {
+            $model = $model->where('created_at', '<=', $endDate);
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);

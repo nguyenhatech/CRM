@@ -36,10 +36,11 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
      */
     public function getByQuery($params, $size = 25, $sorting = [])
     {
-        $query = array_get($params, 'q', '');
+        $query      = array_get($params, 'q', '');
         $customerId = array_get($params, 'customer_id', null);
-        $startDate = array_get($params, 'start_date', null);
-        $endDate = array_get($params, 'end_date', null);
+        $startDate  = array_get($params, 'start_date', null);
+        $endDate    = array_get($params, 'end_date', null);
+
         $model = $this->model;
 
         if (!empty($sorting)) {

@@ -67,8 +67,8 @@ class CustomerController extends ApiController
 
     public function index(Request $request)
     {
-        $pageSize = $request->get('limit', 25);
-        $sort = explode(':', $request->get('sort', 'id:1'));
+        $pageSize   = $request->get('limit', 25);
+        $sort       = explode(':', $request->get('sort', 'created_at:-1'));
 
         $models = $this->getResource()->getByQuery($request->all(), $pageSize, $sort);
         return $this->successResponse($models);

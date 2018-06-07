@@ -17,14 +17,16 @@ class PaymentHistory extends Entity
 
     protected $dates = ['payment_at'];
 
-    const PAY_PENDDING = 0; // Chờ giao dịch
-    const PAY_SUCCESS = 1; // Thành công
-    const PAY_CANCEL = 2; // Hủy
+    const PAY_PENDDING  = 0; // Chờ giao dịch
+    const PAY_SUCCESS   = 1; // Thành công
+    const PAY_CANCEL    = 2; // Hủy
+    const PAY_FINISH    = 3; // Hoàn thành chuyến đi
 
     const LIST_STATUS = [
         self::PAY_PENDDING => 'Chờ giao dịch',
         self::PAY_SUCCESS  => 'Thành công',
-        self::PAY_CANCEL   => 'Hủy'
+        self::PAY_CANCEL   => 'Hủy',
+        self::PAY_FINISH   => 'Đã/đang đi'
     ];
 
     const TYPE_DIRECT = 0; // giao dịch trực tiếp
@@ -38,9 +40,10 @@ class PaymentHistory extends Entity
 
     public static function list_status() {
         return [
-            PAY_PENDDING => 'Chờ giao dịch',
-            PAY_SUCCESS => 'Giao dịch thành công',
-            PAY_CANCEL => 'Giao dịch bị hủy',
+            PAY_PENDDING    => 'Chờ giao dịch',
+            PAY_SUCCESS     => 'Giao dịch thành công',
+            PAY_CANCEL      => 'Giao dịch bị hủy',
+            PAY_FINISH      => 'Đã/đang đi'
         ];
     }
 

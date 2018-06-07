@@ -48,6 +48,14 @@ class Customer extends Entity
         8 => 'Ngành nghề khác'
     ];
 
+    const SOURCE = [
+        0 => 'CRM',
+        1 => 'WEB',
+        2 => 'ERP',
+        3 => 'APP USER',
+        4 => 'APP DRIVE'
+    ];
+
     protected static function boot()
     {
         static::created(function ($model) {
@@ -80,6 +88,14 @@ class Customer extends Entity
         return $this->payments()->where('status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_SUCCESS)->sum('total_point');
     }
 
+    public function getTotalTrips() {
+        $result = $this->payments()->where('client_id', 0)->whereNull('booking_id')->whereDate('payment_at', '2018-04-25')->count();
+        if($result == 1) {
+            return 2;
+        }
+        return $this->payments()->where('status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_FINISH)->sum('total_point');
+    }
+
     public function levelText() {
         if (array_key_exists($this->level, list_level())) {
             return list_level()[$this->level];
@@ -107,5 +123,13 @@ class Customer extends Entity
     public function groups()
     {
         return $this->belongsToMany('Nh\Repositories\Cgroups\Cgroup', 'customer_cgroups', 'customer_id', 'cgroup_id');
+    }
+
+    public function getSource()
+    {
+        if (array_key_exists($this->source, self::SOURCE)) {
+            return self::SOURCE[$this->source];
+        }
+        return null;
     }
 }

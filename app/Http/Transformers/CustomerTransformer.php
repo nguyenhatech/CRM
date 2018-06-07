@@ -9,6 +9,7 @@ use Carbon\Carbon;
 class CustomerTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
+        'histories'
         // 'roles'
     ];
 
@@ -20,7 +21,7 @@ class CustomerTransformer extends TransformerAbstract
 
         $data = [
             'id'              => $customer->uuid,
-            'name'            => $customer->name ? $customer->name : $customer->email,
+            'name'            => $customer->name ? $customer->name : $customer->phone,
             'email'           => $customer->email,
             'phone'           => $customer->phone,
             'home_phone'      => $customer->home_phone,
@@ -37,7 +38,7 @@ class CustomerTransformer extends TransformerAbstract
             'address'         => $customer->address,
             'city_id'         => (int) $customer->city_id,
             'company_address' => $customer->company_address,
-            'source'          => $customer->source,
+            'source'          => $customer->getSource(),
             'level'           => $customer->level,
             'level_txt'       => $customer->levelText(),
             'avatar'          => $customer->avatar,
@@ -45,14 +46,23 @@ class CustomerTransformer extends TransformerAbstract
             'total_amount'    => abs($customer->getTotalAmount()),
             'total_point'     => $customer->getTotalPoint(),
             'total_payment'   => $customer->payments->count(),
+            'total_trips'     => $customer->getTotalTrips(),
             'created_at'      => $customer->created_at ? $customer->created_at->format('d-m-Y H:i:s') : null,
             'updated_at'      => $customer->updated_at ? $customer->updated_at->format('d-m-Y H:i:s') : null,
-            'last_payment'      => $customer->last_payment ? $customer->last_payment->format('d-m-Y H:i:s') : null
+            'last_payment'    => $customer->last_payment ? $customer->last_payment->format('d-m-Y H:i:s') : null
         ];
 
         return $data;
     }
 
+    public function includeHistories(Customer $customer = null)
+    {
+        if (is_null($customer)) {
+            return $this->null();
+        }
+
+        return $this->collection($customer->payments, new PaymentHistoryTransformer());
+    }
     // public function includeRoles(Customer $customer = null)
     // {
     //     if (is_null($customer)) {
