@@ -19,7 +19,7 @@ class PaymentHistoryController extends Controller
     protected $paymentHistory;
 
     protected $validationRules = [
-        'name'           => 'required',
+    //     'name'           => 'required',
         'phone'          => 'required|digits_between:8,12',
         'description'    => 'required|min:5',
         'total_amount'   => 'required|numeric',
@@ -29,7 +29,7 @@ class PaymentHistoryController extends Controller
     ];
 
     protected $validationMessages = [
-        'name.required'         => 'Tên khách hàng không được để trống',
+        // 'name.required'         => 'Tên khách hàng không được để trống',
 
         'phone.required'        => 'Số điện thoại không được để trống',
         'phone.digits_between'  => 'Số điện thoại cần nằm trong khoảng :min đến :max số',
