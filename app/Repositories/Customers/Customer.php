@@ -5,7 +5,7 @@ namespace Nh\Repositories\Customers;
 use Nh\Repositories\Entity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use \Nh\Repositories\PaymentHistories\PaymentHistory;
+use Nh\Repositories\PaymentHistories\PaymentHistory;
 
 class Customer extends Entity
 {
