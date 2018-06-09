@@ -57,7 +57,7 @@ class Customer extends Entity
         4 => 'APP DRIVE'
     ];
 
-    const PAYMENT_STATATUS [
+    const PAYMENT_STATATUS = [
         PaymentHistory::PAY_FINISH,
         PaymentHistory::PAY_SUCCESS
     ];
