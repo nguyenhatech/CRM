@@ -9,8 +9,8 @@ use Carbon\Carbon;
 class CustomerTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
-        'histories'
-        // 'roles'
+        'histories',
+        'tags'
     ];
 
      public function transform(Customer $customer = null)
@@ -64,12 +64,13 @@ class CustomerTransformer extends TransformerAbstract
 
         return $this->collection($customer->payments, new PaymentHistoryTransformer());
     }
-    // public function includeRoles(Customer $customer = null)
-    // {
-    //     if (is_null($customer)) {
-    //         return $this->null();
-    //     }
 
-    //     return $this->collection($customer->roles, new RoleTransformer());
-    // }
+    public function includeTags(Customer $customer = null)
+    {
+        if (is_null($customer)) {
+            return $this->null();
+        }
+
+        return $this->collection($customer->tags, new TagTransformer());
+    }
 }

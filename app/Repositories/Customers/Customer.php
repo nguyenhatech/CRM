@@ -132,4 +132,9 @@ class Customer extends Entity
         }
         return null;
     }
+
+    public function tags()
+    {
+        return $this->belongsToMany('Nh\Repositories\Tags\Tag', 'customer_tag');
+    }
 }
