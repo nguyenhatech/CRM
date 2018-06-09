@@ -5,6 +5,7 @@ namespace Nh\Repositories\Customers;
 use Nh\Repositories\Entity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use \Nh\Repositories\PaymentHistories\PaymentHistory;
 
 class Customer extends Entity
 {
@@ -56,6 +57,11 @@ class Customer extends Entity
         4 => 'APP DRIVE'
     ];
 
+    const PAYMENT_STATATUS [
+        PaymentHistory::PAY_FINISH,
+        PaymentHistory::PAY_SUCCESS
+    ];
+
     protected static function boot()
     {
         static::created(function ($model) {
@@ -81,15 +87,11 @@ class Customer extends Entity
     }
 
     public function getTotalAmount() {
-        return $this->payments()
-                ->where('status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_FINISH)
-                ->where('status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_SUCCESS)->sum('total_amount');
+        return $this->payments()->whereIn('status', self::PAYMENT_STATATUS)->sum('total_amount');
     }
 
     public function getTotalPoint() {
-        return $this->payments()
-                ->where('status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_FINISH)
-                ->where('status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_SUCCESS)->sum('total_point');
+        return $this->payments()->whereIn('status', self::PAYMENT_STATATUS)->sum('total_point');
     }
 
     public function getTotalTrips() {
@@ -97,7 +99,7 @@ class Customer extends Entity
         if($result == 1) {
             return 2;
         }
-        return $this->payments()->where('status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_FINISH)->count();
+        return $this->payments()->where('status', PaymentHistory::PAY_FINISH)->count();
     }
 
     public function levelText() {
