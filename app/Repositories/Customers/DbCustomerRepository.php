@@ -112,7 +112,8 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
     }
 
     public function storeOrUpdate($data) {
-        $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar', 'city_id', 'client_id']);
+        // return $data;
+        $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar', 'city_id', 'client_id', 'tags']);
         $email          = array_get($data, 'email', null);
         $phone          = array_get($data, 'phone', null);
         $data['name']   = array_get($data, 'name', $phone);
@@ -138,9 +139,37 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
             'customer_id' => $model->id
         ]]);
 
+        // Add tags customers
+        $this->syncTags($model, $data);
+
         event(new \Nh\Events\InfoCustomer($model));
 
         return $this->getById($model->id);
+    }
+
+    public function update($id, $data)
+    {
+        $customer = $this->getById($id);
+
+        $customer->fill($data)->save();
+
+        // Add tags customers
+        $this->syncTags($customer, $data);
+
+        return $customer;
+    }
+
+    /**
+     * [syncTags description]
+     * @param  [type] $model [description]
+     * @param  [type] $data  [description]
+     * @return [type]        [description]
+     */
+    public function syncTags($model, $data)
+    {
+        $tags = array_get($data, 'tags', []);
+
+        $model->tags()->sync($tags);
     }
 
     public function checkExist($email = null, $phone = null) {

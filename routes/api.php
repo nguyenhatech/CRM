@@ -113,4 +113,6 @@ Route::group([
     });
 
     Route::resource('cities', 'CityController')->only('index', 'show');
+
+    Route::resource('tags', 'TagController');
 });

@@ -19,4 +19,5 @@ return [
 	Nh\Providers\CampaignSmsIncomingServiceProvider::class,
 	Nh\Providers\SettingServiceProvider::class,
 	Nh\Providers\CampaignEmailServiceProvider::class,
+	Nh\Providers\TagServiceProvider::class,
 ];
