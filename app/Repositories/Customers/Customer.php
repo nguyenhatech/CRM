@@ -97,7 +97,7 @@ class Customer extends Entity
         if($result == 1) {
             return 2;
         }
-        return $this->payments()->where('status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_FINISH)->sum('total_point');
+        return $this->payments()->where('status', \Nh\Repositories\PaymentHistories\PaymentHistory::PAY_FINISH)->count();
     }
 
     public function levelText() {
