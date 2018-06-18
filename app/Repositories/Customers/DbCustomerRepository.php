@@ -88,11 +88,23 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
         $model = $model->leftJoin('payment_histories', function($join) {
             $join->on('payment_histories.customer_id', '=', 'customers.id')->whereIn('payment_histories.status', Customer::PAYMENT_STATATUS);
         });
-        $model = $model->selectRaw('customers.uuid, customers.name, customers.phone, customers.email, customers.id, customers.created_at, customers.job, customers.city_id, customers.level, customers.dob, sum(payment_histories.total_point) as point');
+        $model = $model->selectRaw('customers.uuid, customers.name, customers.phone, customers.email, customers.id, customers.created_at, customers.job, customers.city_id, customers.level, customers.dob, COALESCE(sum(payment_histories.total_point), 0) as point');
         $model = $model->groupBy('customers.uuid', 'customers.name', 'customers.phone', 'customers.email', 'customers.uuid', 'customers.id', 'customers.created_at', 'customers.job', 'customers.city_id', 'customers.level', 'customers.city_id', 'customers.dob');
 
+        $havingRaw = null;
         foreach ($filters as $key => $filter) {
-            $model = $model->where('customers.' . $filter['attribute'], $filter['operation'], $filter['value']);
+            if ($filter['attribute'] == 'point') {
+                if (is_null($havingRaw)) {
+                    $havingRaw = 'COALESCE(sum(payment_histories.total_point), 0) ' . $filter['operation'] . ' ' . $filter['value'];
+                } else {
+                    $havingRaw = $havingRaw . ' and COALESCE(sum(payment_histories.total_point), 0) ' . $filter['operation'] . ' ' . $filter['value'];
+                }
+            } else {
+                $model = $model->where('customers.' . $filter['attribute'], $filter['operation'], $filter['value']);
+            }
+        }
+        if ($havingRaw) {
+            $model = $model->havingRaw($havingRaw);
         }
         // Sort trường hợp lấy giới hạn
         if (!empty($sorting)) {
