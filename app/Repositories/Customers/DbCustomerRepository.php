@@ -84,24 +84,19 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
     {
         $model = $this->model;
 
-        // Join payment
-        $model = $model->leftJoin('payment_histories', function($join) {
-            $join->on('payment_histories.customer_id', '=', 'customers.id')->whereIn('payment_histories.status', Customer::PAYMENT_STATATUS);
-        });
-        $model = $model->selectRaw('customers.uuid, customers.name, customers.phone, customers.email, customers.id, customers.created_at, customers.job, customers.city_id, customers.level, customers.dob, sum(payment_histories.total_point) as point')
-            ->groupBy('customers.uuid', 'customers.name', 'customers.phone', 'customers.email', 'customers.uuid', 'customers.id', 'customers.created_at', 'customers.job', 'customers.city_id', 'customers.level', 'customers.city_id', 'customers.dob');
+        $model = $model->selectRaw('customers.id, customers.uuid, customers.phone, customers.name, (select COALESCE(sum(total_point),0) from payment_histories where payment_histories.customer_id = customers.id) as point');
+
         foreach ($filters as $key => $filter) {
-            if($filter['attribute'] != 'point') {
-                $model = $model->where($filter['attribute'], $filter['operation'], $filter['value']);
+            if ($filter['attribute'] == 'point') {
+                $model = $model->whereRaw('(select COALESCE(sum(total_point),0) from payment_histories where payment_histories.customer_id = customers.id) ' . $filter['operation'] . ' ' . $filter['value']);
             } else {
-
+                $model = $model->where('customers.' . $filter['attribute'], $filter['operation'], $filter['value']);
             }
-
         }
         // Sort trường hợp lấy giới hạn
         if (!empty($sorting)) {
             if ($sorting[0] == 'score') {
-                $model = $model->orderBy('point', $sorting[1] > 0 ? 'ASC' : 'DESC');
+                $model = $model->orderByRaw('(select COALESCE(sum(total_point),0) from payment_histories where payment_histories.customer_id = customers.id)' . ($sorting[1] > 0 ? 'ASC' : 'DESC'));
             } else {
                 $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
             }
