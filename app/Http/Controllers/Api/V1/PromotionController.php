@@ -24,7 +24,7 @@ class PromotionController extends ApiController
         'client_id'         => 'required|exists:users,id',
         'code'              => 'required|max:50|unique:promotions,code',
         'type'              => 'required|numeric',
-        'target_type'       => 'required|numeric',
+        // 'target_type'       => 'required|numeric',
         'cgroup_id'         => 'nullable|exists:cgroups,uuid',
         'amount'            => 'required|numeric|min:0',
         'amount_segment'    => 'nullable|numeric|min:0',
@@ -114,6 +114,9 @@ class PromotionController extends ApiController
 
             $user = getCurrentUser();
             $request['client_id'] = $user->id;
+            if ($request['target_type']) {
+                $request['target_type'] = implode(',', $request['target_type']);
+            }
 
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
@@ -208,7 +211,7 @@ class PromotionController extends ApiController
 
             $this->validationRules = [
                 'type'              => 'required|numeric',
-                'target_type'       => 'required|numeric',
+                // 'target_type'       => 'required|numeric',
                 'cgroup_id'         => 'nullable|exists:cgroups,uuid',
                 'amount'            => 'required|numeric|min:0',
                 'amount_max'        => 'nullable|numeric|min:0',
@@ -222,6 +225,7 @@ class PromotionController extends ApiController
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $params = $request->all();
+            $params['target_type'] = implode(',', $params['target_type']);
 
             $type = array_get($params, 'type', null);
 
