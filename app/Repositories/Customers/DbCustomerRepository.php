@@ -82,7 +82,6 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
      */
     public function getByGroup($filters, $size = -1, $sorting = [])
     {
-        dd($filters);
         $model = $this->model;
 
         // Join payment
@@ -91,9 +90,13 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
         });
         $model = $model->selectRaw('customers.uuid, customers.name, customers.phone, customers.email, customers.id, customers.created_at, customers.job, customers.city_id, customers.level, customers.dob, sum(payment_histories.total_point) as point')
             ->groupBy('customers.uuid', 'customers.name', 'customers.phone', 'customers.email', 'customers.uuid', 'customers.id', 'customers.created_at', 'customers.job', 'customers.city_id', 'customers.level', 'customers.city_id', 'customers.dob');
-
         foreach ($filters as $key => $filter) {
-            $model = $model->where('customers.' . $filter['attribute'], $filter['operation'], $filter['value']);
+            if($filter['attribute'] != 'point') {
+                $model = $model->where($filter['attribute'], $filter['operation'], $filter['value']);
+            } else {
+
+            }
+
         }
         // Sort trường hợp lấy giới hạn
         if (!empty($sorting)) {
