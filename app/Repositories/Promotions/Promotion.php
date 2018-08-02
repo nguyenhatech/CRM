@@ -58,7 +58,7 @@ class Promotion extends Entity
     const VIP_TICKET       = 2;
     const SUPER_VIP_TICKET = 3;
     const LIST_TARGET_TYPE = [
-        self::ALL_TYPE              => 'Tất cả',
+        // self::ALL_TYPE              => 'Tất cả',
         self::NORMAL_TICKET         => 'Phổ thông',
         self::VIP_TICKET            => 'Vip',
         self::SUPER_VIP_TICKET      => 'Royal'
