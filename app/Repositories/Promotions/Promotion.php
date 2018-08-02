@@ -65,7 +65,7 @@ class Promotion extends Entity
     ];
 
     const LIST_TARGET_TYPE_V2 = [
-        self::ALL_TYPE              => 'Áp dụng cho tất cả các hạng xe',
+        // self::ALL_TYPE              => 'Áp dụng cho tất cả các hạng xe',
         self::NORMAL_TICKET         => 'Áp dụng cho khách đi xe hạng Phổ thông',
         self::VIP_TICKET            => 'Áp dụng cho khách đi xe hạng Vip',
         self::SUPER_VIP_TICKET      => 'Áp dụng cho khách đi xe hạng Royal'
@@ -144,8 +144,16 @@ class Promotion extends Entity
      */
     public function getListTargetTypeText($typeTaget)
     {
-        $typeTaget = (int) $typeTaget;
-        return array_key_exists($typeTaget, self::LIST_TARGET_TYPE_V2) ? self::LIST_TARGET_TYPE_V2[$typeTaget] : 'Không xác định';
+        if($typeTaget == 0 ) return 'Áp dụng cho tất cả các hạng xe';
+
+        $typeTaget = explode(',', $typeTaget);
+        $array_text = [];
+        foreach ($typeTaget as $key => $target) {
+            $array_text[] = self::LIST_TARGET_TYPE[$target];
+        }
+        return 'Áp dụng cho khách đi xe hạng ' . implode(',', $array_text);
+        // $typeTaget = (int) $typeTaget;
+        // return array_key_exists($typeTaget, self::LIST_TARGET_TYPE_V2) ? self::LIST_TARGET_TYPE_V2[$typeTaget] : 'Không xác định';
     }
 
     public function cgroup()

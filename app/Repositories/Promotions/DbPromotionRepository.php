@@ -140,9 +140,15 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
         // Check hạng xe hợp lệ thì cho qua?
         $target_valid = false;
-        if ($promotion->target_type == $target_type || $promotion->target_type == 0) {
+        $promotions_target = !is_null($promotion->target_type) ? explode(',', $promotion->target_type) : [];
+
+        if (in_array($target_type, $promotions_target) || $target_type == 0) {
             $target_valid = true;
         }
+
+        // if ($promotion->target_type == $target_type || $promotion->target_type == 0) {
+        //     $target_valid = true;
+        // }
 
         if (!$target_valid) {
             $result->error   = true;
@@ -279,7 +285,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     {
         $startDate  = array_get($params, 'start_date', null);
         $endDate    = array_get($params, 'end_date', null);
-        
+
         $promotion  = $this->getById($id);
         if($promotion) {
             $model = $this->customer->leftJoin('payment_histories', 'customers.id', '=', 'payment_histories.customer_id')
