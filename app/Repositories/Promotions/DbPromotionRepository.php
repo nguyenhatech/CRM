@@ -258,7 +258,6 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $result->type              = $promotion->getFormMovesText($type);
             $result->target_type       = $promotion->getListTargetTypeText($promotion->target_type);
             $result->amount            = $amount;
-
         }
 
         return $result;
