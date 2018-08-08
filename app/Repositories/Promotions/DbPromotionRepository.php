@@ -90,10 +90,6 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      */
     public function check($params)
     {
-        \Log::info([
-            'Đù má ko lên nhỉ',
-            $params
-        ]);
         dd($params);
         $timeNow     = strtotime(Carbon::now()->format('Y-m-d H:i'));
         $code        = array_get($params, 'code', '');
