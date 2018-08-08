@@ -90,6 +90,10 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      */
     public function check($params)
     {
+        \Log::info([
+            'Data bắn lên ',
+            $params
+        ]);
         $timeNow     = strtotime(Carbon::now()->format('Y-m-d H:i'));
         $code        = array_get($params, 'code', '');
         $total_money = (int) array_get($params, 'ticket_money', 0);
@@ -196,8 +200,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                                 ->whereHas('payment_history', function($q) use ($promotion) {
                                                     $q->where('status', '<>', 2);
                                                 })
-                                                ->where('status', 1)
-                                                ->where('type_check', 1)
+                                                ->where('type_check', 2)
                                                 ->get()->count();
 
                 if ($countUsed >= $promotion->quantity) {
@@ -224,8 +227,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                                         $q->where('status', '<>', 2)
                                                             ->where('customer_id', $customer->id);
                                                     })
-                                                    ->where('status', 1)
-                                                    ->where('type_check', 1)
+                                                    ->where('type_check', 2)
                                                     ->get()->count();
 
 
