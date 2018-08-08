@@ -221,8 +221,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                     $countUsed = $paymentHistoryCodeRepo->where('promotion_code', strtoupper($code))
                                                     ->whereHas('payment_history', function($q) use ($promotion, $customer) {
-                                                        $q->where('status', '<>', 2)
-                                                            ->where('customer_id', $customer->id);
+                                                        $q->where('customer_id', $customer->id);
                                                     })
                                                     ->where('type_check', 1)
                                                     ->get()->count();
