@@ -91,7 +91,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     public function check($params)
     {
         \Log::info([
-            'Data bắn lên ',
+            'Data bắn lên',
             $params
         ]);
         $timeNow     = strtotime(Carbon::now()->format('Y-m-d H:i'));
@@ -100,9 +100,10 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $type        = (int) array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
         $target_type = (int) array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
         $timeGoing   = array_get($params, 'time_going', $timeNow);
-        $type_check  = (int) array_get($params, 'type_check', 0);
+        $type_check  = (int) array_get($params, 'type_check', 1);
+
         $used_status = (int) array_get($params, 'used_status', 0);
-        $booking_id  = array_get($params, 'booking_id', 0);
+        $booking_id  = array_get($params, 'booking_id', '');
 
         // Nếu có nhóm khách hàng thì check xem user có nằm trong nhóm đó không?
         $email = array_get($params, 'email', null);
