@@ -60,9 +60,9 @@ class CheckPromotionController extends Controller
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
-            \Log::info('CheckPromotionController/V2/Dòng 60: ERP ' . getCurrentUser()->name . ' : ' . json_encode($request->all()));
-
             $data = $this->getResource()->check($request->all());
+
+            \Log::info('Check data promotion v2 ' . getCurrentUser()->name . ' : ' . json_encode($data));
 
             if ($data->error) {
                 return $this->errorResponse($data);
