@@ -96,6 +96,13 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $type        = (int) array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
         $target_type = (int) array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
         $timeGoing   = array_get($params, 'time_going', $timeNow);
+        $type_check  = (int) array_get($params, 'type_check', 0);
+        $used_status = (int) array_get($params, 'used_status', 0);
+        $booking_id  = array_get($params, 'booking_id', 0);
+
+        // Nếu có nhóm khách hàng thì check xem user có nằm trong nhóm đó không?
+        $email = array_get($params, 'email', null);
+        $phone = array_get($params, 'phone', null);
         $customer    = null;
         $result      = new \stdClass();
         $flagTime = false;
@@ -157,10 +164,6 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         }
 
         if (! is_null($promotion) && $target_valid) {
-            // Nếu có nhóm khách hàng thì check xem user có nằm trong nhóm đó không ?
-            $email = array_get($params, 'email', null);
-            $phone = array_get($params, 'phone', null);
-
             if (!is_null($email) || !is_null($phone)) {
                 $customerRepo = \App::make('Nh\Repositories\Customers\CustomerRepository');
                 $email = null;
@@ -192,7 +195,10 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 $countUsed = $paymentHistoryCodeRepo->where('promotion_code', strtoupper($code))
                                                 ->whereHas('payment_history', function($q) use ($promotion) {
                                                     $q->where('status', '<>', 2);
-                                                })->get()->count();
+                                                })
+                                                ->where('status', 1)
+                                                ->where('type_check', 1)
+                                                ->get()->count();
 
                 if ($countUsed >= $promotion->quantity) {
                     $result->error   = true;
@@ -206,12 +212,22 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 if (!is_null($customer)) {
                     $paymentHistoryCodeRepo = \App::make('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode');
 
+                    // $countUsed = $paymentHistoryCodeRepo->where('promotion_code', strtoupper($code))
+                    //                                 ->whereHas('payment_history', function($q) use ($promotion, $customer) {
+                    //                                     $q->where('status', '<>', 2)
+                    //                                     ->where('customer_id', $customer->id);
+                    //                                 })
+                    //                                 ->get()->count();
+
                     $countUsed = $paymentHistoryCodeRepo->where('promotion_code', strtoupper($code))
                                                     ->whereHas('payment_history', function($q) use ($promotion, $customer) {
                                                         $q->where('status', '<>', 2)
-                                                        ->where('customer_id', $customer->id);
+                                                            ->where('customer_id', $customer->id);
                                                     })
+                                                    ->where('status', 1)
+                                                    ->where('type_check', 1)
                                                     ->get()->count();
+
 
                     if ($countUsed >= $promotion->quantity_per_user) {
                         $result->error   = true;
@@ -257,7 +273,35 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $result->quantity          = $promotion->quantity;
             $result->type              = $promotion->getFormMovesText($type);
             $result->target_type       = $promotion->getListTargetTypeText($promotion->target_type);
+            $result->type_check        = $type_check;
+            $result->used_status       = $used_status;
             $result->amount            = $amount;
+        }
+
+        try {
+            $paymentHistoryRepo = \App::make('Nh\Repositories\PaymentHistories\PaymentHistoryRepository');
+
+            $data_payment_history = [
+                'phone'         => $phone,
+                'booking_id'    => $booking_id,
+                'type'          => PaymentHistory::TYPE_CONFIRM,
+                'status'        => PaymentHistory::PAY_PENDDING,
+                'total_amount'  => 0,
+                'description'   => 'Kiểm tra mã khuyến mại cho mỗi vé',
+                'flag'          => true,
+                'details'       => [
+                    [
+                        'promotion_code'    => $code,
+                        'type_check'        => $type_check,
+                        'status'            => $used_status
+                    ]
+                ]
+            ];
+            $paymentHistoryRepo->store($data_payment_history);
+        } catch (Exception $e) {
+            $result->error   = true;
+            $result->message = 'Có lỗi xảy ra. Vui lòng liên hệ admin';
+            return $result;
         }
 
         return $result;

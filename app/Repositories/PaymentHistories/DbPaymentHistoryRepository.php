@@ -85,27 +85,59 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
         $data['customer_id']    = $customer->id;
         $data['client_id']      = getCurrentUser()->id;
 
-        $model = $this->model->create($data);
+        $model = $this->model->where('booking_id', $data['booking_id'])->first();
 
-        //Lưu mảng mã khuyến mãi ứng với lịch sử giao dịch trên
-        if(isset($data['details'])) {
-            $arr_promotion_codes = array_pluck($data['details'], 'promotion_code');
-            foreach ($arr_promotion_codes as $key => $code) {
-                if (! empty($code)) {
-                    $result = $this->paymentHistoryCode->create([
-                        'payment_history_id' => $model->id,
-                        'promotion_code'     => $code
-                    ]);
+        // Xly booking tồn tại hay chưa
+        if(is_null($model)) {
+            $model = $this->model->create($data);
+        } else {
+            $model->fill($data)->save();
+        }
+
+        if(isset($data['flag']) && $data['flag']) {
+            //Lưu mảng mã khuyến mãi ứng với lịch sử giao dịch trên
+            if(isset($data['details'])) {
+                $arr_promotion_codes = $data['details'];
+
+                foreach ($arr_promotion_codes as $key => $item) {
+                    if (! empty($item['promotion_code'])) {
+                        $result = $this->paymentHistoryCode->create([
+                            'payment_history_id' => $model->id,
+                            'promotion_code'     => $item['promotion_code'],
+                            'type_check'         => isset($item['type_check']) ? $item['type_check'] : 0,
+                            'status'             => isset($item['status']) ? $item['status'] : 0,
+                        ]);
+                    }
                 }
             }
-        }
-        /**
-         * update level customer
-         * @var [type]
-         */
-        if ($model->status == PaymentHistory::PAY_SUCCESS) {
-            event(new \Nh\Events\UpdateLevelCustomer($model->customer));
-            event(new \Nh\Events\PaymentSuccess($model));
+        } else {
+            // Cập nhật mảng mã khuyến mãi ứng với lịch sử giao dịch trên
+            if(isset($data['details'])) {
+                $arr_promotion_codes = $data['details'];
+                foreach ($arr_promotion_codes as $key => $item) {
+                    $paymentHistoryCode = $this->paymentHistoryCode->where('promotion_code', $item['promotion_code'])
+                                                            ->where('payment_history_id', $model->id)
+                                                            ->first();
+
+                    if (! is_null($paymentHistoryCode)) {
+                        $data_update = [
+                            'promotion_code'    => $item['promotion_code'],
+                            'type_check'        => isset($item['type_check']) ? $item['type_check'] : 0,
+                            'status'            => isset($item['status']) ? $item['status'] : 0
+                        ];
+                        $paymentHistoryCode->fill($data_update)->save();
+                    }
+                }
+            }
+
+            /**
+             * update level customer
+             * @var [type]
+             */
+            if ($model->status == PaymentHistory::PAY_SUCCESS) {
+                event(new \Nh\Events\UpdateLevelCustomer($model->customer));
+                event(new \Nh\Events\PaymentSuccess($model));
+            }
         }
 
         return $this->getById($model->id);
@@ -142,12 +174,6 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
                 }
             }
         }
-
-        // if ($record->status == 2) {
-        //     $result->error   = true;
-        //     $result->message = 'Không được phép cập nhật cho lịch sử giao dịch này';
-        //     return $result;
-        // }
 
         if (isset($data['status']) && $data['status'] == PaymentHistory::PAY_SUCCESS) {
             $data['payment_at'] = \Carbon\Carbon::now()->format('Y-m-d');

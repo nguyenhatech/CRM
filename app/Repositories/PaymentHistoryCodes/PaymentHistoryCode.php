@@ -13,7 +13,7 @@ class PaymentHistoryCode extends Entity
      *
      * @var array
      */
-    public $fillable = ['payment_history_id', 'promotion_code'];
+    public $fillable = ['payment_history_id', 'promotion_code', 'type_check', 'status'];
 
     public $timestamps = false;
 
