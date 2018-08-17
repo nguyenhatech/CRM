@@ -200,7 +200,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                                 ->where('type_check', 1)
                                                 ->get()->count();
 
-                if ($countUsed >= $promotion->quantity) {
+                if ($type_check < 2 && $countUsed >= $promotion->quantity) {
                     $result->error   = true;
                     $result->message = 'Xin lỗi mã giảm giá đã quá lượt sử dụng';
                     return $result;
@@ -212,13 +212,6 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 if (!is_null($customer)) {
                     $paymentHistoryCodeRepo = \App::make('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode');
 
-                    // $countUsed = $paymentHistoryCodeRepo->where('promotion_code', strtoupper($code))
-                    //                                 ->whereHas('payment_history', function($q) use ($promotion, $customer) {
-                    //                                     $q->where('status', '<>', 2)
-                    //                                     ->where('customer_id', $customer->id);
-                    //                                 })
-                    //                                 ->get()->count();
-
                     $countUsed = $paymentHistoryCodeRepo->where('promotion_code', strtoupper($code))
                                                     ->whereHas('payment_history', function($q) use ($promotion, $customer) {
                                                         $q->where('status', '<>', 2)
@@ -227,7 +220,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                                     ->where('type_check', 1)
                                                     ->get()->count();
 
-                    if ($countUsed >= $promotion->quantity_per_user) {
+                    if ($type_check < 2 && $countUsed >= $promotion->quantity_per_user) {
                         $result->error   = true;
                         $result->message = 'Xin lỗi mã giảm giá đã quá số lượt sử dụng.';
                         return $result;
