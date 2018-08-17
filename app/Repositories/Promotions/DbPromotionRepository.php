@@ -198,9 +198,9 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                                     $q->where('status', '<>', 2);
                                                 })
                                                 ->where('type_check', 1)
-                                                ->get()->count();
+                                                ->get();
 
-                if ($type_check < 2 && $countUsed >= $promotion->quantity) {
+                if ($type_check < 2 && $countUsed->count() >= $promotion->quantity) {
                     $result->error   = true;
                     $result->message = 'Xin lỗi mã giảm giá đã quá lượt sử dụng';
                     return $result;
@@ -218,9 +218,9 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                                         ->where('customer_id', $customer->id);
                                                     })
                                                     ->where('type_check', 1)
-                                                    ->get()->count();
+                                                    ->get();
 
-                    if ($type_check < 2 && $countUsed >= $promotion->quantity_per_user) {
+                    if ($type_check < 2 && $countUsed->count() >= $promotion->quantity_per_user) {
                         $result->error   = true;
                         $result->message = 'Xin lỗi mã giảm giá đã quá số lượt sử dụng.';
                         return $result;
@@ -264,8 +264,6 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $result->quantity          = $promotion->quantity;
             $result->type              = $promotion->getFormMovesText($type);
             $result->target_type       = $promotion->getListTargetTypeText($promotion->target_type);
-            $result->type_check        = $type_check;
-            $result->used_status       = $used_status;
             $result->amount            = $amount;
         }
 
@@ -278,7 +276,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 'type'          => PaymentHistory::TYPE_CONFIRM,
                 'status'        => PaymentHistory::PAY_PENDDING,
                 'total_amount'  => 0,
-                'description'   => 'Kiểm tra mã khuyến mại cho mỗi vé',
+                'description'   => "Kiểm tra mã vé cho booking - {$booking_id}",
                 'flag'          => true,
                 'details'       => [
                     [
