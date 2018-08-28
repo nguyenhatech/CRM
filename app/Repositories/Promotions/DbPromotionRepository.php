@@ -286,7 +286,10 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                     ]
                 ]
             ];
-            $paymentHistoryRepo->store($data_payment_history);
+            // Nếu là 0 thì insert
+            if($type_check != 0) {
+                $paymentHistoryRepo->store($data_payment_history);
+            }
         } catch (Exception $e) {
             $result->error   = true;
             $result->message = 'Có lỗi xảy ra. Vui lòng liên hệ admin';
