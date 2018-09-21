@@ -9,7 +9,7 @@ use Carbon\Carbon;
 class PaymentHistoryTransformer extends TransformerAbstract
 {
     protected $availableIncludes = [
-        // 'roles'
+        'code'
     ];
 
      public function transform(PaymentHistory $paymentHistory = null)
@@ -39,12 +39,12 @@ class PaymentHistoryTransformer extends TransformerAbstract
         return $data;
     }
 
-    // public function includeRoles(PaymentHistory $paymentHistory = null)
-    // {
-    //     if (is_null($paymentHistory)) {
-    //         return $this->null();
-    //     }
+    public function includeCode(PaymentHistory $paymentHistory = null)
+    {
+        if (is_null($paymentHistory)) {
+            return $this->null();
+        }
 
-    //     return $this->collection($paymentHistory->roles, new RoleTransformer());
-    // }
+        return $this->collection($paymentHistory->payment_history_codes, new PaymentHistoryCodeTransformer());
+    }
 }
