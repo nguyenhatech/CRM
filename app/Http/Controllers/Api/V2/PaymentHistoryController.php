@@ -108,7 +108,7 @@ class PaymentHistoryController extends Controller
 
             $params = $request->only(['booking_id', 'status', 'total_amount', 'description', 'type', 'details']);
 
-            \Log::info('Log update controller: ', $params);
+            \Log::info('Log update controller: ', $request->all());
 
             $model = $this->getResource()->updatePaymentHistory($params);
             
