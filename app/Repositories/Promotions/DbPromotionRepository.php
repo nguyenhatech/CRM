@@ -304,6 +304,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $promotion = $this->getById($id);
         $model = $this->model->leftJoin('payment_history_codes', 'code', '=', 'promotion_code')
                             ->select(\DB::raw('code, count(promotion_code) as total_used'))
+                            ->where('payment_history_codes.type_check',1)
                             ->whereNull('payment_history_codes.deleted_at')
                             ->where('code', $promotion->code)
                             ->groupBy('code')
@@ -327,11 +328,10 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                 ->leftJoin('payment_history_codes', 'payment_histories.id', '=', 'payment_history_codes.payment_history_id')
                                 ->leftJoin('promotions', 'payment_history_codes.promotion_code', '=', 'promotions.code');
             $select = "customers.id, customers.name, customers.phone, customers.email,
-                    COUNT(payment_history_id) AS total_used,
+                    (SUM(CASE WHEN type_check=1 THEN 1 ELSE 0 END) - SUM(!ISNULL(payment_history_codes.deleted_at))) AS total_used,
                     SUM(!ISNULL(payment_history_codes.deleted_at)) as total_cancel";
 
             $model = $model->selectRaw($select)->where('promotions.code', $promotion->code);
-
             // Theo thời gian
             if ($startDate) {
                 $startDate  = $startDate . ' 00:00:00';

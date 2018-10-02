@@ -92,6 +92,6 @@ class PaymentHistory extends Entity
 
     public function payment_history_codes()
     {
-        return $this->hasMany('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode', 'payment_history_id', 'id');
+        return $this->hasMany('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode', 'payment_history_id', 'id')->where('type_check', 1);
     }
 }
