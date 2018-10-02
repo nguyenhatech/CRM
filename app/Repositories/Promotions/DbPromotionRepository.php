@@ -90,7 +90,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      */
     public function check($params)
     {
-        \Log::info('Check khuyến mại repository ', $params); 
+        \Log::info('Request from hshv to crm ', $params); 
 
         $timeNow     = strtotime(Carbon::now()->format('Y-m-d H:i'));
         $code        = array_get($params, 'code', '');

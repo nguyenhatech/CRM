@@ -62,7 +62,7 @@ class CheckPromotionController extends Controller
 
             $data = $this->getResource()->check($request->all());
 
-            \Log::info('Check data promotion v2 ' . getCurrentUser()->name . ' : ' . json_encode($data));
+            \Log::info('Response from crm to hshv ' . getCurrentUser()->name . ' : ' . json_encode($data));
 
             if ($data->error) {
                 return $this->errorResponse($data);
