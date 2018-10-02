@@ -36,7 +36,6 @@ class SendEmailCampaign implements ShouldQueue
      */
     public function handle()
     {
-        $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
         \Log::info('Bắt đầu chạy job gửi email');
         \Log::info($this->campaign->runtime);
         if ($this->campaign->runtime) {
@@ -44,33 +43,53 @@ class SendEmailCampaign implements ShouldQueue
             $sentEmails = $this->campaign->sent_emails->where('runtime', $this->campaign->runtime);
             if ($sentEmails->all() && $sentEmails->first()->runtime == $this->campaign->runtime) {
                 \Log::info('Bắt đầu gửi');
-                $response = null;
-                foreach ($this->customers as $key => $customer) {
-                    if ($customer->email) {
-                        $html = str_replace('***name***', $customer->name, $this->campaign->template);
-                        $response = $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->campaign($this->campaign->name . '_' . $this->campaign->uuid)->sendAsCampaign();
-                    }
-                }
-                if (!is_null($response) && $response->success()) {
-                    $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);
-                    $this->campaign->email_id = $response->getData()['Sent'][0]['MessageID'];
-                    $this->campaign->save();
-                }
+                $this->sending($this->customers);
+                // $response = null;
+                // foreach ($this->customers as $key => $customer) {
+                //     if ($customer->email) {
+                //         $html = str_replace('***name***', $customer->name, $this->campaign->template);
+                //         $response = $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->campaign($this->campaign->name . '_' . $this->campaign->uuid)->sendAsCampaign();
+                //     }
+                // }
+                // if (!is_null($response) && $response->success()) {
+                //     $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);
+                //     $this->campaign->email_id = $response->getData()['Sent'][0]['MessageID'];
+                //     $this->campaign->save();
+                // }
             }
         } else {
             \Log::info('Gửi bằng tay');
-            $response = null;
-            foreach ($this->customers as $key => $customer) {
-                if ($customer->email) {
-                    $html = str_replace('***name***', $customer->name, $this->campaign->template);
-                    $response = $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->campaign($this->campaign->name . '_' . $this->campaign->uuid)->sendAsCampaign();
-                }
+            $this->sending($this->customers);
+            // $response = null;
+            // foreach ($this->customers as $key => $customer) {
+            //     if ($customer->email) {
+            //         $html = str_replace('***name***', $customer->name, $this->campaign->template);
+            //         $response = $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->campaign($this->campaign->name . '_' . $this->campaign->uuid)->sendAsCampaign();
+            //     }
+            // }
+            // \Log::info($response);
+            // if (!is_null($response) && $response->success()) {
+            //     $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);
+            //     $this->campaign->email_id = $response->getData()['Sent'][0]['MessageID'];
+            //     $this->campaign->save();
+            // }
+        }
+    }
+
+    private function sending($customer) {
+        $mailer     = new \Nh\Repositories\Helpers\MailJetHelper();
+        $response;
+        foreach ($this->customers as $key => $customer) {
+            if ($customer->email) {
+                $html = str_replace('***name***', $customer->name, $this->campaign->template);
+                $response = $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->campaign($this->campaign->name . '_' . $this->campaign->uuid)->sendAsCampaign();
+                // dd($response->success());
             }
-            if (!is_null($response) && $response->success()) {
-                $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);
-                $this->campaign->email_id = $response->getData()['Sent'][0]['MessageID'];
-                $this->campaign->save();
-            }
+        }
+        if (!is_null($response) && $response->success()) {
+            $messageInfo  = $mailer->getMessageInfo($response->getData()['Sent'][0]['MessageID']);
+            $this->campaign->email_id = $response->getData()['Sent'][0]['MessageID'];
+            $this->campaign->save();
         }
     }
 }

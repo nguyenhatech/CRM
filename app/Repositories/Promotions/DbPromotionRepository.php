@@ -376,6 +376,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                             ->leftJoin('payment_histories', 'payment_history_codes.payment_history_id', '=', 'payment_histories.id')
                             ->select(\DB::raw('DATE(payment_histories.created_at) as date, COUNT(payment_history_codes.id) as total'))
                             ->where('payment_history_codes.deleted_at', '=', null)
+                            ->where('payment_history_codes.type_check', 1)
                             ->where('promotions.code', $promotion->code)
                             ->groupBy(\DB::raw('DATE(payment_histories.created_at)'))
                             ->get();
