@@ -95,6 +95,8 @@ class PaymentHistoryController extends Controller
 
     public function updatePaymentHistory(Request $request)
     {
+        \Log::info('Log update controller: ', $request);
+
         \DB::beginTransaction();
 
         try {

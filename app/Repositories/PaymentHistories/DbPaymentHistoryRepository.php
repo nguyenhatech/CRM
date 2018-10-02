@@ -154,7 +154,7 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
      */
     public function updatePaymentHistory($data)
     {
-        \Log::info('Cập nhập payment history ', $data);
+        \Log::info('Log update repo: ', $data);
         $result      = new \stdClass();
         // Tìm bản ghi trong DB
         $record = $this->model->where('booking_id', $data['booking_id'])->first();
