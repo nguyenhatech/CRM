@@ -38,6 +38,8 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
         $query      = array_get($params, 'q', '');
         $group_id   = array_get($params, 'group_id', '');
         $level      = array_get($params, 'level', '');
+        $startDate  = array_get($params, 'start_date', null);
+        $endDate    = array_get($params, 'end_date', null);
         $model      = $this->model;
 
         if (!empty($sorting) && array_key_exists(1, $sorting)) {
@@ -62,6 +64,13 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
             });
         }
 
+        if ($startDate) {
+            $model = $model->where('created_at', '>=', $startDate);
+        }
+        if ($endDate) {
+            $model = $model->where('created_at', '<=', $endDate);
+        }
+
         return $size < 0 ? $model->get() : $model->paginate($size);
     }
 
@@ -71,11 +80,26 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
      * @param  array $filters Mảng các điều kiện where
      * @return Illuminate\Pagination\Paginator
      */
-    public function getByGroup($filters, $size = -1)
+    public function getByGroup($filters, $size = -1, $sorting = [])
     {
         $model = $this->model;
+
+        $model = $model->selectRaw('customers.id, customers.uuid, customers.phone, customers.name, (select COALESCE(sum(total_point),0) from payment_histories where payment_histories.customer_id = customers.id) as point');
+
         foreach ($filters as $key => $filter) {
-            $model = $model->where($filter['attribute'], $filter['operation'], $filter['value']);
+            if ($filter['attribute'] == 'point') {
+                $model = $model->whereRaw('(select COALESCE(sum(total_point),0) from payment_histories where payment_histories.customer_id = customers.id) ' . $filter['operation'] . ' ' . $filter['value']);
+            } else {
+                $model = $model->where('customers.' . $filter['attribute'], $filter['operation'], $filter['value']);
+            }
+        }
+        // Sort trường hợp lấy giới hạn
+        if (!empty($sorting)) {
+            if ($sorting[0] == 'score') {
+                $model = $model->orderByRaw('(select COALESCE(sum(total_point),0) from payment_histories where payment_histories.customer_id = customers.id)' . ($sorting[1] > 0 ? 'ASC' : 'DESC'));
+            } else {
+                $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
+            }
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);
@@ -91,10 +115,11 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
     }
 
     public function storeOrUpdate($data) {
-        $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar', 'city_id', 'client_id']);
-        $email = array_get($data, 'email', null);
-        $phone = array_get($data, 'phone', null);
-        // dd($this->checkExist($email, $phone));
+        // return $data;
+        $data = array_only($data, ['name', 'email', 'phone', 'home_phone', 'company_phone', 'fax', 'sex', 'facebook_id', 'google_id', 'website', 'dob', 'job', 'address', 'company_address', 'source', 'avatar', 'city_id', 'client_id', 'tags']);
+        $email          = array_get($data, 'email', null);
+        $phone          = array_get($data, 'phone', null);
+        $data['name']   = array_get($data, 'name', $phone);
         if ($model = $this->checkExist($email, $phone)) {
             $data = array_except($data, 'phone');
             $model->fill($data)->save();
@@ -116,10 +141,38 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
             'client_id'   => $data['client_id'],
             'customer_id' => $model->id
         ]]);
-        
+
+        // Add tags customers
+        $this->syncTags($model, $data);
+
         event(new \Nh\Events\InfoCustomer($model));
 
         return $this->getById($model->id);
+    }
+
+    public function update($id, $data)
+    {
+        $customer = $this->getById($id);
+
+        $customer->fill($data)->save();
+
+        // Add tags customers
+        $this->syncTags($customer, $data);
+
+        return $customer;
+    }
+
+    /**
+     * [syncTags description]
+     * @param  [type] $model [description]
+     * @param  [type] $data  [description]
+     * @return [type]        [description]
+     */
+    public function syncTags($model, $data)
+    {
+        $tags = array_get($data, 'tags', []);
+
+        $model->tags()->sync($tags);
     }
 
     public function checkExist($email = null, $phone = null) {
@@ -193,5 +246,4 @@ class DbCustomerRepository extends BaseRepository implements CustomerRepository
 
         return $size < 0 ? $model->get() : $model->paginate($size);
     }
-
 }

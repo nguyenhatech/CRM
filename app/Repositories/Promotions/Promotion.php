@@ -14,7 +14,7 @@ class Promotion extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type', 'cgroup_id'];
+    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type', 'cgroup_id', 'limit_time_type', 'merchants'];
 
     /**
      * Full path of images.
@@ -46,28 +46,31 @@ class Promotion extends Entity
         self::DISABLE => 'Chưa kích hoạt'
     ];
 
-    const CASH = 0;
-    const PERCENT = 1;
+    const CASH      = 0;
+    const PERCENT   = 1;
     const LIST_TYPE_PROMOTIONS = [
         self::CASH    => 'đ',
         self::PERCENT => '%'
     ];
 
+    const ALL_TYPE         = 0;
     const NORMAL_TICKET    = 1;
     const VIP_TICKET       = 2;
     const SUPER_VIP_TICKET = 3;
+    const CARRENTAL_TICKET = 4;
+
     const LIST_TARGET_TYPE = [
-        0                   => 'Áp dụng cho tất cả các chuyến',
-        self::NORMAL_TICKET => 'Phổ thông',
-        self::VIP_TICKET    => 'Vip',
-        self::SUPER_VIP_TICKET     => 'Royal'
+        self::NORMAL_TICKET         => 'Phổ thông',
+        self::VIP_TICKET            => 'Vip',
+        self::SUPER_VIP_TICKET      => 'Royal',
+        self::CARRENTAL_TICKET      => 'CarRental'
     ];
 
     const LIST_TARGET_TYPE_V2 = [
-        0                   => 'Áp dụng cho tất cả các hạng xe',
-        self::NORMAL_TICKET => 'Áp dụng cho khách đi xe hạng Phổ thông',
-        self::VIP_TICKET    => 'Áp dụng cho khách đi xe hạng Vip',
-        self::SUPER_VIP_TICKET     => 'Áp dụng cho khách đi xe hạng Royal'
+        self::NORMAL_TICKET         => 'Áp dụng cho khách đi xe hạng Phổ thông',
+        self::VIP_TICKET            => 'Áp dụng cho khách đi xe hạng Vip',
+        self::SUPER_VIP_TICKET      => 'Áp dụng cho khách đi xe hạng Royal',
+        self::CARRENTAL_TICKET      => 'Áp dụng cho khách thuê xe riêng'
     ];
 
     const ROUTE = 1; // Hình thức khách hàng đi theo tuyến
@@ -78,6 +81,20 @@ class Promotion extends Entity
         self::ROUTE   => 'Giảm giá cho khách hàng đi cả tuyến',
         self::SEGMENT => 'Giảm giá cho khách hàng đi theo chặng'
     ];
+
+    // Giới hạn thời gian theo giờ đặt hoặc theo giờ đi
+    const TIME_BOOKING   = 1;
+    const TIME_GOING   = 2;
+
+    protected static function boot()
+    {
+        static::created(function ($model) {
+            $model->uuid = \Hashids::encode($model->id);
+            $model->save();
+        });
+
+        parent::boot();
+    }
 
     public function getImage()
     {
@@ -129,8 +146,14 @@ class Promotion extends Entity
      */
     public function getListTargetTypeText($typeTaget)
     {
-        $typeTaget = (int) $typeTaget;
-        return array_key_exists($typeTaget, self::LIST_TARGET_TYPE_V2) ? self::LIST_TARGET_TYPE_V2[$typeTaget] : 'Không xác định';
+        if($typeTaget == 0 ) return 'Áp dụng cho tất cả các hạng xe';
+
+        $typeTaget = explode(',', $typeTaget);
+        $array_text = [];
+        foreach ($typeTaget as $key => $target) {
+            $array_text[] = self::LIST_TARGET_TYPE[$target];
+        }
+        return 'Áp dụng cho khách đi xe hạng ' . implode(',', $array_text);
     }
 
     public function cgroup()

@@ -57,7 +57,7 @@ class ImportCsvCustomer implements ShouldQueue
         }
 
         // Import customer
-        Excel::load('storage/app/' . $this->filePath, function ($reader) use ($request, $group) {
+        Excel::selectSheetsByIndex(0)->load('storage/app/' . $this->filePath, function ($reader) use ($request, $group) {
             $results = $reader->get();
             foreach ($results as $key => $row) {
                 $params = ['client_id' => $this->userId];

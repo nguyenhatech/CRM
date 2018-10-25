@@ -15,8 +15,8 @@ class MailJetHelper {
 
     function __construct()
     {
-        $apikey = getenv('MAIL_USERNAME');
-        $apisecret = getenv('MAIL_PASSWORD');
+        $apikey     = getenv('MAIL_USERNAME');
+        $apisecret  = getenv('MAIL_PASSWORD');
         $this->mailer = new \Mailjet\Client($apikey, $apisecret, true,['version' => 'v3']);
 
         $this->sender = [

@@ -40,6 +40,7 @@ Route::group([
     Route::post('promotions/{id}/active', 'PromotionController@active');
     Route::post('promotions/upload-image', 'PromotionController@uploadImage');
     Route::get('promotions/get-free', 'PromotionController@getFree');
+    Route::get('promotions/export-excel', 'PromotionController@exportExcel');
     Route::resource('promotions', 'PromotionController');
 
     // Modul Setting
@@ -56,6 +57,7 @@ Route::group([
     Route::post('account/change-password', 'AccountController@changePassword');
     Route::post('account/update-profile', 'AccountController@updateProfile');
     Route::post('account/upload-avatar', 'AccountController@uploadAvatar');
+    Route::get('account/permissions', 'AccountController@getPermissions');
 
     Route::resource('roles', 'RoleController');
 
@@ -111,4 +113,6 @@ Route::group([
     });
 
     Route::resource('cities', 'CityController')->only('index', 'show');
+
+    Route::resource('tags', 'TagController');
 });

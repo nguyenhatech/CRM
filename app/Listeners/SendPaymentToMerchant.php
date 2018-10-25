@@ -36,7 +36,7 @@ class SendPaymentToMerchant
     public function handle(PaymentSuccess $event)
     {
         $paymentHistory = $event->paymentHistory;
-        $client_id = $paymentHistory->client->id;
+        $client_id  = $paymentHistory->client->id;
         $oauth_client = Client::where('user_id', $client_id)->first();
 
         $dataToDispatch = [
@@ -53,7 +53,7 @@ class SendPaymentToMerchant
                 'email'        => $paymentHistory->customer->email,
                 'status'       => $paymentHistory->status,
                 'webhook_type' => Webhook::WH_TRANSACTION,
-                'payment_at'   => $paymentHistory->payment_at->format('Y-m-d'),
+                'payment_at'   => isset($paymentHistory->payment_at) ? $paymentHistory->payment_at->format('Y-m-d') : '',
             ]
         ];
 

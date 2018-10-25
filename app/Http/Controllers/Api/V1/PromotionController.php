@@ -12,6 +12,7 @@ use Nh\Http\Controllers\Api\TransformerTrait;
 use Nh\Repositories\Promotions\PromotionRepository;
 use Nh\Repositories\Promotions\Promotion;
 use Nh\Http\Transformers\PromotionTransformer;
+use Excel;
 
 class PromotionController extends ApiController
 {
@@ -23,7 +24,6 @@ class PromotionController extends ApiController
         'client_id'         => 'required|exists:users,id',
         'code'              => 'required|max:50|unique:promotions,code',
         'type'              => 'required|numeric',
-        'target_type'       => 'required|numeric',
         'cgroup_id'         => 'nullable|exists:cgroups,uuid',
         'amount'            => 'required|numeric|min:0',
         'amount_segment'    => 'nullable|numeric|min:0',
@@ -113,6 +113,13 @@ class PromotionController extends ApiController
 
             $user = getCurrentUser();
             $request['client_id'] = $user->id;
+            if ($request['target_type']) {
+                $request['target_type'] = implode(',', $request['target_type']);
+            }
+
+            if($request['merchant']) {
+                $request['merchants'] = implode(',', $request['merchant']);
+            }
 
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
@@ -173,10 +180,10 @@ class PromotionController extends ApiController
                 if (\Hashids::decode($cgroud_id)[0]) {
                     $params['cgroup_id'] = \Hashids::decode($cgroud_id)[0];
                 } else {
-                    $params['cgroup_id'] = 0; 
+                    $params['cgroup_id'] = 0;
                 }
             } else {
-                $params['cgroup_id'] = 0; 
+                $params['cgroup_id'] = 0;
             }
 
             $data = $this->getResource()->store($params);
@@ -207,7 +214,7 @@ class PromotionController extends ApiController
 
             $this->validationRules = [
                 'type'              => 'required|numeric',
-                'target_type'       => 'required|numeric',
+                // 'target_type'       => 'required|numeric',
                 'cgroup_id'         => 'nullable|exists:cgroups,uuid',
                 'amount'            => 'required|numeric|min:0',
                 'amount_max'        => 'nullable|numeric|min:0',
@@ -221,6 +228,8 @@ class PromotionController extends ApiController
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $params = $request->all();
+            $params['target_type'] = implode(',', $params['target_type']);
+            $params['merchants'] = implode(',', $params['merchant']);
 
             $type = array_get($params, 'type', null);
 
@@ -247,10 +256,10 @@ class PromotionController extends ApiController
                 if (\Hashids::decode($cgroud_id)[0]) {
                     $params['cgroup_id'] = \Hashids::decode($cgroud_id)[0];
                 } else {
-                    $params['cgroup_id'] = 0; 
+                    $params['cgroup_id'] = 0;
                 }
             } else {
-                $params['cgroup_id'] = 0; 
+                $params['cgroup_id'] = 0;
             }
 
             $model = $this->getResource()->update($id, $params);
@@ -330,10 +339,10 @@ class PromotionController extends ApiController
     public function statisticQuantityUsed($id)
     {
         $statistic = $this->promotion->usedStatistic($id);
-        if ($statistic) {
+        if (!empty($statistic->all())) {
             return $this->infoResponse($statistic->first());
         }
-        return $this->notFoundResponse();
+        return $this->infoResponse([]);
     }
 
     /**
@@ -341,13 +350,13 @@ class PromotionController extends ApiController
      * @param  string $value [description]
      * @return [type]        [description]
      */
-    public function getListCustomerUsed($id)
+    public function getListCustomerUsed($id, Request $request)
     {
-        $customers = $this->promotion->usedCustomers($id);
-        if ($customers && !is_null($customers->first()->id)) {
+        $customers = $this->promotion->usedCustomers($id, $request->all());
+        if (!is_null($customers) && !empty($customers->all()) && !is_null($customers->first()->id)) {
             return $this->infoResponse($customers);
         }
-        return $this->notFoundResponse();
+        return $this->infoResponse([]);
     }
 
     /**
@@ -361,7 +370,7 @@ class PromotionController extends ApiController
         if ($customers && !is_null($customers->first()->id)) {
             return $this->infoResponse($customers);
         }
-        return $this->notFoundResponse();
+        return $this->infoResponse([]);
     }
 
     /**
@@ -399,4 +408,66 @@ class PromotionController extends ApiController
         return $this->successResponse($data);
     }
 
+    /**
+     * Export excel
+     * @param  [type] $id [description]
+     * @return [type]     [description]
+     */
+    public function exportExcel(Request $request)
+    {
+        $uuid = $request->get('uuid');
+        try {
+            $promotions = $this->getResource()->usedCustomers($uuid, $request->all());
+
+            if(!$promotions) return [];
+
+            $pathToFile = Excel::create('khach_hang_su_dung_ma_khuyen_mai ' . time(), function ($excel) use ($promotions) {
+                $excel->sheet('sheet1', function ($sheet) use ($promotions) {
+                    // Set auto size for sheet
+                    $sheet->setAutoSize(true);
+                    $sheet->row(
+                        1,
+                        [
+                            '#',
+                            'Họ tên',
+                            'Điện thoại',
+                            'Email',
+                            'Số lượt dùng',
+                            'Số lượt hủy'
+                        ]
+                    );
+                    // Start at row 2
+                    $rowPointer = 2;
+                    foreach($promotions as $promotion) {
+                        $sheet->row(
+                            $rowPointer,
+                            [
+                                $rowPointer - 1,
+                                $promotion->name,
+                                $promotion->phone,
+                                $promotion->email,
+                                $promotion->total_used,
+                                $promotion->total_cancel
+                            ]
+                        );
+                        // Move on to the next row
+                        $rowPointer++;
+                    }
+                });
+            })->store('xlsx', storage_path('/app/public/excels'), true);
+
+            $path = "excels/{$pathToFile['file']}";
+            return $this->infoResponse([
+                'full' => env('APP_URL') . "/storage/" . $path,
+                'path' => env('APP_URL') . "/storage/excels",
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $validationException) {
+            return $this->errorResponse([
+                'errors'    => $validationException->validator->errors(),
+                'exception' => $validationException->getMessage()
+            ]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

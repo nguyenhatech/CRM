@@ -18,7 +18,7 @@ Route::group([
 
 
 Route::get('/', function () {
-    return "I'm ok";
+    return "I'm ok NguyenHa";
 });
 
 // Disable auth function in api, chỉ giữ lại chức năng quên mật khẩu

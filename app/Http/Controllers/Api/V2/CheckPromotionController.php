@@ -22,14 +22,15 @@ class CheckPromotionController extends Controller
         'code'         => 'required|max:50',
         'ticket_money' => 'required|numeric|min:1000',
         'type'         => 'required|in:1,2',
-        'target_type'  => 'required|in:0,1,2,3',
+        'target_type'  => 'required|in:0,1,2,3,4',
         'email'        => 'nullable|max:50',
-        'phone'        => 'required|digits_between:8,12'
+        'phone'        => 'required|digits_between:8,12',
+        'time_going'   => 'required|integer'
     ];
 
     protected $validationMessages = [
-        'code.required'         => 'Vui lòng nhập mã Code cần kiểm tra',
-        'code.max'              => 'Mã code có chiều dài tối đa chỉ 50 kí tự',
+        'code.required'         => 'Vui lòng nhập mã khuyến mại',
+        'code.max'              => 'Mã code tối đa chỉ 50 kí tự',
         'ticket_money.required' => 'Vui lòng nhập tổng số tiền đơn hàng',
         'ticket_money.numeric'  => 'Số tiền đơn hàng phải là kiểu số',
         'ticket_money.min'      => 'Số tiền đơn hàng tối thiểu là 1000 đồng',
@@ -37,7 +38,9 @@ class CheckPromotionController extends Controller
         'type.in'               => 'Hình thức khách đi chỉ có thể là theo tuyến hoặc chặng',
         'target_type.required'  => 'Hạng xe không thể để trống',
         'target_type.in'        => 'Hạng xe không hợp lệ',
-        'phone.required'        => 'Vui lòng nhập mã Phone'
+        'phone.required'        => 'Vui lòng nhập số điện thoại',
+        'time_going.required'   => 'Vui lòng nhập thời gian đi',
+        'time_going.integer'    => 'Vui lòng nhập định dạng số'
     ];
 
     public function __construct(PromotionRepository $promotion)
@@ -57,9 +60,9 @@ class CheckPromotionController extends Controller
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
-            \Log::info('CheckPromotionController/V2/Dòng 60: ERP ' . getCurrentUser()->name . ' : ' . json_encode($request->all()));
-            
             $data = $this->getResource()->check($request->all());
+
+            \Log::info('Response from crm to havaz ' . getCurrentUser()->name . ' : ' . json_encode($data));
 
             if ($data->error) {
                 return $this->errorResponse($data);

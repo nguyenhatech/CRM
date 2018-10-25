@@ -3,13 +3,15 @@
 namespace Nh\Repositories\PaymentHistories;
 use Nh\Repositories\BaseRepository;
 use Nh\Repositories\Customers\CustomerRepository;
+use Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode;
 
 class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistoryRepository
 {
-    public function __construct(PaymentHistory $paymentHistory, CustomerRepository $customer)
+    public function __construct(PaymentHistory $paymentHistory, CustomerRepository $customer, PaymentHistoryCode $paymentHistoryCode)
     {
-        $this->model = $paymentHistory;
-        $this->customer = $customer;
+        $this->model                = $paymentHistory;
+        $this->customer             = $customer;
+        $this->paymentHistoryCode   = $paymentHistoryCode;
     }
 
     /**
@@ -34,10 +36,11 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
      */
     public function getByQuery($params, $size = 25, $sorting = [])
     {
-        $query = array_get($params, 'q', '');
+        $query      = array_get($params, 'q', '');
         $customerId = array_get($params, 'customer_id', null);
-        $startDate = array_get($params, 'start_date', null);
-        $endDate = array_get($params, 'end_date', null);
+        $startDate  = array_get($params, 'start_date', null);
+        $endDate    = array_get($params, 'end_date', null);
+
         $model = $this->model;
 
         if (!empty($sorting)) {
@@ -77,33 +80,66 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
      */
     public function store($data)
     {
+        \Log::info('Log create payment ', $data);
 
-        $dataCustomer = array_only($data, ['name', 'email', 'phone']);
-        $customer = $this->customer->storeOrUpdate($dataCustomer);
-        $data['customer_id'] = $customer->id;
-        $data['client_id'] = getCurrentUser()->id;
+        $dataCustomer           = array_only($data, ['name', 'email', 'phone']);
+        $customer               = $this->customer->storeOrUpdate($dataCustomer);
+        $data['customer_id']    = $customer->id;
+        $data['client_id']      = getCurrentUser()->id;
 
-        $model = $this->model->create($data);
+        $model = $this->model->where('booking_id', $data['booking_id'])->first();
 
-        //Lưu mảng mã khuyến mãi ứng với lịch sử giao dịch trên
-        $arr_promotion_codes = array_pluck($data['details'], 'promotion_code');
-        $paymentHistoryCodeRepo = \App::make('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode');
-
-        foreach ($arr_promotion_codes as $key => $code) {
-            if (! empty($code)) {
-                $result = $paymentHistoryCodeRepo->create([
-                    'payment_history_id' => $model->id,
-                    'promotion_code' => $code
-                ]);
-            }
+        // Xly booking tồn tại hay chưa
+        if(is_null($model)) {
+            $model = $this->model->create($data);
+        } else {
+            $model->fill($data)->save();
         }
-        /**
-         * update level customer
-         * @var [type]
-         */
-        if ($model->status == PaymentHistory::PAY_SUCCESS) {
-            event(new \Nh\Events\UpdateLevelCustomer($model->customer));
-            event(new \Nh\Events\PaymentSuccess($model));
+
+        if(isset($data['flag']) && $data['flag']) {
+            //Lưu mảng mã khuyến mãi ứng với lịch sử giao dịch trên
+            if(isset($data['details'])) {
+                $arr_promotion_codes = $data['details'];
+
+                foreach ($arr_promotion_codes as $key => $item) {
+                    if (! empty($item['promotion_code'])) {
+                        $result = $this->paymentHistoryCode->create([
+                            'payment_history_id' => $model->id,
+                            'promotion_code'     => $item['promotion_code'],
+                            'type_check'         => isset($item['type_check']) ? $item['type_check'] : 0,
+                            'status'             => isset($item['status']) ? $item['status'] : 0,
+                        ]);
+                    }
+                }
+            }
+        } else {
+            // Cập nhật mảng mã khuyến mãi ứng với lịch sử giao dịch trên
+            if(isset($data['details'])) {
+                $arr_promotion_codes = $data['details'];
+                foreach ($arr_promotion_codes as $key => $item) {
+                    $paymentHistoryCode = $this->paymentHistoryCode->where('promotion_code', $item['promotion_code'])
+                                                            ->where('payment_history_id', $model->id)
+                                                            ->first();
+
+                    if (! is_null($paymentHistoryCode)) {
+                        $data_update = [
+                            'promotion_code'    => $item['promotion_code'],
+                            'type_check'        => isset($item['type_check']) ? $item['type_check'] : 0,
+                            'status'            => isset($item['status']) ? $item['status'] : 0
+                        ];
+                        $paymentHistoryCode->fill($data_update)->save();
+                    }
+                }
+            }
+
+            /**
+             * update level customer
+             * @var [type]
+             */
+            if ($model->status == PaymentHistory::PAY_SUCCESS) {
+                event(new \Nh\Events\UpdateLevelCustomer($model->customer));
+                event(new \Nh\Events\PaymentSuccess($model));
+            }
         }
 
         return $this->getById($model->id);
@@ -117,23 +153,29 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
      */
     public function updatePaymentHistory($data)
     {
+        \Log::info('Log update payment : ', $data);
         $result      = new \stdClass();
-
-        // $record = $this->getById($id);
         // Tìm bản ghi trong DB
-        
         $record = $this->model->where('booking_id', $data['booking_id'])->first();
-        
+
         if (is_null($record)) {
             $result->error   = true;
             $result->message = 'Không tìm thấy lịch sử giao dịch nào ứng với booking_id: ' . $data['booking_id'];
             return $result;
         }
 
-        if ($record->status == 2) {
-            $result->error   = true;
-            $result->message = 'Không được phép cập nhật cho lịch sử giao dịch này';
-            return $result;
+        //Lưu mảng mã khuyến mãi ứng với lịch sử giao dịch trên
+        if(isset($data['details'])) {
+            foreach ($data['details'] as $key => $value) {
+                if (isset($value['delete_at'])) {
+                    $paymentHistoryCode = $this->paymentHistoryCode->where('promotion_code', $value['promotion_code'])
+                                                            ->where('payment_history_id', $record->id)
+                                                            ->first();
+                    if (! is_null($paymentHistoryCode)) {
+                        $paymentHistoryCode->delete();
+                    }
+                }
+            }
         }
 
         if (isset($data['status']) && $data['status'] == PaymentHistory::PAY_SUCCESS) {
@@ -179,7 +221,5 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
         $result->error   = false;
         $result->message = 'Xóa lịch sử giao dịch của booking mã: ' . $booking_id . ' thành công.';
         return $result;
-
     }
-
 }

@@ -44,11 +44,12 @@ class Cgroup extends Entity
             $model->save();
         });
 
-        static::addGlobalScope('cgroups', function (Builder $builder) {
-            if (getCurrentUser() && !getCurrentUser()->isAdmin()) {
-                $builder->where('client_id', getCurrentUser()->id);
-            }
-        });
+        // Con Hà Sơn Hải Vân là không có theo kiểu nhiều merchant
+        // static::addGlobalScope('cgroups', function (Builder $builder) {
+        //     if (getCurrentUser() && !getCurrentUser()->isAdmin()) {
+        //         $builder->where('client_id', getCurrentUser()->id);
+        //     }
+        // });
 
         parent::boot();
     }

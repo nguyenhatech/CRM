@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Nh\Http\Controllers\Api\RestfulHandler;
 use Nh\Http\Controllers\Api\TransformerTrait;
-use Nh\Http\Controllers\Api\V1\ApiController;
 
 use Nh\Repositories\EmailTemplates\EmailTemplateRepository;
 use Nh\Http\Transformers\EmailTemplateTransformer;

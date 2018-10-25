@@ -5,7 +5,6 @@ namespace Nh\Http\Controllers\Api\V1;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-use Nh\Http\Controllers\Api\V1\ApiController;
 use Nh\Http\Controllers\Api\RestfulHandler;
 use Nh\Http\Controllers\Api\TransformerTrait;
 
@@ -14,6 +13,7 @@ use Nh\Repositories\Campaigns\Campaign;
 use Nh\Repositories\Cgroups\CgroupRepository;
 use Nh\Repositories\Customers\CustomerRepository;
 use Nh\Repositories\Campaigns\CampaignRepository;
+use Nh\Repositories\CampaignEmails\CampaignEmailRepository;
 use Nh\Repositories\CampaignSmsIncomings\CampaignSmsIncomingRepository;
 use Nh\Http\Transformers\CampaignTransformer;
 
@@ -31,6 +31,7 @@ class CampaignController extends ApiController
     protected $cgroup;
     protected $customer;
     protected $smsIncoming;
+    protected $campaignEmail;
 
     protected $validationRules = [
         'name'        => 'required|max:191',
@@ -50,16 +51,18 @@ class CampaignController extends ApiController
     ];
 
     public function __construct(
-        CampaignRepository $campaign, 
-        CgroupRepository $cgroup, 
-        CustomerRepository $customer, 
-        CampaignSmsIncomingRepository $smsIncoming, 
+        CampaignRepository $campaign,
+        CgroupRepository $cgroup,
+        CustomerRepository $customer,
+        CampaignSmsIncomingRepository $smsIncoming,
+        CampaignEmailRepository $campaignEmail,
         CampaignTransformer $transformer)
     {
         $this->campaign     = $campaign;
         $this->cgroup       = $cgroup;
         $this->customer     = $customer;
         $this->smsIncoming  = $smsIncoming;
+        $this->campaignEmail = $campaignEmail;
         $this->setTransformer($transformer);
         $this->checkPermission('campaign');
     }
@@ -115,7 +118,17 @@ class CampaignController extends ApiController
             if (array_key_exists('runtime', $params) && !is_null($params['runtime'])) {
                 $time = Carbon::parse($params['runtime']);
                 $time = $time->timestamp - time();
+                if ($time < 0) {
+                    $time = 1;
+                }
                 $this->sendEmail($data->id, $time);
+
+                // Tạo mới thông tin gửi mail
+                $this->campaignEmail->store([
+                    'campaign_id'   => $data->id,
+                    'runtime'       => $params['runtime'],
+                    'email_content' => $params['template']
+                ]);
             }
 
             DB::commit();
@@ -147,7 +160,7 @@ class CampaignController extends ApiController
 
             $params = $request->all();
 
-            $params = array_only($params, ['name', 'description', 'status', 'cgroup_id', 'template', 'sms_template', 'target_type', 'period', 'customers', 'filters', 'sms_id', 'email_id']);
+            $params = array_only($params, ['name', 'description', 'status', 'cgroup_id', 'template', 'sms_template', 'target_type', 'period', 'customers', 'filters', 'sms_id', 'email_id', 'runtime']);
             if (array_key_exists('cgroup_id', $params)) {
                 $params['cgroup_id'] = convert_uuid2id($params['cgroup_id']);
             }
@@ -166,6 +179,31 @@ class CampaignController extends ApiController
             }
 
             $model = $this->getResource()->update($id, $params);
+
+            // Nếu upate runtime
+            if (array_key_exists('runtime', $params) && !is_null($params['runtime']) && $data->runtime != $params['runtime']) {
+                $time = Carbon::parse($params['runtime']);
+                $time = $time->timestamp - time();
+                if ($time < 0) {
+                    $time = 1;
+                }
+
+                // Tạo mới thông tin gửi mail, nếu đã có thì cập nhật thời gian chạy
+                $campaignEmails = $data->sent_emails->where('runtime', $data->runtime);
+                if ($campaignEmails->first()) {
+                    $this->campaignEmail->update($campaignEmails->first()->id, [
+                        'runtime'       => $params['runtime']
+                    ]);
+                } else {
+                    $this->campaignEmail->store([
+                        'campaign_id'   => $data->id,
+                        'runtime'       => $params['runtime'],
+                        'email_content' => $data->content
+                    ]);
+                }
+
+                $this->sendEmail($data->id, $time);
+            }
 
             DB::commit();
             return $this->successResponse($model);
@@ -212,7 +250,6 @@ class CampaignController extends ApiController
     public function sendEmail($id, $time = 1)
     {
         $campaign = $this->campaign->getById($id);
-
         if ($campaign) {
             $customers = [];
 
@@ -230,6 +267,12 @@ class CampaignController extends ApiController
                 foreach ($customerChunks as $chunk) {
                     $job = new SendEmailCampaign($campaign, $chunk);
                     dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
+                }
+
+                if ($time === 1) {
+                    $campaign->sent_emails()->delete();
+                    $campaign->runtime = null;
+                    $campaign->save();
                 }
             } catch (\Exception $e) {
                 throw $e;

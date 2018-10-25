@@ -22,7 +22,7 @@ class CheckPromotionController extends ApiController
         'code'         => 'required|max:50',
         'ticket_money' => 'required|numeric|min:1000',
         'type'         => 'required|in:1,2',
-        'target_type'  => 'required|in:0,1,2,3',
+        'target_type'  => 'required|in:0,1,2,3,4',
         'email'        => 'nullable|max:50',
         'phone'        => 'required|digits_between:8,12'
     ];
@@ -59,10 +59,9 @@ class CheckPromotionController extends ApiController
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $data = $this->getResource()->check($request->all());
-            \Log::info([
-                'Kết quả check Promotion ở con CRM',
-                $data
-            ]);
+            
+            \Log::info('v1 - response from crm to havaz ' . getCurrentUser()->name . ' : ' . json_encode($data));
+
             if ($data->error) {
                 return $this->errorResponse($data);
             }
