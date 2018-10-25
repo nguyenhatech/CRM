@@ -22,7 +22,7 @@ class CheckPromotionController extends Controller
         'code'         => 'required|max:50',
         'ticket_money' => 'required|numeric|min:1000',
         'type'         => 'required|in:1,2',
-        'target_type'  => 'required|in:0,1,2,3',
+        'target_type'  => 'required|in:0,1,2,3,4',
         'email'        => 'nullable|max:50',
         'phone'        => 'required|digits_between:8,12',
         'time_going'   => 'required|integer'
@@ -62,7 +62,7 @@ class CheckPromotionController extends Controller
 
             $data = $this->getResource()->check($request->all());
 
-            \Log::info('Response from crm to hshv ' . getCurrentUser()->name . ' : ' . json_encode($data));
+            \Log::info('Response from crm to havaz ' . getCurrentUser()->name . ' : ' . json_encode($data));
 
             if ($data->error) {
                 return $this->errorResponse($data);

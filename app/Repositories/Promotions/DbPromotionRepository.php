@@ -90,7 +90,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      */
     public function check($params)
     {
-        \Log::info('Request from hshv to crm ', $params); 
+        \Log::info('Request from havaz to crm ', $params); 
 
         $timeNow     = strtotime(Carbon::now()->format('Y-m-d H:i'));
         $code        = array_get($params, 'code', '');
@@ -101,6 +101,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $type_check  = array_get($params, 'type_check', 0);
         $used_status = array_get($params, 'used_status', 0);
         $booking_id  = array_get($params, 'booking_id', '');
+        $merchant    = array_get($params, 'merchant', null);
 
         // Nếu có nhóm khách hàng thì check xem user có nằm trong nhóm đó không?
         $email = array_get($params, 'email', null);
@@ -155,13 +156,25 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             $target_valid = true;
         }
 
-        // if ($promotion->target_type == $target_type || $promotion->target_type == 0) {
-        //     $target_valid = true;
-        // }
-
         if (!$target_valid) {
             $result->error   = true;
             $result->message = 'Mã khuyến mại không áp dụng hạng xe ' . Promotion::LIST_TARGET_TYPE[$target_type];
+            return $result;
+        }
+
+        // Check mã khuyến mại áp dụng cho từng nhà xe
+        $merchant_valid = false;
+
+        $promotion_merchant = !is_null($promotion->merchants) ? explode(',', $promotion->merchants) : [];
+
+        if (in_array($merchant, $promotion_merchant) || is_null($merchant)) {
+            $merchant_valid = true;
+        }
+
+        if (!$merchant_valid) {
+            $result->error    = true;
+            $result->message  = 'Mã khuyến mại không được áp dụng với nhà xe ';
+            $result->merchant = $merchant;
             return $result;
         }
 

@@ -14,7 +14,7 @@ class Promotion extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type', 'cgroup_id', 'limit_time_type'];
+    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type', 'cgroup_id', 'limit_time_type', 'merchants'];
 
     /**
      * Full path of images.
@@ -57,18 +57,20 @@ class Promotion extends Entity
     const NORMAL_TICKET    = 1;
     const VIP_TICKET       = 2;
     const SUPER_VIP_TICKET = 3;
+    const CARRENTAL_TICKET = 4;
+
     const LIST_TARGET_TYPE = [
-        // self::ALL_TYPE              => 'Tất cả',
         self::NORMAL_TICKET         => 'Phổ thông',
         self::VIP_TICKET            => 'Vip',
-        self::SUPER_VIP_TICKET      => 'Royal'
+        self::SUPER_VIP_TICKET      => 'Royal',
+        self::CARRENTAL_TICKET      => 'CarRental'
     ];
 
     const LIST_TARGET_TYPE_V2 = [
-        // self::ALL_TYPE              => 'Áp dụng cho tất cả các hạng xe',
         self::NORMAL_TICKET         => 'Áp dụng cho khách đi xe hạng Phổ thông',
         self::VIP_TICKET            => 'Áp dụng cho khách đi xe hạng Vip',
-        self::SUPER_VIP_TICKET      => 'Áp dụng cho khách đi xe hạng Royal'
+        self::SUPER_VIP_TICKET      => 'Áp dụng cho khách đi xe hạng Royal',
+        self::CARRENTAL_TICKET      => 'Áp dụng cho khách thuê xe riêng'
     ];
 
     const ROUTE = 1; // Hình thức khách hàng đi theo tuyến
@@ -152,8 +154,6 @@ class Promotion extends Entity
             $array_text[] = self::LIST_TARGET_TYPE[$target];
         }
         return 'Áp dụng cho khách đi xe hạng ' . implode(',', $array_text);
-        // $typeTaget = (int) $typeTaget;
-        // return array_key_exists($typeTaget, self::LIST_TARGET_TYPE_V2) ? self::LIST_TARGET_TYPE_V2[$typeTaget] : 'Không xác định';
     }
 
     public function cgroup()
