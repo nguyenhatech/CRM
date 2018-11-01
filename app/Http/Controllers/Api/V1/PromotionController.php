@@ -228,8 +228,8 @@ class PromotionController extends ApiController
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $params = $request->all();
-            $params['target_type'] = implode(',', $params['target_type']);
-            $params['merchants'] = implode(',', $params['merchant']);
+            $params['target_type']  = $params['target_type'] ? implode(',', $params['target_type']) : '';
+            $params['merchants']    = $params['merchant'] ? implode(',', $params['merchant']) : '';
 
             $type = array_get($params, 'type', null);
 
