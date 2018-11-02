@@ -42,7 +42,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $status         = array_get($params, 'status', null);
         $expired_status = array_get($params, 'expired_status', null);
         $now            = Carbon::now();
-        $model = $this->model;
+        $model          = $this->model;
 
         if (!empty($sorting)) {
             $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
@@ -405,5 +405,23 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                             ->where('quantity', 0)
                             ->get();
         return $promotions;
+    }
+
+    public function getAllPromotions($params, $size = 25, $sorting = [])
+    {
+        $current = array_get($params, 'current', false);
+        $now            = Carbon::now();
+        $model          = $this->model->where('status', Promotion::ENABLE);
+
+        if (!empty($sorting)) {
+            $model = $model->orderBy($sorting[0], $sorting[1] > 0 ? 'ASC' : 'DESC');
+        }
+
+        if($current) {
+            $model->where('date_start', '<=',  Carbon::now())
+                ->where('date_end', '>=',  Carbon::now());
+        }
+
+        return $size < 0 ? $model->get() : $model->paginate($size);
     }
 }

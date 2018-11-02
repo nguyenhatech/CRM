@@ -51,3 +51,6 @@ Route::post('/test-webhooks', function (\Illuminate\Http\Request $request) {
 
 // Nhận SMS phản hồi qua SpeedSMS
 Route::post('/sms-incoming-webhooks', 'SmsWebhookController@incomingSMS');
+
+// Send notification
+Route::get('/promotions', 'PromotionController@index');
