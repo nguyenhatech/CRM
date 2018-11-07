@@ -178,7 +178,7 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
             }
         }
 
-        if (isset($data['status']) && $data['status'] == PaymentHistory::PAY_SUCCESS || $data['status'] == PaymentHistory::PAY_FINISH) {
+        if (isset($data['status']) && $data['status'] == PaymentHistory::PAY_SUCCESS) {
             $data['payment_at'] = \Carbon\Carbon::now()->format('Y-m-d');
         }
 
@@ -188,7 +188,7 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
          * update level customer
          * @var [type]
          */
-        if ($record->status == PaymentHistory::PAY_SUCCESS || $record->status == PaymentHistory::PAY_FINISH) {
+        if ($record->status == PaymentHistory::PAY_SUCCESS) {
             event(new \Nh\Events\UpdateLevelCustomer($record->customer));
             event(new \Nh\Events\PaymentSuccess($record));
         }
