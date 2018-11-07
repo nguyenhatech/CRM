@@ -96,7 +96,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $code        = array_get($params, 'code', '');
         $total_money = (int) array_get($params, 'ticket_money', 0);
         $type        = (int) array_get($params, 'type', 1); // 1 là theo tuyến, 2 là theo chặng
-        $target_type = (int) array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip
+        $target_type = (int) array_get($params, 'target_type', 1); // 1 là thường, 2 vip , 3 - siêu vip, 4 - Car Rental
         $timeGoing   = array_get($params, 'time_going', $timeNow);
         $type_check  = array_get($params, 'type_check', 0);
         $used_status = array_get($params, 'used_status', 0);
@@ -409,7 +409,8 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
     public function getAllPromotions($params, $size = 25, $sorting = [])
     {
-        $current = array_get($params, 'current', false);
+        $current    = array_get($params, 'current', false);
+        $code       = array_get($params, 'id', '');
         $now            = Carbon::now();
         $model          = $this->model->where('status', Promotion::ENABLE);
 
@@ -420,6 +421,10 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         if($current) {
             $model->where('date_start', '<=',  Carbon::now())
                 ->where('date_end', '>=',  Carbon::now());
+        }
+
+        if($code) {
+            $model->where('uuid', '=', $code);
         }
 
         return $size < 0 ? $model->get() : $model->paginate($size);
