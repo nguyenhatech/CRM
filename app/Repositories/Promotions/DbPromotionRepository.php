@@ -289,7 +289,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 'booking_id'    => $booking_id,
                 'type'          => PaymentHistory::TYPE_CONFIRM,
                 'status'        => PaymentHistory::PAY_PENDDING,
-                'total_amount'  => 0,
+                'total_amount'  => $total_money,
                 'description'   => "Kiểm tra mã vé cho booking - {$booking_id}",
                 'flag'          => true,
                 'details'       => [
