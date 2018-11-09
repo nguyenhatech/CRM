@@ -57,8 +57,6 @@ class PaymentHistory extends Entity
             if ($model->type == self::TYPE_DIRECT) {
                 $model->status = self::PAY_SUCCESS;
                 $model->payment_at = \Carbon\Carbon::now();
-            }
-            if ($model->total_amount < 0) {
                 $setting = \Nh\Repositories\Settings\Setting::find(1);
                 $model->total_point = floor(abs($model->total_amount) / $setting->amount_per_score);
             }
