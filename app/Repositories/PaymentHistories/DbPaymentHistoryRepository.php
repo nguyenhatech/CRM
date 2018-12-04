@@ -178,8 +178,15 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
             }
         }
 
-        if (isset($data['status']) && $data['status'] == PaymentHistory::PAY_SUCCESS) {
-            $data['payment_at'] = \Carbon\Carbon::now()->format('Y-m-d');
+        if (isset($data['status'])) {
+            if($data['status'] == PaymentHistory::PAY_SUCCESS) {
+                $data['payment_at']  = \Carbon\Carbon                   ::now()->format('Y-m-d');
+                $setting             = \Nh\Repositories\Settings\Setting::find(1);
+                $data['total_point'] = floor(abs($data['total_amount']) / $setting->amount_per_score);
+            }
+            if($data['status'] == PaymentHistory::PAY_CANCEL) {
+                $record->payment_history_codes()->delete();
+            }
         }
 
         $record->fill($data)->save();
