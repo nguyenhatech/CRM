@@ -41,6 +41,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $query          = array_get($params, 'q', '');
         $status         = array_get($params, 'status', null);
         $expired_status = array_get($params, 'expired_status', null);
+        $free           = array_get($params, 'free', null);
         $now            = Carbon::now();
         $model          = $this->model;
 
@@ -59,6 +60,10 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
         if (!is_null($client_id)) {
             $model = $model->where('client_id', $client_id);
+        }
+
+        if (!is_null($free)) {
+            $model = $model->where('cgroup_id', 0);
         }
 
         if (!getCurrentUser()->isAdmin()) {
