@@ -90,7 +90,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
      */
     public function check($params)
     {
-        \Log::info('Request from havaz to crm ', $params); 
+        \Log::info('Request from havaz to crm ', $params);
 
         $timeNow     = strtotime(Carbon::now()->format('Y-m-d H:i'));
         $code        = array_get($params, 'code', '');
@@ -214,7 +214,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                                 ->where('type_check', 1)
                                                 ->get();
 
-                if ($type_check < 2 && $countUsed->count() >= $promotion->quantity) {
+                if ($countUsed->count() >= $promotion->quantity) {
                     $result->error   = true;
                     $result->message = 'Xin lỗi mã giảm giá đã quá lượt sử dụng';
                     return $result;
@@ -233,8 +233,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                                     })
                                                     ->where('type_check', 1)
                                                     ->get();
-
-                    if ($type_check < 2 && $countUsed->count() >= $promotion->quantity_per_user) {
+                    if ($countUsed->count() >= $promotion->quantity_per_user) {
                         $result->error   = true;
                         $result->message = 'Xin lỗi mã giảm giá đã quá số lượt sử dụng.';
                         return $result;
@@ -300,8 +299,8 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                     ]
                 ]
             ];
-            // Nếu là 0 thì insert
-            if($type_check != 0) {
+            // Nếu là 1 thì insert
+            if($type_check == 1) {
                 $paymentHistoryRepo->store($data_payment_history);
             }
         } catch (Exception $e) {
