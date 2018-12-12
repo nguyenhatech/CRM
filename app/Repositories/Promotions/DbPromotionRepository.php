@@ -222,6 +222,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             }
 
             // Nếu mã tồn tại theo số lượt của User thì kiểm tra
+            $totalPromotionUsed = 0;
             if ($promotion->quantity_per_user) {
                 if (!is_null($customer)) {
                     $paymentHistoryCodeRepo = \App::make('Nh\Repositories\PaymentHistoryCodes\PaymentHistoryCode');
@@ -233,6 +234,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                                                     })
                                                     ->where('type_check', 1)
                                                     ->get();
+                    $totalPromotionUsed = $countUsed->count();
                     if ($countUsed->count() >= $promotion->quantity_per_user) {
                         $result->error   = true;
                         $result->message = 'Xin lỗi mã giảm giá đã quá số lượt sử dụng.';
@@ -273,7 +275,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             // Trả về thông tin nếu hợp lệ
             $result->error             = false;
             $result->message           = 'Mã khuyến mại hợp lệ';
-            $result->quantity_per_user = $promotion->quantity_per_user;
+            $result->quantity_per_user = $promotion->quantity_per_user - $totalPromotionUsed;
             $result->quantity          = $promotion->quantity;
             $result->type              = $promotion->getFormMovesText($type);
             $result->target_type       = $promotion->getListTargetTypeText($promotion->target_type);
