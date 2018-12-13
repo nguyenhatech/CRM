@@ -152,7 +152,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $target_valid = false;
         $promotions_target = !is_null($promotion->target_type) ? explode(',', $promotion->target_type) : [];
 
-        if (in_array($target_type, $promotions_target) || $target_type == 0) {
+        if (in_array($target_type, $promotions_target) || $target_type == 0 || $promotion->target_type == 0) {
             $target_valid = true;
         }
 
@@ -167,7 +167,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
         $promotion_merchant = !is_null($promotion->merchants) ? explode(',', $promotion->merchants) : [];
 
-        if (in_array($merchant, $promotion_merchant) || is_null($merchant)) {
+        if (in_array($merchant, $promotion_merchant) || is_null($merchant) || is_null($promotion->merchants)) {
             $merchant_valid = true;
         }
 
