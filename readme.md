@@ -31,6 +31,8 @@
     $ php artisan db:seed
     $ php artisan passport:install
 
+    $ mkdir storage/app/public/excels
+    $ mkdir storage/app/public/images
     $ mkdir storage/app/public/images/email-templates
     $ mkdir storage/app/public/images/cgroups
     $ mkdir storage/app/public/images/avatars
