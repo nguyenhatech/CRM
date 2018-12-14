@@ -32,4 +32,7 @@
     $ php artisan passport:install
 
     $ mkdir storage/app/public/images/email-templates
+    $ mkdir storage/app/public/images/cgroups
+    $ mkdir storage/app/public/images/avatars
+    $ mkdir storage/app/public/images/promotions
 ```

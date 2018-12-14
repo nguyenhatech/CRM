@@ -18,6 +18,7 @@ Route::post('login', ['as' => 'login', 'uses' => 'LoginController@login']);
 Route::group([
     'middleware' => 'auth:api',
 ], function () {
+    Route::post('logout', ['as' => 'logout', 'uses' => 'LoginController@logout']);
     Route::resource('clients', 'ClientController');
     Route::get('customers/export-excel', 'CustomerController@exportExcel');
     Route::post('customers/import-excel', 'CustomerController@importExcel');
