@@ -121,10 +121,20 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         if (!is_null($promotion)) {
             $dateStart = strtotime($promotion->date_start);
             $dateEnd = strtotime($promotion->date_end);
-            if ($dateStart <= $timeGoing && $dateEnd >= $timeGoing) {
+
+            if ($dateStart <= $timeNow && $dateEnd >= $timeNow) {
                 $flagTime = true;
             }
-            if (!$flagTime && $promotion->limit_time_type == Promotion::TIME_GOING) {
+
+            if ($flagTime && $dateStart <= $timeGoing && $dateEnd <= $timeGoing && $promotion->limit_time_type == Promotion::TIME_GOING) {
+                $flagTime = true;
+            }
+
+            if ($flagTime && $dateStart <= $timeGoing && $dateEnd <= $timeGoing && $promotion->limit_time_type == Promotion::TIME_BOOKING) {
+                $flagTime = false;
+            }
+
+            if (!$flagTime) {
                 $result->error = true;
                 $result->message = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
 
