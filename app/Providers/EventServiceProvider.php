@@ -18,25 +18,24 @@ class EventServiceProvider extends ServiceProvider
         ],
         \Nh\Events\PaymentSuccess::class => [
             \Nh\Listeners\UpdateLastPaymentListener::class,
-            \Nh\Listeners\SendPaymentToMerchant::class
+            \Nh\Listeners\SendPaymentToMerchant::class,
         ],
         \Nh\Events\DownLevelCustomer::class => [
-            \Nh\Listeners\DownLevelCustomerListener::class
+            \Nh\Listeners\DownLevelCustomerListener::class,
         ],
         \Nh\Events\InfoCustomer::class => [
-            \Nh\Listeners\SendCustomerToMerchant::class
-        ]
+            \Nh\Listeners\SendCustomerToMerchant::class,
+        ],
+        \Nh\Events\NewCustomer::class => [
+            \Nh\Listeners\SendEmailNewCustomer::class,
+        ],
     ];
 
     /**
      * Register any events for your application.
-     *
-     * @return void
      */
     public function boot()
     {
         parent::boot();
-
-        //
     }
 }

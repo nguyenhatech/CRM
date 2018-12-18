@@ -46,7 +46,7 @@ class Customer extends Entity
         5 => 'Kế toán/ Tài chính',
         6 => 'Sản xuất công nghiệp/nông nghiệp',
         7 => 'Cơ khí/ Điện tử/ Vận tải',
-        8 => 'Ngành nghề khác'
+        8 => 'Ngành nghề khác',
     ];
 
     const SOURCE = [
@@ -54,12 +54,12 @@ class Customer extends Entity
         1 => 'WEB',
         2 => 'ERP',
         3 => 'APP USER',
-        4 => 'APP DRIVE'
+        4 => 'APP DRIVE',
     ];
 
     const PAYMENT_STATATUS = [
         PaymentHistory::PAY_FINISH,
-        PaymentHistory::PAY_SUCCESS
+        PaymentHistory::PAY_SUCCESS,
     ];
 
     protected static function boot()
@@ -67,6 +67,7 @@ class Customer extends Entity
         static::created(function ($model) {
             $model->uuid = \Hashids::encode($model->id);
             $model->save();
+            event(new \Nh\Events\NewCustomer($model));
         });
 
         // Tạm bỏ đi vì HSHV không cần
@@ -83,29 +84,35 @@ class Customer extends Entity
 
     public function getAvatar()
     {
-        return $this->avatar == '' ? get_asset('avatar_default.png') : get_asset($this->imgPath . '/' . $this->avatar);
+        return $this->avatar == '' ? get_asset('avatar_default.png') : get_asset($this->imgPath.'/'.$this->avatar);
     }
 
-    public function getTotalAmount() {
+    public function getTotalAmount()
+    {
         return $this->payments()->whereIn('status', self::PAYMENT_STATATUS)->sum('total_amount');
     }
 
-    public function getTotalPoint() {
+    public function getTotalPoint()
+    {
         return $this->payments()->whereIn('status', self::PAYMENT_STATATUS)->sum('total_point');
     }
 
-    public function getTotalTrips() {
+    public function getTotalTrips()
+    {
         $result = $this->payments()->where('client_id', 0)->whereNull('booking_id')->whereDate('payment_at', '2018-04-25')->count();
-        if($result == 1) {
+        if ($result == 1) {
             return 2;
         }
+
         return $this->payments()->where('status', PaymentHistory::PAY_FINISH)->count();
     }
 
-    public function levelText() {
+    public function levelText()
+    {
         if (array_key_exists($this->level, list_level())) {
             return list_level()[$this->level];
         }
+
         return null;
     }
 
@@ -114,15 +121,18 @@ class Customer extends Entity
         return list_level();
     }
 
-    public function sexText() {
+    public function sexText()
+    {
         return list_sex()[$this->sex];
     }
 
-    public function payments() {
+    public function payments()
+    {
         return $this->hasMany('Nh\Repositories\PaymentHistories\PaymentHistory');
     }
 
-    public function client() {
+    public function client()
+    {
         return $this->belongsToMany('Nh\User', 'client_customers', 'customer_id', 'client_id');
     }
 
@@ -136,6 +146,7 @@ class Customer extends Entity
         if (array_key_exists($this->source, self::SOURCE)) {
             return self::SOURCE[$this->source];
         }
+
         return null;
     }
 

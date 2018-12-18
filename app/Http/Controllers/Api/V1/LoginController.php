@@ -92,4 +92,14 @@ class LoginController extends ApiController
             ], $clientException->getCode());
         }
     }
+
+    public function logout(Request $request)
+    {
+        if ($request->user()) {
+            $request->user()->token()->revoke();
+            $request->user()->token()->delete();
+        }
+
+        return $this->successResponse([], false);
+    }
 }
