@@ -34,11 +34,13 @@ class SendingCutomerRegisterNew implements ShouldQueue
     public function handle()
     {
         $promotion = $this->promotion->getPromotionByAccountNew();
-        if ($this->customer->email) {
-            $this->sendingEmail($this->customer, $promotion);
-        }
-        if ($this->customer->phone) {
-            $this->sendingSMS($this->customer, $promotion);
+        if (!is_null($promotion)) {
+            if ($this->customer->email) {
+                $this->sendingEmail($this->customer, $promotion);
+            }
+            if ($this->customer->phone) {
+                $this->sendingSMS($this->customer, $promotion);
+            }
         }
     }
 
