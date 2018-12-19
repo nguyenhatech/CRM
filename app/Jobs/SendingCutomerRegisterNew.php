@@ -47,7 +47,8 @@ class SendingCutomerRegisterNew implements ShouldQueue
     {
         try {
             $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
-            $response = $mailer->revicer($customer->email)->subject('Havaz gửi tặng mã khuyến mại dành cho khách hàng đăng ký mới')->content($promotion->content)->sent();
+            $html = str_replace('***name***', $customer->name, $promotion->content);
+            $response = $mailer->revicer($customer->email)->subject('Havaz gửi tặng mã khuyến mại dành cho khách hàng đăng ký mới')->content($html)->sent();
             \Log::debug('Mail: ', [$response]);
         } catch (\Exception $e) {
             return $e;
