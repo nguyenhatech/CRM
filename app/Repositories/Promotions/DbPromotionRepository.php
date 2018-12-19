@@ -473,10 +473,10 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
     {
         $timeNow = strtotime(Carbon::now()->format('Y-m-d H:i'));
 
+        // ->where('date_end', '<=', $timeNow)
         return $this->model->orderBy('created_at', 'DESC')
                             ->where('is_account_new', Promotion::IS_ACCOUNT_NEW)
                             ->where('status', Promotion::ENABLE)
-                            ->where('date_end', '<=', $timeNow)
                             ->first();
     }
 }
