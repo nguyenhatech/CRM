@@ -57,7 +57,8 @@ class SendEmailCampaign implements ShouldQueue
         foreach ($this->customers as $key => $customer) {
             if ($customer->email) {
                 $html = str_replace('***name***', $customer->name, $this->campaign->template);
-                $response = $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->campaign($this->campaign->name . '_' . $this->campaign->uuid)->sendAsCampaign();
+                $campaignName = $this->campaign->name . '_' . $this->campaign->uuid . '_' . time();
+                $response = $mailer->revicer($customer->email)->subject($this->campaign->name)->content($html)->campaign($campaignName)->sendAsCampaign();
             }
         }
         if (!is_null($response) && $response->success()) {
