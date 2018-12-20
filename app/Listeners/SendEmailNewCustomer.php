@@ -29,7 +29,7 @@ class SendEmailNewCustomer
 
         try {
             $job = new SendingCutomerRegisterNew($customer, $this->promotion);
-            dispatch($job)->onQueue(env('APP_NAME'))->delay(now()->addSeconds(10));
+            dispatch($job)->onQueue(env('APP_NAME'));
         } catch (\Exception $e) {
         }
     }

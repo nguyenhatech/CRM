@@ -34,6 +34,7 @@ class SendingCutomerRegisterNew implements ShouldQueue
     public function handle()
     {
         $promotion = $this->promotion->getPromotionByAccountNew();
+        \Log::debug('Mail: ', [$promotion]);
         if ($this->customer->email) {
             $this->sendingEmail($this->customer, $promotion);
         }
@@ -46,7 +47,9 @@ class SendingCutomerRegisterNew implements ShouldQueue
     {
         try {
             $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
-            $mailer->revicer($customer->email)->subject('Đăng ký tài khoản thành công')->content($promotion->content)->campaign('send_email_register_account_new_'.time())->sendAsCampaign();
+            $html = str_replace('***name***', $customer->name, $promotion->content);
+            $response = $mailer->revicer($customer->email)->subject('Havaz gửi tặng mã khuyến mại dành cho khách hàng đăng ký mới')->content($html)->sent();
+            \Log::debug('Mail: ', [$response]);
         } catch (\Exception $e) {
             return $e;
         }
@@ -57,7 +60,8 @@ class SendingCutomerRegisterNew implements ShouldQueue
         try {
             $sms = new SpeedSMSAPI();
             $phone = [$customer->phone];
-            $sms->sendSMS($phone, $promotion->sms_template, SpeedSMSAPI::SMS_TYPE_CSKH, '', 1);
+            $response = $sms->sendSMS($phone, $promotion->sms_template, SpeedSMSAPI::SMS_TYPE_CSKH, '', 1);
+            \Log::debug('SMS: ', [$response]);
         } catch (\Exception $e) {
             return $e;
         }
