@@ -137,13 +137,13 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
             if (!$flagTime) {
                 $result->error = true;
-                $result->message = 'Xin lỗi mã khuyến mại đã hết hạn sử dụng';
+                $result->message = 'Xin lỗi, mã khuyến mại đã hết hạn!';
 
                 return $result;
             }
         } else {
             $result->error = true;
-            $result->message = 'Xin lỗi mã khuyến mại không hợp lệ';
+            $result->message = 'Xin lỗi, mã khuyến mại không hợp lệ!';
 
             return $result;
         }
@@ -160,7 +160,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
             if ($in_array) {
                 $result->error = true;
-                $result->message = 'Xin lỗi mã khuyến mại không áp dụng trong ngày lễ - tết';
+                $result->message = 'Xin lỗi, mã khuyến mại không áp dụng ngày đặc biệt!';
 
                 return $result;
             }
@@ -208,7 +208,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             if ($promotion->cgroup_id) {
                 if (is_null($customer)) {
                     $result->error = true;
-                    $result->message = 'Xin lỗi quý khách không được áp dụng mã khuyến mại';
+                    $result->message = 'Xin lỗi, bạn không thuộc đối tượng áp dụng mã!';
 
                     return $result;
                 }
@@ -217,8 +217,8 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 $customer_in_array = in_array($customer->id, $customers);
 
                 if (!$customer_in_array) {
-                    $result->error = true;
-                    $result->message = 'Xin lỗi quý khách không được áp dụng mã khuyến mại';
+                    $result->error      = true;
+                    $result->message    = 'Xin lỗi, bạn không thuộc đối tượng áp dụng mã!';
 
                     return $result;
                 }
@@ -240,7 +240,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
                 if ($totalQuantityUsed >= $promotion->quantity) {
                     $result->error = true;
-                    $result->message = 'Xin lỗi mã giảm giá đã quá lượt sử dụng';
+                    $result->message = 'Mã khuyến mại đã hết lượt sử dụng. Xin cảm ơn!';
 
                     return $result;
                 }
@@ -262,7 +262,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                     $totalQuantityPerUserUsed = $countUsed->count();
                     if ($totalQuantityPerUserUsed >= $promotion->quantity_per_user) {
                         $result->error = true;
-                        $result->message = "Bạn chỉ được sử dụng tối đa {$promotion->quantity_per_user} mã khuyến mại";
+                        $result->message = "Bạn đã hết lượt sử dụng mã khuyến mại. Xin cảm ơn!";
 
                         return $result;
                     }
@@ -278,7 +278,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
             if ($promotion->amount_segment == 0 && $type == Promotion::SEGMENT) {
                 $result->error = true;
-                $result->message = 'Mã giảm giá chỉ áp dụng cho toàn tuyến.';
+                $result->message = 'Xin lỗi, mã khuyến mại áp dụng cho toàn tuyến!';
 
                 return $result;
             }
@@ -301,7 +301,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
 
             // Trả về thông tin nếu hợp lệ
             $result->error = false;
-            $result->message = 'Mã khuyến mại hợp lệ';
+            $result->message = 'Chúc mừng, mã khuyến mại hợp lệ!';
             $result->quantity_per_user = $promotion->quantity_per_user - $totalQuantityPerUserUsed;
             $result->quantity = $promotion->quantity - $totalQuantityUsed;
             $result->type = $promotion->getFormMovesText($type);
@@ -318,7 +318,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 'type' => PaymentHistory::TYPE_CONFIRM,
                 'status' => PaymentHistory::PAY_PENDDING,
                 'total_amount' => $total_money,
-                'description' => "Kiểm tra mã vé cho booking - {$booking_id}",
+                'description' => "Kiểm tra booking - {$booking_id}",
                 'flag' => true,
                 'details' => [
                     [
@@ -335,7 +335,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             }
         } catch (Exception $e) {
             $result->error = true;
-            $result->message = 'Có lỗi xảy ra. Vui lòng liên hệ admin';
+            $result->message = 'Đã có lỗi xảy ra!';
 
             return $result;
         }
