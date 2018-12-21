@@ -178,7 +178,7 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
                     $paymentHistoryCode = $this->paymentHistoryCode->where('seat_id', $value['seat_id'])
                                                             ->where('payment_history_id', $record->id)
                                                             ->first();
-                    if (! is_null($paymentHistoryCode)) {
+                    if ($paymentHistoryCode) {
                         $paymentHistoryCode->delete();
                     }
                 }
