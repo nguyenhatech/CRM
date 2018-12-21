@@ -181,21 +181,21 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         // }
 
         // Check mã khuyến mại áp dụng cho từng nhà xe
-        $merchant_valid = false;
+        // $merchant_valid = false;
 
-        $promotion_merchant = !is_null($promotion->merchants) ? explode(',', $promotion->merchants) : [];
+        // $promotion_merchant = !is_null($promotion->merchants) ? explode(',', $promotion->merchants) : [];
 
-        if (in_array($merchant, $promotion_merchant) || is_null($merchant) || is_null($promotion->merchants)) {
-            $merchant_valid = true;
-        }
+        // if (in_array($merchant, $promotion_merchant) || is_null($merchant) || is_null($promotion->merchants)) {
+        //     $merchant_valid = true;
+        // }
 
-        if (!$merchant_valid) {
-            $result->error = true;
-            $result->message = 'Mã khuyến mại không được áp dụng với nhà xe ';
-            $result->merchant = $merchant;
+        // if (!$merchant_valid) {
+        //     $result->error = true;
+        //     $result->message = 'Mã khuyến mại không được áp dụng với nhà xe ';
+        //     $result->merchant = $merchant;
 
-            return $result;
-        }
+        //     return $result;
+        // }
 
         if (!is_null($promotion)) {
             if (!is_null($email) || !is_null($phone)) {
