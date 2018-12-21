@@ -126,6 +126,15 @@ class Customer extends Entity
         return list_sex()[$this->sex];
     }
 
+    public function jobText()
+    {
+        if (array_key_exists($this->job, self::JOBS)) {
+            return self::JOBS[$this->job];
+        }
+
+        return 'Không xác định';
+    }
+
     public function payments()
     {
         return $this->hasMany('Nh\Repositories\PaymentHistories\PaymentHistory');

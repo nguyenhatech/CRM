@@ -22,7 +22,7 @@ class CheckPromotionController extends ApiController
         'code'         => 'required|max:50',
         'ticket_money' => 'required|numeric|min:1000',
         'type'         => 'required|in:1,2',
-        'target_type'  => 'required|in:0,1,2,3,4',
+        'target_type'  => 'required',
         'email'        => 'nullable|max:50',
         'phone'        => 'required|digits_between:8,12'
     ];
@@ -36,7 +36,7 @@ class CheckPromotionController extends ApiController
         'type.required'         => 'Hình thức khách đi không thể bỏ trống',
         'type.in'               => 'Hình thức khách đi chỉ có thể là theo tuyến hoặc chặng',
         'target_type.required'  => 'Hạng xe không thể để trống',
-        'target_type.in'        => 'Hạng xe không hợp lệ',
+        // 'target_type.in'        => 'Hạng xe không hợp lệ',
         'phone.required'        => 'Vui lòng nhập mã Phone'
     ];
 
@@ -59,7 +59,7 @@ class CheckPromotionController extends ApiController
             $this->validate($request, $this->validationRules, $this->validationMessages);
 
             $data = $this->getResource()->check($request->all());
-            
+
             \Log::info('v1 - response from crm to havaz ' . getCurrentUser()->name . ' : ' . json_encode($data));
 
             if ($data->error) {

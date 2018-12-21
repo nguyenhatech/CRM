@@ -204,6 +204,8 @@ class CustomerController extends ApiController
                     $sheet->setHeight(1, 25);
                     $sheet->row(1, $params['fields']);
                     foreach ($datas as $key => $customer) {
+                        $customer->sex = $customer->sexText();
+                        $customer->job = $customer->jobText();
                         $sheet->row($rowPointer, array_values($customer->toArray()));
                         $rowPointer++;
                     }

@@ -12,12 +12,14 @@ class MailJetHelper {
     private $campaign;
     private $contentHtml;
     private $contentText;
+    private $apikey;
+    private $apisecret;
 
     function __construct()
     {
-        $apikey     = getenv('MAIL_USERNAME');
-        $apisecret  = getenv('MAIL_PASSWORD');
-        $this->mailer = new \Mailjet\Client($apikey, $apisecret, true,['version' => 'v3']);
+        $this->apikey     = getenv('MAIL_USERNAME');
+        $this->apisecret  = getenv('MAIL_PASSWORD');
+        $this->mailer = new \Mailjet\Client($this->apikey, $this->apisecret, true,['version' => 'v3']);
 
         $this->sender = [
             'Email' => config('mail.from')['address'],
@@ -37,12 +39,14 @@ class MailJetHelper {
                     'From' => $this->sender,
                     'To' => $this->revicers,
                     'Subject' => $this->subject,
-                    'HTMLPart' => $this->content
+                    'HTMLPart' => $this->contentHtml
                 ]
             ]
         ];
 
-        $response = $this->mailer->post(Resources::$Email, ['body' => $body]);
+        $mailer = new \Mailjet\Client($this->apikey, $this->apisecret, true,['version' => 'v3.1']);
+
+        $response = $mailer->post(Resources::$Email, ['body' => $body]);
 
         return $response;
     }

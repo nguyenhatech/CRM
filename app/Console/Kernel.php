@@ -13,7 +13,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        '\Nh\Console\Commands\CreateLog'
     ];
 
     /**
@@ -24,8 +24,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('cron:level')
-        //          ->daily();
+        $schedule->command('cron:create-log')
+                ->dailyAt('00:01');
     }
 
     /**

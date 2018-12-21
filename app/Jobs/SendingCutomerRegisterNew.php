@@ -35,11 +35,13 @@ class SendingCutomerRegisterNew implements ShouldQueue
     {
         $promotion = $this->promotion->getPromotionByAccountNew();
         \Log::debug('Mail: ', [$promotion]);
-        if ($this->customer->email) {
-            $this->sendingEmail($this->customer, $promotion);
-        }
-        if ($this->customer->phone) {
-            $this->sendingSMS($this->customer, $promotion);
+        if ($promotion) {
+            if ($this->customer->email) {
+                $this->sendingEmail($this->customer, $promotion);
+            }
+            if ($this->customer->phone) {
+                $this->sendingSMS($this->customer, $promotion);
+            }
         }
     }
 
