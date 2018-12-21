@@ -127,11 +127,11 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 $flagTime = true;
             }
 
-            if ($flagTime && $dateStart <= $timeGoing && $dateEnd <= $timeGoing && $promotion->limit_time_type == Promotion::TIME_GOING) {
+            if ($flagTime && $dateStart <= $timeGoing && $dateEnd <= $timeGoing && $promotion->limit_time_type == Promotion::TIME_BOOKING) {
                 $flagTime = true;
             }
 
-            if ($flagTime && $dateStart <= $timeGoing && $dateEnd <= $timeGoing && $promotion->limit_time_type == Promotion::TIME_BOOKING) {
+            if ($flagTime && $dateStart <= $timeGoing && $dateEnd <= $timeGoing && $promotion->limit_time_type == Promotion::TIME_GOING) {
                 $flagTime = false;
             }
 
