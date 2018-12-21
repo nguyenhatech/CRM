@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Nh\Repositories\Campaigns\Campaign;
 use Nh\Jobs\SendEmailCampaign;
 use Illuminate\Support\Carbon;
+use Nh\Jobs\SendSMSCampaign;
 
 class CronSendEmailCampaign extends Command
 {
@@ -62,8 +63,17 @@ class CronSendEmailCampaign extends Command
                 foreach ($customerChunks as $chunk) {
                     $job = new SendEmailCampaign($campaign, $chunk);
                     dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
+
+                    // Send SMS
+                    $this->sendSMS($campaign, $chunk, $time);
                 }
             }
         }
+    }
+
+    private function sendSMS(Campaign $campaign, $customers, $time) {
+        $content = $campaign->sms_template;
+        $job = new SendSMSCampaign($campaign, $customers, $content);
+        dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
     }
 }
