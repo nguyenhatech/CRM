@@ -128,7 +128,7 @@ class PromotionController extends ApiController
             $quantity = (int) array_get($params, 'quantity', 0);
             $quantityPerUser = (int) array_get($params, 'quantity_per_user', 0);
 
-            if($quantity < $quantityPerUser) {
+            if($quantity != 0 && $quantity < $quantityPerUser) {
                 return $this->errorResponse([
                     'errors' => [
                         'quantity' => [
@@ -167,7 +167,7 @@ class PromotionController extends ApiController
 
             // Check Code of User là hợp lệ
             $data = [
-                'client_id' => $user->id,
+                // 'client_id' => $user->id,
                 'code' => $request['code'],
             ];
 
@@ -248,7 +248,7 @@ class PromotionController extends ApiController
             $quantity = (int) array_get($params, 'quantity', 0);
             $quantityPerUser = (int) array_get($params, 'quantity_per_user', 0);
 
-            if($quantity < $quantityPerUser) {
+            if($quantity != 0 && $quantity < $quantityPerUser) {
                 return $this->errorResponse([
                     'errors' => [
                         'quantity' => [
