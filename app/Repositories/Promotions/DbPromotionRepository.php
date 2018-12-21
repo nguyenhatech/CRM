@@ -106,6 +106,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         $used_status = array_get($params, 'used_status', 0);
         $booking_id = array_get($params, 'booking_id', '');
         $merchant = array_get($params, 'merchant', null);
+        $seatId = array_get($params, 'seat_id', null);
 
         // Nếu có nhóm khách hàng thì check xem user có nằm trong nhóm đó không?
         $email = array_get($params, 'email', null);
@@ -319,6 +320,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
                 'flag' => true,
                 'details' => [
                     [
+                        'seat_id' => $seatId,
                         'promotion_code' => $code,
                         'type_check' => $type_check,
                         'status' => $used_status,

@@ -103,12 +103,19 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
 
                 foreach ($arr_promotion_codes as $key => $item) {
                     if (! empty($item['promotion_code'])) {
-                        $result = $this->paymentHistoryCode->create([
-                            'payment_history_id' => $model->id,
-                            'promotion_code'     => $item['promotion_code'],
-                            'type_check'         => isset($item['type_check']) ? $item['type_check'] : 0,
-                            'status'             => isset($item['status']) ? $item['status'] : 0,
-                        ]);
+                        $paymentHistoryCode = $this->paymentHistoryCode->where('seat_id', $item['seat_id'])
+                                                            ->where('payment_history_id', $model->id)
+                                                            ->withTrashed()
+                                                            ->first();
+                        if (!$paymentHistoryCode) {
+                            $result = $this->paymentHistoryCode->create([
+                                'payment_history_id' => $model->id,
+                                'seat_id'            => $item['seat_id'],
+                                'promotion_code'     => $item['promotion_code'],
+                                'type_check'         => isset($item['type_check']) ? $item['type_check'] : 0,
+                                'status'             => isset($item['status']) ? $item['status'] : 0,
+                            ]);
+                        }
                     }
                 }
             }
@@ -117,7 +124,7 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
             if(isset($data['details'])) {
                 $arr_promotion_codes = $data['details'];
                 foreach ($arr_promotion_codes as $key => $item) {
-                    $paymentHistoryCode = $this->paymentHistoryCode->where('promotion_code', $item['promotion_code'])
+                    $paymentHistoryCode = $this->paymentHistoryCode->where('seat_id', $item['seat_id'])
                                                             ->where('payment_history_id', $model->id)
                                                             ->first();
 
@@ -168,7 +175,7 @@ class DbPaymentHistoryRepository extends BaseRepository implements PaymentHistor
         if(isset($data['details'])) {
             foreach ($data['details'] as $key => $value) {
                 if (isset($value['delete_at'])) {
-                    $paymentHistoryCode = $this->paymentHistoryCode->where('promotion_code', $value['promotion_code'])
+                    $paymentHistoryCode = $this->paymentHistoryCode->where('seat_id', $value['seat_id'])
                                                             ->where('payment_history_id', $record->id)
                                                             ->first();
                     if (! is_null($paymentHistoryCode)) {
