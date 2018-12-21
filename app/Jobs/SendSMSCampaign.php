@@ -45,8 +45,10 @@ class SendSMSCampaign implements ShouldQueue
                 array_push($phones, $customer->phone);
             }
         }
+        \Log::info(['Phone SMS Auto:', $phones]);
         $sms = new SpeedSMSAPI();
         $result = $sms->sendSMS($phones, $this->content, SpeedSMSAPI::SMS_TYPE_CSKH, "", 1);
+        \Log::info(['Results: ', $result]);
         // Cập nhật SMS ID vào campaign
         if ($result['status'] == 'success') {
             $params = [
