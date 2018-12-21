@@ -166,19 +166,19 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
         }
 
         // Check hạng xe hợp lệ thì cho qua?
-        $target_valid = false;
-        $promotions_target = !is_null($promotion->target_type) ? explode(',', $promotion->target_type) : [];
+        // $target_valid = false;
+        // $promotions_target = !is_null($promotion->target_type) ? explode(',', $promotion->target_type) : [];
 
-        if (in_array($target_type, $promotions_target) || $target_type == 0 || $promotion->target_type == 0) {
-            $target_valid = true;
-        }
+        // if (in_array($target_type, $promotions_target) || $target_type == 0 || $promotion->target_type == 0) {
+        //     $target_valid = true;
+        // }
 
-        if (!$target_valid) {
-            $result->error = true;
-            $result->message = 'Mã khuyến mại không áp dụng hạng xe '.Promotion::LIST_TARGET_TYPE[$target_type];
+        // if (!$target_valid) {
+        //     $result->error = true;
+        //     $result->message = 'Mã khuyến mại không áp dụng hạng xe '.Promotion::LIST_TARGET_TYPE[$target_type];
 
-            return $result;
-        }
+        //     return $result;
+        // }
 
         // Check mã khuyến mại áp dụng cho từng nhà xe
         $merchant_valid = false;
