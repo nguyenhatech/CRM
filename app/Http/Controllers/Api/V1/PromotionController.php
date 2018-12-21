@@ -19,7 +19,7 @@ class PromotionController extends ApiController
 
     protected $validationRules = [
         'client_id' => 'required|exists:users,id',
-        'code' => 'required|max:50|unique:promotions,code',
+        'code' => 'required|max:50',
         'type' => 'required|numeric',
         'cgroup_id' => 'nullable|exists:cgroups,uuid',
         'amount' => 'required|numeric|min:0',
@@ -40,7 +40,7 @@ class PromotionController extends ApiController
 
         'code.required' => 'Vui lòng nhập mã giảm giá',
         'code.max' => 'Mã giảm giá có chiều dài tối đa là 50 kí tự',
-        'code.unique' => 'Mã giảm giá này đã tồn tại trên hệ thống',
+        // 'code.unique' => 'Mã giảm giá này đã tồn tại trên hệ thống',
 
         'type.required' => 'Vui lòng nhập kiểu giảm giá',
         'type.numeric' => 'Kiểu giảm giá phải là kiểu số',
@@ -166,21 +166,21 @@ class PromotionController extends ApiController
             }
 
             // Check Code of User là hợp lệ
-            $data = [
-                // 'client_id' => $user->id,
-                'code' => $request['code'],
-            ];
+            // $data = [
+            //     // 'client_id' => $user->id,
+            //     'code' => $request['code'],
+            // ];
 
-            $promotion = $this->getResource()->getByQuery($data)->first();
-            if (!is_null($promotion)) {
-                return $this->errorResponse([
-                    'errors' => [
-                        'code' => [
-                            'Mã code đã tồn tại trên hệ thống',
-                        ],
-                    ],
-                ]);
-            }
+            // $promotion = $this->getResource()->getByQuery($data)->first();
+            // if (!is_null($promotion)) {
+            //     return $this->errorResponse([
+            //         'errors' => [
+            //             'code' => [
+            //                 'Mã code đã tồn tại trên hệ thống',
+            //             ],
+            //         ],
+            //     ]);
+            // }
 
             // UPPERCASE mã code:
             $request['code'] = strtoupper($request['code']);
