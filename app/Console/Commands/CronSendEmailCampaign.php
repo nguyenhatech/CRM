@@ -7,6 +7,7 @@ use Nh\Repositories\Campaigns\Campaign;
 use Nh\Jobs\SendEmailCampaign;
 use Illuminate\Support\Carbon;
 use Nh\Jobs\SendSMSCampaign;
+use Nh\Repositories\Helpers\SpeedSMSAPI;
 
 class CronSendEmailCampaign extends Command
 {
@@ -73,6 +74,8 @@ class CronSendEmailCampaign extends Command
 
     private function sendSMS(Campaign $campaign, $customers, $time) {
         $content = $campaign->sms_template;
+        \Log::info(['SMS LOG', $customers]);
+        \Log::info(['SMS CAM', $campaign]);
         $job = new SendSMSCampaign($campaign, $customers, $content);
         dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
     }
