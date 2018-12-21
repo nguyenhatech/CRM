@@ -245,6 +245,19 @@ class PromotionController extends ApiController
 
             $type = array_get($params, 'type', null);
 
+            $quantity = (int) array_get($params, 'quantity', 0);
+            $quantityPerUser = (int) array_get($params, 'quantity_per_user', 0);
+
+            if($quantity < $quantityPerUser) {
+                return $this->errorResponse([
+                    'errors' => [
+                        'quantity' => [
+                            'Tổng số lượt phải lớn hơn số lượt sử dụng',
+                        ]
+                    ],
+                ]);
+            }
+
             if (!is_null($type) && $type == Promotion::PERCENT) {
                 $amount = array_get($params, 'amount', null);
                 if ($amount > 100) {
