@@ -66,17 +66,11 @@ class CronSendEmailCampaign extends Command
                     dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
 
                     // Send SMS
-                    $this->sendSMS($campaign, $chunk, $time);
+                    $content = $campaign->sms_template;
+                    $jobSMS  = new SendSMSCampaign($campaign, $chunk, $content);
+                    dispatch($jobSMS)->onQueue(env('APP_NAME'));
                 }
             }
         }
-    }
-
-    private function sendSMS(Campaign $campaign, $customers, $time) {
-        $content = $campaign->sms_template;
-        \Log::info(['SMS LOG', $customers]);
-        \Log::info(['SMS CAM', $campaign]);
-        $job = new SendSMSCampaign($campaign, $customers, $content);
-        dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
     }
 }
