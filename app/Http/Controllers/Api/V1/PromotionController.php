@@ -19,7 +19,7 @@ class PromotionController extends ApiController
 
     protected $validationRules = [
         'client_id' => 'required|exists:users,id',
-        'code' => 'required|max:50|unique:promotions,code',
+        'code' => 'required|max:50',
         'type' => 'required|numeric',
         'cgroup_id' => 'nullable|exists:cgroups,uuid',
         'amount' => 'required|numeric|min:0',
@@ -40,7 +40,7 @@ class PromotionController extends ApiController
 
         'code.required' => 'Vui lòng nhập mã giảm giá',
         'code.max' => 'Mã giảm giá có chiều dài tối đa là 50 kí tự',
-        'code.unique' => 'Mã giảm giá này đã tồn tại trên hệ thống',
+        // 'code.unique' => 'Mã giảm giá này đã tồn tại trên hệ thống',
 
         'type.required' => 'Vui lòng nhập kiểu giảm giá',
         'type.numeric' => 'Kiểu giảm giá phải là kiểu số',
@@ -125,6 +125,19 @@ class PromotionController extends ApiController
 
             $type = array_get($params, 'type', Promotion::PERCENT);
 
+            $quantity = (int) array_get($params, 'quantity', 0);
+            $quantityPerUser = (int) array_get($params, 'quantity_per_user', 0);
+
+            if($quantity != 0 && $quantity < $quantityPerUser) {
+                return $this->errorResponse([
+                    'errors' => [
+                        'quantity' => [
+                            'Tổng số lượt phải lớn hơn số lượt sử dụng',
+                        ]
+                    ],
+                ]);
+            }
+
             // Nếu kiểu là giảm theo phần trăm
             if ($type == Promotion::PERCENT) {
                 if ($amount > 100) {
@@ -137,6 +150,7 @@ class PromotionController extends ApiController
                     ]);
                 }
             }
+
             // Check amount_segment phải nhỏ hơn amount
             $amount_segment = (int) array_get($params, 'amount_segment', null);
             if (!is_null($amount_segment) && $amount_segment >= $amount) {
@@ -152,21 +166,21 @@ class PromotionController extends ApiController
             }
 
             // Check Code of User là hợp lệ
-            $data = [
-                'client_id' => $user->id,
-                'code' => $request['code'],
-            ];
+            // $data = [
+            //     // 'client_id' => $user->id,
+            //     'code' => $request['code'],
+            // ];
 
-            $promotion = $this->getResource()->getByQuery($data)->first();
-            if (!is_null($promotion)) {
-                return $this->errorResponse([
-                    'errors' => [
-                        'code' => [
-                            'Mã code đã tồn tại trên hệ thống',
-                        ],
-                    ],
-                ]);
-            }
+            // $promotion = $this->getResource()->getByQuery($data)->first();
+            // if (!is_null($promotion)) {
+            //     return $this->errorResponse([
+            //         'errors' => [
+            //             'code' => [
+            //                 'Mã code đã tồn tại trên hệ thống',
+            //             ],
+            //         ],
+            //     ]);
+            // }
 
             // UPPERCASE mã code:
             $request['code'] = strtoupper($request['code']);
@@ -230,6 +244,19 @@ class PromotionController extends ApiController
             $params['merchants'] = $params['merchant'] ? implode(',', $params['merchant']) : '';
 
             $type = array_get($params, 'type', null);
+
+            $quantity = (int) array_get($params, 'quantity', 0);
+            $quantityPerUser = (int) array_get($params, 'quantity_per_user', 0);
+
+            if($quantity != 0 && $quantity < $quantityPerUser) {
+                return $this->errorResponse([
+                    'errors' => [
+                        'quantity' => [
+                            'Tổng số lượt phải lớn hơn số lượt sử dụng',
+                        ]
+                    ],
+                ]);
+            }
 
             if (!is_null($type) && $type == Promotion::PERCENT) {
                 $amount = array_get($params, 'amount', null);

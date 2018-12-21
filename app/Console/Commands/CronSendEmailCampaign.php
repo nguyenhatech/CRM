@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use Nh\Repositories\Campaigns\Campaign;
 use Nh\Jobs\SendEmailCampaign;
 use Illuminate\Support\Carbon;
+use Nh\Jobs\SendSMSCampaign;
+use Nh\Repositories\Helpers\SpeedSMSAPI;
 
 class CronSendEmailCampaign extends Command
 {
@@ -45,12 +47,13 @@ class CronSendEmailCampaign extends Command
         foreach ($campaigns as $key => $campaign) {
             $sentEmail = $campaign->sent_emails->where('runtime', $campaign->runtime);
             if (!$sentEmail->all()) {
-                \Log::info(['Cron send email campaign', $sentEmail->all()]);
                 $time = Carbon::parse($campaign->runtime);
                 $time = $time->timestamp - time();
+
                 if ($time < 1) {
                     $time = 1;
                 }
+
 
                 if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
                     $customers = $campaign->cgroup->customers;
@@ -62,6 +65,10 @@ class CronSendEmailCampaign extends Command
                 foreach ($customerChunks as $chunk) {
                     $job = new SendEmailCampaign($campaign, $chunk);
                     dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
+
+                    // Send SMS
+                    $jobSMS = new SendSMSCampaign($campaign, $chunk, $campaign->sms_template);
+                    dispatch($jobSMS)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
                 }
             }
         }

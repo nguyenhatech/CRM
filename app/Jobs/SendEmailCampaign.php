@@ -36,17 +36,15 @@ class SendEmailCampaign implements ShouldQueue
      */
     public function handle()
     {
-        \Log::info('Bắt đầu chạy job gửi email');
         \Log::info($this->campaign->runtime);
         if ($this->campaign->runtime) {
-            \Log::info('Gửi tự động');
             $sentEmails = $this->campaign->sent_emails->where('runtime', $this->campaign->runtime);
             if ($sentEmails->all() && $sentEmails->first()->runtime == $this->campaign->runtime) {
-                \Log::info('Bắt đầu gửi');
+                \Log::info('Bắt đầu gửi tự động');
                 $this->sending($this->customers);
             }
         } else {
-            \Log::info('Gửi bằng tay');
+            \Log::info('Gửi bằng tay bằng tay');
             $this->sending($this->customers);
         }
     }

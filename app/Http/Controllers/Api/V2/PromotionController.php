@@ -22,7 +22,7 @@ class PromotionController extends Controller
 
     protected $validationRules = [
         'client_id'         => 'required|exists:users,id',
-        'code'              => 'required|max:50|unique:promotions,code',
+        'code'              => 'required|max:50',
         'type'              => 'required|numeric',
         'amount'            => 'required|numeric|min:0',
         'amount_segment'    => 'nullable|numeric|min:0',
@@ -42,7 +42,7 @@ class PromotionController extends Controller
 
         'code.required'             => 'Vui lòng nhập mã giảm giá',
         'code.max'                  => 'Mã giảm giá có chiều dài tối đa là 50 kí tự',
-        'code.unique'               => 'Mã giảm giá này đã tồn tại trên hệ thống',
+        // 'code.unique'               => 'Mã giảm giá này đã tồn tại trên hệ thống',
 
         'type.required'             => 'Vui lòng nhập kiểu giảm giá',
         'type.numeric'              => 'Kiểu giảm giá phải là kiểu số',
