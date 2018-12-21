@@ -197,7 +197,7 @@ class DbPromotionRepository extends BaseRepository implements PromotionRepositor
             return $result;
         }
 
-        if (!is_null($promotion) && $target_valid) {
+        if (!is_null($promotion)) {
             if (!is_null($email) || !is_null($phone)) {
                 $customerRepo = \App::make('Nh\Repositories\Customers\CustomerRepository');
                 $email = null;
