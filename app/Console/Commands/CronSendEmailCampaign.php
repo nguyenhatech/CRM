@@ -47,12 +47,13 @@ class CronSendEmailCampaign extends Command
         foreach ($campaigns as $key => $campaign) {
             $sentEmail = $campaign->sent_emails->where('runtime', $campaign->runtime);
             if (!$sentEmail->all()) {
-                \Log::info(['Cron send email campaign', $sentEmail->all()]);
                 $time = Carbon::parse($campaign->runtime);
                 $time = $time->timestamp - time();
+
                 if ($time < 1) {
                     $time = 1;
                 }
+
 
                 if ($campaign->target_type == Campaign::GROUP_TARGET || $campaign->target_type == Campaign::FILTER_TARGET) {
                     $customers = $campaign->cgroup->customers;
@@ -66,9 +67,8 @@ class CronSendEmailCampaign extends Command
                     dispatch($job)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
 
                     // Send SMS
-                    $content = $campaign->sms_template;
-                    $jobSMS  = new SendSMSCampaign($campaign, $chunk, $content);
-                    dispatch($jobSMS)->onQueue(env('APP_NAME'));
+                    $jobSMS = new SendSMSCampaign($campaign, $chunk, $campaign->sms_template);
+                    dispatch($jobSMS)->delay(now()->addSeconds($time))->onQueue(env('APP_NAME'));
                 }
             }
         }
