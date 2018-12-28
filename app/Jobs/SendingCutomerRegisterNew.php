@@ -23,7 +23,6 @@ class SendingCutomerRegisterNew implements ShouldQueue
      */
     public function __construct(Customer $customer, $promotion)
     {
-        // dd($customer);
         $this->customer = $customer;
         $this->promotion = $promotion;
     }
@@ -33,14 +32,13 @@ class SendingCutomerRegisterNew implements ShouldQueue
      */
     public function handle()
     {
-        $promotion = $this->promotion->getPromotionByAccountNew();
-        \Log::debug('Mail: ', [$promotion]);
-        if ($promotion) {
+        \Log::debug('Mail: ', [$this->promotion]);
+        if ($this->promotion) {
             if ($this->customer->email) {
-                $this->sendingEmail($this->customer, $promotion);
+                $this->sendingEmail($this->customer, $this->promotion);
             }
             if ($this->customer->phone) {
-                $this->sendingSMS($this->customer, $promotion);
+                $this->sendingSMS($this->customer, $this->promotion);
             }
         }
     }
@@ -50,7 +48,6 @@ class SendingCutomerRegisterNew implements ShouldQueue
         try {
             $mailer = new \Nh\Repositories\Helpers\MailJetHelper();
             $html = str_replace('***name***', $customer->name, $promotion->content);
-            // dd($mailer);
             $mailer->revicer($customer->email)->subject('Havaz gửi tặng mã khuyến mại dành cho khách hàng đăng ký mới')->content($html)->sent();
             \Log::debug('Mail: ', [$response]);
         } catch (\Exception $e) {
