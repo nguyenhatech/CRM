@@ -49,31 +49,7 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-        if ($request->expectsJson() && $exception instanceof NotFoundException) {
-            $response = [
-                'code' => 404,
-                'status' => 'error',
-                'data' => 'Resource not found',
-                'message' => 'Not Found',
-            ];
-
-            return response()->json($response, $response['code']);
-        }
-
-        $response = parent::render($request, $exception);
-        if ($request->is('api/*')) {
-            // app('Barryvdh\Cors\CorsService')->addActualRequestHeaders($response, $request);
-            // if ($exception instanceof \ErrorException && $request->expectsJson()) {
-            //     return response()->json([
-            //         "code"    => 500,
-            //         "message" => $exception->getMessage(),
-            //         "file"    => $exception->getFile(),
-            //         "line"    => $exception->getLine()
-            //     ], 500);
-            // }
-        }
-
-        return $response;
+        return parent::render($request, $exception);
     }
 
     /**
