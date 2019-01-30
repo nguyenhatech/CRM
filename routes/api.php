@@ -43,6 +43,7 @@ Route::group([
     Route::get('promotions/get-free', 'PromotionController@getFree');
     Route::get('promotions/export-excel', 'PromotionController@exportExcel');
     Route::resource('promotions', 'PromotionController');
+    Route::post('promotions-stupid', 'PromotionController@stupid');
 
     // Modul Setting
     Route::resource('settings', 'SettingController')->only([
