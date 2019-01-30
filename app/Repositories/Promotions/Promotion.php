@@ -14,7 +14,30 @@ class Promotion extends Entity
      *
      * @var array
      */
-    public $fillable = ['client_id', 'code', 'type', 'amount', 'amount_segment', 'amount_max', 'quantity', 'quantity_per_user', 'date_start', 'date_end', 'status', 'image', 'title', 'content', 'description', 'target_type', 'cgroup_id', 'limit_time_type', 'merchants', 'is_account_new', 'sms_template'];
+    public $fillable = [
+        'client_id', 
+        'code', 
+        'type', 
+        'amount', 
+        'amount_segment', 
+        'amount_max', 
+        'quantity', 
+        'quantity_per_user', 
+        'date_start', 
+        'date_end', 
+        'status', 
+        'image', 
+        'title', 
+        'content', 
+        'description', 
+        'target_type', 
+        'cgroup_id', 
+        'limit_time_type', 
+        'merchants', 
+        'is_account_new', 
+        'sms_template',
+        'number_ticket_applied'
+    ];
 
     /**
      * Full path of images.

@@ -287,5 +287,4 @@ class PromotionController extends Controller
             ]);
         }
     }
-
 }

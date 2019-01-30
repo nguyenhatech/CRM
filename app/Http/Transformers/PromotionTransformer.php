@@ -43,6 +43,7 @@ class PromotionTransformer extends TransformerAbstract
             'status_txt' => $promotion->getStatusText(),
             'sms_template' => $promotion->sms_template,
             'is_account_new' => $promotion->is_account_new,
+            'number_ticket_applied' => $promotion->number_ticket_applied,
             'created_at' => $promotion->created_at ? $promotion->created_at->format('Y-m-d H:i:s') : null,
         ];
 
