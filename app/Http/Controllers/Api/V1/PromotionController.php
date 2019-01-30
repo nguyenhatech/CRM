@@ -519,4 +519,13 @@ class PromotionController extends ApiController
             throw $e;
         }
     }
+
+    public function stupid(Request $request){
+        \Log::info('Check promotion stupid: '. time());
+
+        $code = $request->code;
+        $data =  ($code && count($code) > 0) ? Promotion::where('number_ticket_applied', '>', 0)->where('status', Promotion::ENABLE)->whereIn('code', (array) $code)->get(['code', 'number_ticket_applied']) : []; 
+
+        return $this->successResponse($data);
+    }
 }
