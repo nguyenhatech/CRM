@@ -153,9 +153,8 @@ class PromotionController extends ApiController
 
             // Check amount_segment phải nhỏ hơn amount
             $amount_segment = (int) array_get($params, 'amount_segment', null);
-            if (!is_null($amount_segment) && $amount_segment >= $amount) {
+            if (!is_null($amount_segment) && $amount_segment > $amount) {
                 $message = $type == Promotion::PERCENT ? 'Phần trăm' : 'Số tiền';
-
                 return $this->errorResponse([
                     'errors' => [
                         'amount_segment' => [
@@ -164,23 +163,6 @@ class PromotionController extends ApiController
                     ],
                 ]);
             }
-
-            // Check Code of User là hợp lệ
-            // $data = [
-            //     // 'client_id' => $user->id,
-            //     'code' => $request['code'],
-            // ];
-
-            // $promotion = $this->getResource()->getByQuery($data)->first();
-            // if (!is_null($promotion)) {
-            //     return $this->errorResponse([
-            //         'errors' => [
-            //             'code' => [
-            //                 'Mã code đã tồn tại trên hệ thống',
-            //             ],
-            //         ],
-            //     ]);
-            // }
 
             // UPPERCASE mã code:
             $request['code'] = strtoupper($request['code']);
