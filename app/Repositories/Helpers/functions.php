@@ -272,3 +272,14 @@ function generateWebhookToken($data, $client_secret)
     $data = json_encode($data);
     return base64_encode(hash_hmac('sha256', $data, $client_secret, true));
 }
+
+function randStrGen($len){
+    $result = "";
+    $chars = "abcdefghijklmnopqrstuvwxyz";
+    $charArray = str_split($chars);
+    for($i = 0; $i < $len; $i++){
+	    $randItem = array_rand($charArray);
+	    $result .= "".$charArray[$randItem];
+    }
+    return $result;
+}

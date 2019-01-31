@@ -7,7 +7,7 @@ use Nh\Repositories\Entity;
 class CustomerCgroup extends Entity
 {
 	protected $table = 'customer_cgroups';
-
+    public $timestamps = false;
     /**
      * The attributes that are mass assignable.
      *

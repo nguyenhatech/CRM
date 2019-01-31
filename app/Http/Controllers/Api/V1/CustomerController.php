@@ -77,7 +77,6 @@ class CustomerController extends ApiController
     public function store(Request $request)
     {
         \DB::beginTransaction();
-
         try {
             $this->validate($request, $this->validationRules, $this->validationMessages);
 

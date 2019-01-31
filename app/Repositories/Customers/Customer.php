@@ -70,15 +70,6 @@ class Customer extends Entity
             event(new \Nh\Events\NewCustomer($model));
         });
 
-        // Tạm bỏ đi vì HSHV không cần
-        // static::addGlobalScope('customers', function (Builder $builder) {
-        //     if (getCurrentUser() && !getCurrentUser()->isAdmin()) {
-        //         $builder->whereHas('client', function ($builder) {
-        //             $builder->where('id', getCurrentUser()->id);
-        //         });
-        //     }
-        // });
-
         parent::boot();
     }
 
