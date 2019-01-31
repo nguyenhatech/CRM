@@ -20,14 +20,22 @@ class EventServiceProvider extends ServiceProvider
             \Nh\Listeners\UpdateLastPaymentListener::class,
             \Nh\Listeners\SendPaymentToMerchant::class,
         ],
+
         \Nh\Events\DownLevelCustomer::class => [
             \Nh\Listeners\DownLevelCustomerListener::class,
         ],
+
         \Nh\Events\InfoCustomer::class => [
             \Nh\Listeners\SendCustomerToMerchant::class,
         ],
+
         \Nh\Events\NewCustomer::class => [
             \Nh\Listeners\SendEmailNewCustomer::class,
+            \Nh\Listeners\InviteFriendListener::class,
+        ],
+
+        \Nh\Events\EventSendInfoToFriends::class => [
+            \Nh\Listeners\SendInfoToFriendsListener::class,
         ],
     ];
 

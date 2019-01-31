@@ -31,6 +31,12 @@ Route::group([
     // Modul check-promotion
     Route::post('check-promotion', ['as' => 'check-promotion.check', 'uses' => 'CheckPromotionController@check']);
 
+    /**
+     * Invite friends
+     * */ 
+    Route::post('invite-friends', 'InviteFriendController@store');
+    Route::get('invite-friends-index', 'InviteFriendController@index');
+
     // Customers
     Route::resource('customers', 'CustomerController');
 });
