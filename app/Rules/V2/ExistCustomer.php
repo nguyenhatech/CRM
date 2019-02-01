@@ -1,6 +1,6 @@
 <?php
 
-namespace Nh\Rules;
+namespace Nh\Rules\V2;
 
 use Illuminate\Contracts\Validation\Rule;
 use Carbon\Carbon;

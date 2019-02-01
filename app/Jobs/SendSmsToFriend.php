@@ -40,11 +40,6 @@ class SendSmsToFriend implements ShouldQueue
 
         if ($phone_friend){
             $result = $sms->sendSMS((array) $phone_friend, $content, SpeedSMSAPI::SMS_TYPE_CSKH, "", 1);
-            if ($result) {
-                \Log::info('Tin nhan gioi thieu ban be: '. $phone_friend);
-            } else {
-                \Log::debug('Tin nhan gioi thieu ban be: '. $phone_friend);
-            }
         }
 
     }

@@ -34,8 +34,15 @@ class EventServiceProvider extends ServiceProvider
             \Nh\Listeners\InviteFriendListener::class,
         ],
 
+        /**
+         * V2
+        */
         \Nh\Events\EventSendInfoToFriends::class => [
             \Nh\Listeners\SendInfoToFriendsListener::class,
+        ],
+
+        \Nh\Events\V2\CustomerReviewAppEvent::class => [
+            \Nh\Listeners\V2\CustomerReviewAppListener::class,
         ],
     ];
 

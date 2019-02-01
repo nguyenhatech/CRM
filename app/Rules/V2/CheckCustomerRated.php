@@ -1,24 +1,22 @@
 <?php
 
-namespace Nh\Rules;
+namespace Nh\Rules\V2;
 
 use Illuminate\Contracts\Validation\Rule;
-use Carbon\Carbon;
-use Nh\Models\InviteFriend;
-use Nh\Repositories\Customers\Customer;
+use Nh\Repositories\Cgroups\Cgroup;
 
-class LimitInviteFriend implements Rule
+class CheckCustomerRated implements Rule
 {
-    const ALLOW_INVITE = 5;
+    protected $uuid = null;
 
     /**
      * Create a new rule instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($phone)
     {
-        //
+        $this->phone = $phone;
     }
 
     /**
@@ -30,7 +28,8 @@ class LimitInviteFriend implements Rule
      */
     public function passes($attribute, $value)
     {
-        return (InviteFriend::wherePhoneOwner($value)->whereDate('created_at', Carbon::today())->count() <= self::ALLOW_INVITE);
+        $name = strtoupper('REVIEW_'.$value.'_'.$this->phone);
+        return !(Cgroup::whereName($name)->exists());
     }
 
     /**
@@ -40,6 +39,6 @@ class LimitInviteFriend implements Rule
      */
     public function message()
     {
-        return 'Bạn bè giới thiệu đã quá số lượng cho phép ('.self::ALLOW_INVITE.' bạn/ngày.)';
+        return 'Booking này đã được đánh giá.';
     }
 }

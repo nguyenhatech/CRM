@@ -37,6 +37,11 @@ Route::group([
     Route::post('invite-friends', 'InviteFriendController@store');
     Route::get('invite-friends-index', 'InviteFriendController@index');
 
+    /**
+     * Review apps
+    */
+    Route::post('customer-review-app', 'ReviewAppController@store');
+
     // Customers
     Route::resource('customers', 'CustomerController');
 });

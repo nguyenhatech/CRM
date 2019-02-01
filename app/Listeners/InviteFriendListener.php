@@ -14,6 +14,10 @@ use Carbon\Carbon;
 
 class InviteFriendListener
 {
+
+    protected $moneyApplied = 0;
+    protected $dayApplied = 0;
+
     /**
      * Create the event listener.
      *
@@ -21,7 +25,8 @@ class InviteFriendListener
      */
     public function __construct()
     {
-        //
+        $this->moneyApplied= env('REIVIEW_APP_OF_CUSTOMER_MONEY_APPLIED');
+        $this->dayApplied= env('REIVIEW_APP_OF_CUSTOMER_DAY_APPLIED');
     }
 
     /**
@@ -32,11 +37,7 @@ class InviteFriendListener
      */
     public function handle(NewCustomer $event)
     {
-        //dd($code, $num);
-        $moneyApplied= env('INVITE_FRIEND_MONEY_APPLIED');
-        $dayApplied= env('INVITE_FRIEND_DAY_APPLIED');
-
-        $conditionInputs = ($moneyApplied && $dayApplied && (int)$moneyApplied  > 0 &&  (int)$dayApplied > 0);
+        $conditionInputs = ($this->moneyApplied && $this->dayApplied && (int)$this->moneyApplied  > 0 &&  (int)$this->dayApplied > 0);
 
         if (!$conditionInputs) return false;
 
@@ -54,7 +55,7 @@ class InviteFriendListener
             $this->putCustomerToGroup($dataCgroup, $customerOwner);
 
             // Gửi tin nhắn cho khách hàng owner
-            $job = new \Nh\Jobs\SendSmsToPresenter($customerFriend, $dataPromotions->code, $dayApplied, $moneyApplied);
+            $job = new \Nh\Jobs\SendSmsToPresenter($customerFriend, $dataPromotions->code, $this->dayApplied, $this->moneyApplied);
             dispatch($job)->onQueue(env('APP_NAME'));
         }
     }
@@ -76,22 +77,20 @@ class InviteFriendListener
         $inputsGroup = [
             'name' => 'INVITE_'.$phoneFriend.'_'.$phoneOwner,
             'type' => 1,
-            'description' => 'Chương trình giới thiệu bạn bè.',
+            'description' => 'Chương trình khuyến mại giới thiệu bạn bè.',
             'client_id' => 3
         ];
         return Cgroup::create($inputsGroup);
     }
 
     private function createPromotion(Cgroup $dataCgroup) {
-        $moneyApplied= env('INVITE_FRIEND_MONEY_APPLIED');
-        $dayApplied= env('INVITE_FRIEND_DAY_APPLIED');
         $code = $this->genCodePromotion();
         $start = Carbon::today();
-        $end = Carbon::today()->addDays($dayApplied);
+        $end = Carbon::today()->addDays($this->dayApplied);
 
         $inputsPromotions = [
-            'amount'=> $moneyApplied,
-            'amount_segment'=>$moneyApplied,
+            'amount'=> $this->moneyApplied,
+            'amount_segment'=>$this->moneyApplied,
             'cgroup_id' => $dataCgroup->id,
             'code'=> $code,
             'content'=> 'Chương trình khuyến mại giới thiệu bạn bè.',
@@ -101,11 +100,11 @@ class InviteFriendListener
             'limit_time_type' => 2,
             'quantity' => 1,
             'quantity_per_user' => 1,
-            'sms_template' => 'Chuong trinh khuyen mai gioi thieu ban be.',
+            'sms_template' => 'Chương trình khuyến mại giới thiệu bạn bè.',
             'target_type' => 0,
             'time_end' =>'23:59',
             'time_start'=> '00:00',
-            'title'=> 'Chương trình khuyến mại giới thiệu bạn bè',
+            'title'=> 'Chương trình khuyến mại giới thiệu bạn bè.',
             'type'=> 0,
             'client_id'=> 3
         ];

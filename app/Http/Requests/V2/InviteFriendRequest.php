@@ -7,7 +7,7 @@ use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 use Nh\Models\InviteFriend;
 use Nh\Repositories\Customers\Customer;
-use Nh\Rules\{
+use Nh\Rules\V2\{
     LimitInviteFriend,
     ExistCustomer
 };
