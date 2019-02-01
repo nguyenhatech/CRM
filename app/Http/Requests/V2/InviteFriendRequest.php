@@ -7,6 +7,10 @@ use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 use Nh\Models\InviteFriend;
 use Nh\Repositories\Customers\Customer;
+use Nh\Rules\{
+    LimitInviteFriend,
+    ExistCustomer
+};
 
 class InviteFriendRequest extends ApiRequests
 {
@@ -17,13 +21,9 @@ class InviteFriendRequest extends ApiRequests
      */
     public function rules()
     {
-        $phone_owner = request()->phone_owner;
-        $phone_friend = request()->phone_friend;
-
-        //dd($phone_owner);
         return [
-            'phone_owner'=> ['required', 'phone', 'min:10', 'max:12'],
-            'phone_friend' => ['required', 'phone', 'unique:invite_friends', 'min:10', 'max:12', 'different:phone_owner']
+            'phone_owner'=> ['required', 'phone', 'min:10', 'max:12', new LimitInviteFriend],
+            'phone_friend' => ['required', 'phone', 'unique:invite_friends', 'min:10', 'max:12', 'different:phone_owner', new ExistCustomer]
         ];
     }
 
@@ -37,15 +37,5 @@ class InviteFriendRequest extends ApiRequests
             'phone_friend.phone'  => 'Định dạng không đúng.',
             'phone_friend.unique'  => 'Người bạn này đã được khách hàng khác giới thiệu.',
         ];
-    }
-
-    protected function getNumberInvited($phone_owner)
-    {
-        $today = Carbon::today();
-        return InviteFriend::wherePhoneOwner($phone_owner)->count();
-    }
-
-    protected function checkIsCustomer($phone_friend) {
-        return Customer::wherePhone($phone_friend)->exists();
     }
 }
