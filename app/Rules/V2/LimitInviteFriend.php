@@ -30,7 +30,7 @@ class LimitInviteFriend implements Rule
      */
     public function passes($attribute, $value)
     {
-        return (InviteFriend::wherePhoneOwner($value)->whereDate('created_at', Carbon::today())->count() <= self::ALLOW_INVITE);
+        return (InviteFriend::wherePhoneOwner($value)->whereDate('created_at', Carbon::today())->count() < self::ALLOW_INVITE);
     }
 
     /**
